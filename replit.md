@@ -56,6 +56,8 @@ This is a WhatsApp personal assistant bot designed to operate through the owner'
 ✅ **Outgoing Command Processing**: Fixed bot to process commands from owner's outgoing messages while maintaining access control for incoming messages
 ✅ **JID Matching Fix**: Resolved owner recognition issue by extracting phone numbers for comparison (handles device ID suffixes like :79)
 ✅ **Command Execution Fix**: Fixed plugin command handlers to use proper context objects with reply functions
+✅ **Performance Optimization**: Bot now only processes messages starting with prefix to reduce CPU usage
+✅ **Sender JID Fix**: Corrected group chat sender detection to use actual sender instead of chat JID
 ✅ **Storage Management**: Implemented 3-day automatic cleanup for messages and media to prevent storage bloat (runs every 24h with 10-minute startup delay)
 ✅ **Command System Fully Functional**: All commands (.help, .info, .status, etc.) now responding correctly
 ✅ **Connection Confirmation**: Bot now sends a welcome message to owner when successfully connected to WhatsApp

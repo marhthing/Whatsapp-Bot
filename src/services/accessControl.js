@@ -90,9 +90,9 @@ class AccessControlService extends EventEmitter {
         const baseJid = normalizedJid ? normalizedJid.split(':')[0] : null;
         const baseOwner = normalizedOwner ? normalizedOwner.split(':')[0] : null;
         
-        console.log(`🔍 JID Debug - Input: ${jid}, Normalized: ${normalizedJid}, Base: ${baseJid}`);
-        console.log(`🔍 Owner Debug - Stored: ${this.ownerJid}, Normalized: ${normalizedOwner}, Base: ${baseOwner}`);
-        console.log(`🔍 Match Result: ${baseJid === baseOwner}`);
+        // console.log(`🔍 JID Debug - Input: ${jid}, Normalized: ${normalizedJid}, Base: ${baseJid}`);
+        // console.log(`🔍 Owner Debug - Stored: ${this.ownerJid}, Normalized: ${normalizedOwner}, Base: ${baseOwner}`);
+        // console.log(`🔍 Match Result: ${baseJid === baseOwner}`);
         
         return baseJid === baseOwner;
     }

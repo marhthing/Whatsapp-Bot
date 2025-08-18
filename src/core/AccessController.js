@@ -99,7 +99,7 @@ class AccessController {
         const phoneFromInput = getPhoneNumber(jid);
         const phoneFromOwner = getPhoneNumber(this.ownerJid);
         
-        // Remove debug logs since the fix is working
+        // Disable debug logs for performance - only enable when needed
         // console.log(`🔍 JID Debug - Input: ${jid}, Phone: ${phoneFromInput}`);
         // console.log(`🔍 Owner Debug - Stored: ${this.ownerJid}, Phone: ${phoneFromOwner}`);
         // console.log(`🔍 Match Result: ${phoneFromInput === phoneFromOwner}`);
@@ -225,7 +225,7 @@ class AccessController {
         }
 
         // Debug log for troubleshooting
-        console.log(`🔍 Access check - Sender: ${senderJid}, Owner: ${this.ownerJid}, Chat: ${chatId}`);
+        // console.log(`🔍 Access check - Sender: ${senderJid}, Owner: ${this.ownerJid}, Chat: ${chatId}`);
 
         // Owner can always process any message
         if (this.isOwner(senderJid)) {

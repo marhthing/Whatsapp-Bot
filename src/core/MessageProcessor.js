@@ -34,6 +34,15 @@ class MessageProcessor extends EventEmitter {
                 await this.downloadAndStoreMedia(message);
             }
 
+            // Only process messages that start with command prefix - optimize performance
+            const messageText = this.getMessageText(message);
+            const prefix = process.env.COMMAND_PREFIX || process.env.PREFIX || '.';
+            
+            // Skip processing if message doesn't start with prefix (for non-outgoing messages)
+            if (!isOutgoing && (!messageText || !messageText.trim().startsWith(prefix))) {
+                return; // Don't waste resources on non-command messages
+            }
+            
             // Extract command if present (for both incoming and outgoing messages)
             const command = this.extractCommand(message);
             
@@ -498,6 +507,24 @@ class MessageProcessor extends EventEmitter {
             activeProcessing: this.activeProcessing.size,
             maxConcurrent: this.maxConcurrentProcessing
         };
+    }
+
+    getMessageText(message) {
+        // Extract message text from different message types
+        if (message.message) {
+            if (message.message.conversation) {
+                return message.message.conversation;
+            } else if (message.message.extendedTextMessage?.text) {
+                return message.message.extendedTextMessage.text;
+            } else if (message.message.imageMessage?.caption) {
+                return message.message.imageMessage.caption;
+            } else if (message.message.videoMessage?.caption) {
+                return message.message.videoMessage.caption;
+            }
+        }
+        
+        // Fallback to direct body property
+        return message.body || '';
     }
 
     async shutdown() {
