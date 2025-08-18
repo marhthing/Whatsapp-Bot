@@ -72,10 +72,18 @@ class LoadingReaction {
 
     async showLoadingReaction(message) {
         try {
-            const messageId = message.id._serialized || message.id.id;
+            // Extract message ID safely from different message structures
+            let messageId;
+            if (message.key?.id) {
+                messageId = message.key.id;
+            } else if (message.id) {
+                messageId = message.id._serialized || message.id.id || message.id;
+            } else {
+                messageId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            }
             
-            // React with loading emoji
-            await message.react(this.loadingEmoji);
+            // Skip loading reaction for now due to Baileys compatibility issues
+            // await message.react(this.loadingEmoji);
             
             // Store reaction info
             this.activeReactions.set(messageId, {
@@ -98,10 +106,18 @@ class LoadingReaction {
 
     async updateReaction(message, emoji, status = 'completed') {
         try {
-            const messageId = message.id._serialized || message.id.id;
+            // Extract message ID safely
+            let messageId;
+            if (message.key?.id) {
+                messageId = message.key.id;
+            } else if (message.id) {
+                messageId = message.id._serialized || message.id.id || message.id;
+            } else {
+                return false;
+            }
             
-            // Update reaction emoji
-            await message.react(emoji);
+            // Skip reaction updates for now due to Baileys compatibility issues
+            // await message.react(emoji);
             
             // Update stored info
             if (this.activeReactions.has(messageId)) {

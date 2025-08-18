@@ -214,18 +214,26 @@ class AccessController {
         let senderJid, chatId;
         
         if (message.key) {
-            // For group messages, participant is the sender
-            // For individual messages, remoteJid is the sender
-            senderJid = message.key.participant || message.key.remoteJid;
-            chatId = message.key.remoteJid;
+            // Check if this is an outgoing message from the bot owner
+            if (message.key.fromMe) {
+                // For outgoing messages, use the owner JID
+                senderJid = this.ownerJid;
+                chatId = message.key.remoteJid;
+            } else {
+                // For incoming messages:
+                // - In groups: participant is the sender
+                // - In individual chats: remoteJid is the sender
+                senderJid = message.key.participant || message.key.remoteJid;
+                chatId = message.key.remoteJid;
+            }
         } else {
             // Fallback for other message structures
             senderJid = message.author || message.from;
             chatId = message.from;
         }
 
-        // Debug log for troubleshooting
-        // console.log(`🔍 Access check - Sender: ${senderJid}, Owner: ${this.ownerJid}, Chat: ${chatId}`);
+        // Debug when needed (uncomment for troubleshooting)
+        // console.log(`🔍 Access check - FromMe: ${message.key?.fromMe}, Sender: ${senderJid}, Owner: ${this.ownerJid}, Chat: ${chatId}`);
 
         // Owner can always process any message
         if (this.isOwner(senderJid)) {
