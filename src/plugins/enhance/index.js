@@ -194,10 +194,9 @@ class EnhancePlugin {
             const enhancedBase64 = enhancedBuffer.toString('base64');
             const extension = this.getExtensionFromMimeType(sourceMedia.mimetype);
 
-            // Send enhanced image using correct BotClient format
+            // Send enhanced image without caption
             const sentMessage = await reply({
                 image: enhancedBuffer,
-                caption: '✨ Enhanced image ready!\n\n🎯 Original size preserved with improved quality\n💡 Tip: Use `.enhance` on any image to improve its quality',
                 mimetype: 'image/png' // Required by BotClient
             });
 
