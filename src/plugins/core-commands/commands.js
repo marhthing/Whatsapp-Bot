@@ -21,7 +21,7 @@ class Commands {
             // Show general help
             const prefix = this.envManager.get('BOT_PREFIX', '.');
             
-            const helpText = `🤖 **WhatsApp Personal Assistant Bot**\n\n` +
+            const helpText = `🤖 **MATDEV Bot**\n\n` +
                            `**Core Commands:**\n` +
                            `${prefix}help [command] - Show this help or help for specific command\n` +
                            `${prefix}info - Show bot information\n` +
@@ -96,8 +96,8 @@ class Commands {
             const { reply } = context;
             
             const clientInfo = this.botClient.getClientInfo();
-            const botName = this.envManager.get('BOT_NAME', 'WhatsApp Personal Assistant Bot');
-            const botDescription = this.envManager.get('BOT_DESCRIPTION', 'Your personal WhatsApp assistant');
+            const botName = this.envManager.get('BOT_NAME', 'MATDEV');
+            const botDescription = this.envManager.get('BOT_DESCRIPTION', 'Your personal MATDEV assistant');
             
             const infoText = `🤖 **${botName}**\n\n` +
                            `📱 **Connected Account:** ${clientInfo?.pushname || 'Unknown'} (${clientInfo?.phone || 'Unknown'})\n` +

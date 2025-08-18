@@ -1,6 +1,6 @@
 {
   "bot": {
-    "name": "WhatsApp Personal Assistant",
+    "name": "MATDEV",
     "version": "1.0.0",
     "commandPrefix": ".",
     "maxMessageLength": 4096,

@@ -130,7 +130,7 @@ class BotClient extends EventEmitter {
             auth: state,
             logger: pino({ level: 'silent' }), // Reduce log noise
             printQRInTerminal: false, // We'll handle QR ourselves
-            browser: ['WhatsApp Personal Assistant', 'Chrome', '1.0.0'],
+            browser: ['MATDEV', 'Chrome', '1.0.0'],
             defaultQueryTimeoutMs: 60000
         });
 
@@ -175,7 +175,7 @@ class BotClient extends EventEmitter {
                 
                 // Send confirmation message to owner
                 try {
-                    const confirmationMessage = `🤖 *WhatsApp Personal Assistant Connected*\n\n✅ Bot is now active and ready to serve!\n🔗 Connected at: ${new Date().toLocaleString()}\n📱 Operating as: ${this.ownerJid}\n\nType *.help* to see available commands.`;
+                    const confirmationMessage = `🤖 *MATDEV Connected*\n\n✅ Bot is now active and ready to serve!\n🔗 Connected at: ${new Date().toLocaleString()}\n📱 Operating as: ${this.ownerJid}\n\nType *.help* to see available commands.`;
                     await this.client.sendMessage(this.ownerJid, { text: confirmationMessage });
                     console.log('📱 Connection confirmation sent to owner');
                 } catch (error) {

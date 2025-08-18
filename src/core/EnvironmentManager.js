@@ -35,7 +35,7 @@ class EnvironmentManager {
     async ensureEnvironmentFiles() {
         // Create user .env if it doesn't exist
         if (!await fs.pathExists(this.envPath)) {
-            const defaultUserEnv = `# WhatsApp Personal Assistant Bot - User Configuration
+            const defaultUserEnv = `# MATDEV Bot - User Configuration
 # This file is automatically created and managed by the bot
 NODE_ENV=development
 ENABLE_WEB_INTERFACE=false
@@ -54,7 +54,7 @@ WEB_HOST=0.0.0.0
 
         // Create system .env if it doesn't exist
         if (!await fs.pathExists(this.systemEnvPath)) {
-            const defaultSystemEnv = `# WhatsApp Personal Assistant Bot - System Configuration
+            const defaultSystemEnv = `# MATDEV Bot - System Configuration
 # Session-specific variables (automatically managed)
 WHATSAPP_SESSION_ID=
 OWNER_JID=

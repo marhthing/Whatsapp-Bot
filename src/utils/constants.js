@@ -5,9 +5,9 @@
 
 // Bot Configuration
 const BOT_CONFIG = {
-    NAME: 'WhatsApp Personal Assistant',
+    NAME: 'MATDEV',
     VERSION: '1.0.0',
-    AUTHOR: 'Personal Assistant Bot',
+    AUTHOR: 'MATDEV Bot',
     MAX_MESSAGE_LENGTH: 4096,
     COMMAND_PREFIX: '.',
     LOADING_EMOJI: '⏳',
