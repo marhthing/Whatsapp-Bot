@@ -83,6 +83,13 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Enhanced media storage with message ID-based filename generation for proper uniqueness
   - Added proper media path linking between archived messages and stored media files
   - Fixed "Invalid message content type" errors in anti-delete forwarding system
+  - **PERFORMANCE OPTIMIZATIONS**: Implemented parallel processing for message archiving and media storage
+  - Enhanced bulk deletion handling with batch processing (5 deletions at a time) to prevent lag
+  - Added proper caption extraction from images/videos that forwards with deleted media
+  - Optimized archive queue processing from 1 second to 500ms intervals for faster response
+  - Increased batch size from 10 to 20 messages for more efficient archiving
+  - Added download timeouts (10 seconds) to prevent hanging media downloads
+  - Fixed directory naming inconsistency ("groups" vs "group") in message archiver
 - All core functionality tested and operational
 
 ### Current Working Features:

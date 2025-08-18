@@ -68,7 +68,7 @@ class MessageArchiver {
             if (!this.processing && this.archiveQueue.length > 0) {
                 await this.processArchiveQueue();
             }
-        }, 1000); // Process every second
+        }, 500); // Process every 500ms for faster archiving
     }
 
     startCleanupScheduler() {
@@ -330,7 +330,7 @@ class MessageArchiver {
             const fileName = `${day}.json`;
             const possiblePaths = [
                 path.join(this.messagesPath, year.toString(), month, 'individual', fileName),
-                path.join(this.messagesPath, year.toString(), month, 'group', fileName)
+                path.join(this.messagesPath, year.toString(), month, 'groups', fileName)
             ];
             
             for (const filePath of possiblePaths) {
@@ -397,11 +397,13 @@ class MessageArchiver {
         }
 
         try {
-            const batch = this.archiveQueue.splice(0, 10); // Process up to 10 messages at once
+            const batch = this.archiveQueue.splice(0, 20); // Process up to 20 messages at once
             
-            for (const item of batch) {
-                await this.archiveMessageToFile(item.message);
-            }
+            // Process messages in parallel for better performance
+            const promises = batch.map(item => this.saveMessage(item.message, item.isOutgoing));
+            await Promise.allSettled(promises); // Use allSettled to not fail on individual errors
+            
+            console.log(`📁 Archived ${batch.length} messages`);
 
         } catch (error) {
             console.error('❌ Error processing archive queue:', error);

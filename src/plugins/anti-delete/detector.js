@@ -283,7 +283,7 @@ class Detector {
                 case 'image':
                     messageToSend = { 
                         image: mediaBuffer, 
-                        caption: deletionEntry.messageBody || undefined,
+                        caption: this.extractMediaCaption(originalMessage) || undefined,
                         contextInfo: contextInfo
                     };
                     break;
@@ -292,7 +292,7 @@ class Detector {
                 case 'video':
                     messageToSend = { 
                         video: mediaBuffer, 
-                        caption: deletionEntry.messageBody || undefined,
+                        caption: this.extractMediaCaption(originalMessage) || undefined,
                         contextInfo: contextInfo
                     };
                     break;
@@ -314,7 +314,7 @@ class Detector {
                         document: mediaBuffer, 
                         fileName: originalMessage.fileName || 'deleted_document',
                         mimetype: originalMessage.mimetype || 'application/octet-stream',
-                        caption: deletionEntry.messageBody || undefined,
+                        caption: this.extractMediaCaption(originalMessage) || undefined,
                         contextInfo: contextInfo
                     };
                     break;
@@ -340,6 +340,28 @@ class Detector {
             console.error('❌ Error forwarding tagged media message:', error);
             // Just log and exit - no placeholder messages
         }
+    }
+
+    extractMediaCaption(message) {
+        if (!message || !message.message) return null;
+        
+        // Extract caption from different message types
+        if (message.message.imageMessage?.caption) {
+            return message.message.imageMessage.caption;
+        }
+        if (message.message.videoMessage?.caption) {
+            return message.message.videoMessage.caption;
+        }
+        if (message.message.documentMessage?.caption) {
+            return message.message.documentMessage.caption;
+        }
+        
+        // Fallback to body if it's not a standard media format
+        if (message.body && message.body !== '[Image]' && message.body !== '[Video]' && message.body !== '[Document]' && message.body !== '[Sticker]') {
+            return message.body;
+        }
+        
+        return null;
     }
 
     isMediaType(messageType) {

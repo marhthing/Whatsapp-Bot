@@ -26,17 +26,25 @@ class MessageProcessor extends EventEmitter {
             // Emit message received event
             this.eventBus?.emitMessageReceived(message);
 
-            // Always archive the message first (both incoming and outgoing)
-            await this.messageArchiver.archiveMessage(message, isOutgoing);
-
-            // Download and store media automatically for all message types
+            // Process archiving and media storage in parallel for better performance
+            const archivePromise = this.messageArchiver.archiveMessage(message, isOutgoing);
+            
+            let mediaPromise = null;
             if (this.hasMedia(message)) {
-                const storedMedia = await this.downloadAndStoreMedia(message);
-                
-                // Update the archived message with the media path
-                if (storedMedia && storedMedia.relativePath) {
-                    await this.messageArchiver.updateMessageMediaPath(message.key.id, storedMedia.relativePath);
-                }
+                mediaPromise = this.downloadAndStoreMedia(message);
+            }
+
+            // Wait for both to complete
+            const [archiveResult, storedMedia] = await Promise.all([
+                archivePromise,
+                mediaPromise
+            ]);
+            
+            // Update the archived message with the media path if media was stored
+            if (storedMedia && storedMedia.relativePath) {
+                // Don't await this - let it happen in background for better performance
+                this.messageArchiver.updateMessageMediaPath(message.key.id, storedMedia.relativePath)
+                    .catch(error => console.warn('⚠️ Failed to update media path:', error));
             }
 
             // Only process messages that start with command prefix - optimize performance
@@ -141,7 +149,8 @@ class MessageProcessor extends EventEmitter {
             if (message.message.imageMessage) {
                 mediaType = 'image';
                 mimetype = message.message.imageMessage.mimetype || 'image/jpeg';
-                filename = 'image.jpg';
+                filename = message.message.imageMessage.caption ? 
+                    `image_${Date.now()}.jpg` : 'image.jpg';
             } else if (message.message.videoMessage) {
                 mediaType = 'video';
                 mimetype = message.message.videoMessage.mimetype || 'video/mp4';
@@ -160,11 +169,12 @@ class MessageProcessor extends EventEmitter {
                 filename = 'sticker.webp';
             }
 
-            // Store in media vault
+            // Store in media vault with caption
             const mediaData = {
                 data: buffer,
                 mimetype: mimetype,
-                filename: filename
+                filename: filename,
+                caption: this.extractMediaCaption(message)
             };
 
             const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
@@ -176,6 +186,23 @@ class MessageProcessor extends EventEmitter {
             console.error('❌ Error downloading/storing media:', error);
             return null;
         }
+    }
+
+    extractMediaCaption(message) {
+        if (!message || !message.message) return null;
+        
+        // Extract caption from different message types
+        if (message.message.imageMessage?.caption) {
+            return message.message.imageMessage.caption;
+        }
+        if (message.message.videoMessage?.caption) {
+            return message.message.videoMessage.caption;
+        }
+        if (message.message.documentMessage?.caption) {
+            return message.message.documentMessage.caption;
+        }
+        
+        return null;
     }
 
     formatSize(bytes) {
@@ -395,70 +422,6 @@ class MessageProcessor extends EventEmitter {
 
         } catch (error) {
             console.error('❌ Error executing game move:', error);
-        }
-    }
-
-    async downloadAndStoreMedia(message) {
-        try {
-            if (!this.hasMedia(message)) {
-                return null;
-            }
-
-            console.log('📥 Downloading media...');
-
-            // Use Baileys downloadMediaMessage function
-            const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
-                logger: require('pino')({ level: 'silent' })
-            });
-
-            if (!buffer) {
-                console.warn('⚠️ Failed to download media - no buffer received');
-                return null;
-            }
-
-            // Determine media type and mimetype
-            let mediaType = 'document';
-            let mimetype = 'application/octet-stream';
-            let filename = 'file';
-
-            if (message.message.imageMessage) {
-                mediaType = 'image';
-                mimetype = message.message.imageMessage.mimetype || 'image/jpeg';
-                filename = 'image.jpg';
-            } else if (message.message.videoMessage) {
-                mediaType = 'video';
-                mimetype = message.message.videoMessage.mimetype || 'video/mp4';
-                filename = 'video.mp4';
-            } else if (message.message.audioMessage) {
-                mediaType = 'audio';
-                mimetype = message.message.audioMessage.mimetype || 'audio/ogg';
-                filename = 'audio.ogg';
-            } else if (message.message.documentMessage) {
-                mediaType = 'document';
-                mimetype = message.message.documentMessage.mimetype || 'application/octet-stream';
-                filename = message.message.documentMessage.fileName || 'document';
-            } else if (message.message.stickerMessage) {
-                mediaType = 'sticker';
-                mimetype = message.message.stickerMessage.mimetype || 'image/webp';
-                filename = 'sticker.webp';
-            }
-
-            // Store in media vault
-            const mediaData = {
-                data: buffer,
-                mimetype: mimetype,
-                filename: filename
-            };
-
-            const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
-            console.log(`✅ Media stored: ${storedMedia.filename} (${this.formatSize(buffer.length)})`);
-
-            return storedMedia;
-
-        } catch (error) {
-            console.error('❌ Error downloading/storing media:', error);
-            return null;
         }
     }
 
