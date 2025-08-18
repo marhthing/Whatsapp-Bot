@@ -106,10 +106,15 @@ The system follows a **personal assistant architecture** with multi-session supp
 - **CRITICAL FIX (Latest - August 18, 2025)**: Resolved media ID mismatch and race condition issues
   - Enhanced unique media filename generation with nano-timestamp and randomness to prevent collisions
   - Implemented proper media-to-message linking using MessageVault.getMediaByMessageId() method
-  - Fixed "Could not find message to update media path" errors with retry mechanism and delayed updates
+  - Fixed "Could not find message to update media path" errors with advanced retry mechanism and delayed updates
   - Removed redundant media path updates to prevent race conditions during archiving
   - Enhanced MediaVault with dedicated message-based media retrieval for anti-delete system
   - Anti-delete now properly retrieves and forwards the exact deleted media without confusion
+  - **MEDIA VALIDATION IMPROVEMENTS**: Enhanced media key validation to handle edge cases
+    - Added support for view-once messages and quoted message media
+    - Improved validation to check both mediaKey and URL/directPath availability
+    - Enhanced logging for debugging "no valid media key" warnings
+    - Implemented progressive retry mechanism with increasing delays (250ms to 3s)
 - All core functionality tested and operational
 
 ### Current Working Features:

@@ -51,22 +51,30 @@ class MessageProcessor extends EventEmitter {
             if (storedMedia && storedMedia.relativePath) {
                 // Add a small delay and retry mechanism for media path updates
                 setTimeout(async () => {
-                    let retries = 3;
-                    while (retries > 0) {
+                    let retries = 5; // Increased retries for better success rate
+                    const delays = [250, 500, 1000, 2000, 3000]; // Increasing delays
+                    
+                    for (let i = 0; i < retries; i++) {
                         try {
                             const success = await this.messageArchiver.updateMessageMediaPath(
                                 message.key.id, 
                                 storedMedia.relativePath, 
                                 storedMedia
                             );
-                            if (success) break;
+                            if (success) {
+                                console.log(`📁 Successfully updated media path for ${message.key.id} on attempt ${i + 1}`);
+                                break;
+                            }
                         } catch (error) {
-                            console.warn(`⚠️ Failed to update media path (${retries} retries left):`, error);
+                            console.warn(`⚠️ Failed to update media path (attempt ${i + 1}/${retries}):`, error.message);
                         }
-                        retries--;
-                        if (retries > 0) await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        // Wait before next retry (except on last attempt)
+                        if (i < retries - 1) {
+                            await new Promise(resolve => setTimeout(resolve, delays[i]));
+                        }
                     }
-                }, 250); // Wait 250ms for archiving to complete
+                }, 150); // Reduced initial delay
             }
 
             // Only process messages that start with command prefix - optimize performance
@@ -122,11 +130,19 @@ class MessageProcessor extends EventEmitter {
     hasMedia(message) {
         // Check if message has media content - comprehensive check
         if (message.message) {
-            return !!(message.message.imageMessage || 
-                     message.message.videoMessage || 
-                     message.message.audioMessage || 
-                     message.message.documentMessage || 
-                     message.message.stickerMessage);
+            const hasMediaContent = !!(message.message.imageMessage || 
+                                      message.message.videoMessage || 
+                                      message.message.audioMessage || 
+                                      message.message.documentMessage || 
+                                      message.message.stickerMessage);
+            
+            // Also check for view once messages that might contain media
+            if (!hasMediaContent && message.message.viewOnceMessage) {
+                return !!(message.message.viewOnceMessage.message?.imageMessage ||
+                         message.message.viewOnceMessage.message?.videoMessage);
+            }
+            
+            return hasMediaContent;
         }
         
         // Additional checks for different message formats
@@ -144,13 +160,42 @@ class MessageProcessor extends EventEmitter {
 
     hasValidMediaKey(message) {
         try {
-            if (message.message?.imageMessage?.mediaKey) return true;
-            if (message.message?.videoMessage?.mediaKey) return true;
-            if (message.message?.audioMessage?.mediaKey) return true;
-            if (message.message?.documentMessage?.mediaKey) return true;
-            if (message.message?.stickerMessage?.mediaKey) return true;
+            // Check for valid media key and URL for each message type
+            const mediaTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage', 'stickerMessage'];
+            
+            for (const mediaType of mediaTypes) {
+                let mediaObj = message.message?.[mediaType];
+                
+                // Check view once messages
+                if (!mediaObj && message.message?.viewOnceMessage?.message) {
+                    mediaObj = message.message.viewOnceMessage.message[mediaType];
+                }
+                
+                if (mediaObj) {
+                    // Check if it has both mediaKey and url (required for download)
+                    if (mediaObj.mediaKey && (mediaObj.url || mediaObj.directPath)) {
+                        return true;
+                    }
+                    // For some messages, mediaKey might be in a Buffer format
+                    if (mediaObj.mediaKey && mediaObj.mediaKey.length > 0 && (mediaObj.url || mediaObj.directPath)) {
+                        return true;
+                    }
+                    // Sometimes the media might be a quotedMessage
+                    if (mediaObj.quotedMessage && this.hasValidMediaKey({ message: { [mediaType]: mediaObj.quotedMessage } })) {
+                        return true;
+                    }
+                }
+            }
+            
+            // Check if it's a forwarded message with media
+            if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+                const quotedMessage = { message: message.message.extendedTextMessage.contextInfo.quotedMessage };
+                return this.hasValidMediaKey(quotedMessage);
+            }
+            
             return false;
         } catch (error) {
+            console.warn('Error checking media key validity:', error);
             return false;
         }
     }
@@ -163,7 +208,19 @@ class MessageProcessor extends EventEmitter {
             
             // Check if message has valid media key before attempting download
             if (!this.hasValidMediaKey(message)) {
-                console.warn('⚠️ Message has media but no valid media key, skipping download');
+                console.warn(`⚠️ Message ${message.key?.id} has media but no valid media key/URL, skipping download`);
+                // Log the message structure for debugging
+                console.debug('Message structure:', JSON.stringify({
+                    id: message.key?.id,
+                    hasImageMessage: !!message.message?.imageMessage,
+                    hasVideoMessage: !!message.message?.videoMessage,
+                    hasAudioMessage: !!message.message?.audioMessage,
+                    hasDocumentMessage: !!message.message?.documentMessage,
+                    hasStickerMessage: !!message.message?.stickerMessage,
+                    imageMediaKey: !!message.message?.imageMessage?.mediaKey,
+                    imageUrl: !!message.message?.imageMessage?.url,
+                    imageDirectPath: !!message.message?.imageMessage?.directPath
+                }, null, 2));
                 return null;
             }
 
