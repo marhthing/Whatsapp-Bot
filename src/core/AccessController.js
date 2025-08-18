@@ -136,34 +136,11 @@ class AccessController {
                     return true;
                 }
                 
-                // Known owner @lid format - if you tell me your specific @lid JID, I can add it here
-                // For now, let's be more permissive for the owner to test
+                // Known owner @lid formats - your specific @lid JIDs
                 const knownOwnerLidFormats = [
-                    // Add your specific @lid JID here once we identify it
+                    '185534701924401@lid', // Current owner @lid JID
+                    // Add other variations as they appear
                 ];
-                
-                // TEMPORARY DEBUG: If this is a potential owner @lid, log it for identification
-                console.log(`🔍 OWNER DEBUG: Potential owner @lid detected: ${jid}`);
-                console.log(`🔍 OWNER DEBUG: Phone comparison - @lid: ${lidPhoneNumber}, owner: ${phoneFromOwner}`);
-                
-                // TEMPORARY: More lenient check for owner - any @lid with similar digits
-                const lidDigits = lidPhoneNumber.replace(/\D/g, '');
-                const ownerDigits = phoneFromOwner.replace(/\D/g, '');
-                
-                // Check if most digits match (at least 8 matching digits for security)
-                let matchingDigits = 0;
-                for (let i = 0; i < Math.min(lidDigits.length, ownerDigits.length); i++) {
-                    if (lidDigits[lidDigits.length - 1 - i] === ownerDigits[ownerDigits.length - 1 - i]) {
-                        matchingDigits++;
-                    } else {
-                        break;
-                    }
-                }
-                
-                if (matchingDigits >= 8) {
-                    console.log(`✅ TEMPORARY: @lid has ${matchingDigits} matching digits with owner - allowing access: ${jid}`);
-                    return true;
-                }
                 
                 if (knownOwnerLidFormats.includes(jid)) {
                     console.log(`✅ Known owner @lid format: ${jid}`);

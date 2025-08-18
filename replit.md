@@ -143,6 +143,7 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Now properly validates phone number match for @lid format before granting access
   - Enhanced access control to prevent unauthorized command execution
   - Added intelligent @lid matching for owner's group messages with WhatsApp format variations
+  - **RESOLVED**: Owner can now use bot in groups with proper @lid recognition (185534701924401@lid)
 - All core functionality tested and operational
 
 ### Current Working Features:
