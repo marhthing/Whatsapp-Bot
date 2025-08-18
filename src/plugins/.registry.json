@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T10:56:20.609Z",
+  "lastUpdated": "2025-08-18T10:59:12.241Z",
   "plugins": [
     {
       "name": "admin-tools",
@@ -15,17 +15,6 @@
         "logs",
         "cleanup",
         "backup"
-      ]
-    },
-    {
-      "name": "anti-delete",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T10:56:20.598Z",
-      "commands": [
-        "recover",
-        "deleted",
-        "antilog"
       ]
     },
     {
@@ -79,6 +68,17 @@
       "commands": [
         "ping",
         "pinginfo"
+      ]
+    },
+    {
+      "name": "anti-delete",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T10:59:12.241Z",
+      "commands": [
+        "recover",
+        "deleted",
+        "antilog"
       ]
     }
   ]
