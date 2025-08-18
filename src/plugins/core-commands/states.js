@@ -125,4 +125,4 @@ class States {
     }
 }
 
-module.exports = { states: States };
+module.exports = States;

@@ -1,7 +1,7 @@
 const os = require('os');
 const fs = require('fs-extra');
 const path = require('path');
-const { EnvironmentManager } = require('../../core/EnvironmentManager');
+const EnvironmentManager = require('../../core/EnvironmentManager');
 
 class SystemInfo {
     constructor(botClient, eventBus) {

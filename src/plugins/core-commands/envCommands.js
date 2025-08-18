@@ -1,4 +1,4 @@
-const { EnvironmentManager } = require('../../core/EnvironmentManager');
+const EnvironmentManager = require('../../core/EnvironmentManager');
 
 class EnvCommands {
     constructor(botClient, eventBus) {
@@ -212,4 +212,4 @@ class EnvCommands {
     }
 }
 
-module.exports = { envCommands: EnvCommands };
+module.exports = EnvCommands;

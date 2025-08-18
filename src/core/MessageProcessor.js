@@ -362,26 +362,66 @@ class MessageProcessor extends EventEmitter {
 
     async downloadAndStoreMedia(message) {
         try {
-            // Download media data
-            const media = await message.downloadMedia();
-            
-            if (media) {
-                // Store in media vault
-                const stored = await this.mediaVault.storeMedia(media, message);
-                
-                console.log(`📁 Downloaded and stored ${stored.category}: ${stored.filename}`);
-                
-                // Emit media downloaded event
-                this.eventBus?.emitMediaDownloaded(stored, message);
-                
-                return stored;
+            if (!this.hasMedia(message)) {
+                return null;
             }
 
+            console.log('📥 Downloading media...');
+            
+            // Use Baileys downloadMediaMessage function
+            const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+            const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
+                logger: require('pino')({ level: 'silent' })
+            });
+            
+            if (!buffer) {
+                console.warn('⚠️ Failed to download media - no buffer received');
+                return null;
+            }
+
+            // Determine media type and mimetype
+            let mediaType = 'document';
+            let mimetype = 'application/octet-stream';
+            let filename = 'file';
+
+            if (message.message.imageMessage) {
+                mediaType = 'image';
+                mimetype = message.message.imageMessage.mimetype || 'image/jpeg';
+                filename = 'image.jpg';
+            } else if (message.message.videoMessage) {
+                mediaType = 'video';
+                mimetype = message.message.videoMessage.mimetype || 'video/mp4';
+                filename = 'video.mp4';
+            } else if (message.message.audioMessage) {
+                mediaType = 'audio';
+                mimetype = message.message.audioMessage.mimetype || 'audio/ogg';
+                filename = 'audio.ogg';
+            } else if (message.message.documentMessage) {
+                mediaType = 'document';
+                mimetype = message.message.documentMessage.mimetype || 'application/octet-stream';
+                filename = message.message.documentMessage.fileName || 'document';
+            } else if (message.message.stickerMessage) {
+                mediaType = 'sticker';
+                mimetype = message.message.stickerMessage.mimetype || 'image/webp';
+                filename = 'sticker.webp';
+            }
+
+            // Store in media vault
+            const mediaData = {
+                data: buffer,
+                mimetype: mimetype,
+                filename: filename
+            };
+
+            const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
+            console.log(`✅ Media stored: ${storedMedia.filename} (${this.formatSize(buffer.length)})`);
+            
+            return storedMedia;
+
         } catch (error) {
-            console.error('❌ Failed to download and store media:', error);
+            console.error('❌ Error downloading/storing media:', error);
+            return null;
         }
-        
-        return null;
     }
 
     async processDeletedMessage(after, before) {

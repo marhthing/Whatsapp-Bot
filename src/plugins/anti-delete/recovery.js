@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
-const { EnvironmentManager } = require('../../core/EnvironmentManager');
+const EnvironmentManager = require('../../core/EnvironmentManager');
 
 class Recovery {
     constructor(botClient, eventBus) {

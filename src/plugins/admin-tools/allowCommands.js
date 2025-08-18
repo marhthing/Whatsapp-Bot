@@ -1,4 +1,4 @@
-const { EnvironmentManager } = require('../../core/EnvironmentManager');
+const EnvironmentManager = require('../../core/EnvironmentManager');
 
 class AllowCommands {
     constructor(botClient, eventBus) {

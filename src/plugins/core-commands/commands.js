@@ -1,4 +1,4 @@
-const { EnvironmentManager } = require('../../core/EnvironmentManager');
+const EnvironmentManager = require('../../core/EnvironmentManager');
 const { constants } = require('../../utils/constants');
 
 class Commands {
@@ -399,4 +399,4 @@ class Commands {
     }
 }
 
-module.exports = { Commands };
+module.exports = Commands;

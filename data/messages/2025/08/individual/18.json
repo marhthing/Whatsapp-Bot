@@ -261,5 +261,61 @@
     "isGroup": false,
     "mediaPath": null,
     "archived": "2025-08-18T08:33:13.315Z"
+  },
+  {
+    "id": "3A461E37A49CCD5D2475",
+    "from": "2347018091555@s.whatsapp.net",
+    "body": "Hi",
+    "type": "text",
+    "timestamp": "2025-08-18T08:33:49.000Z",
+    "isOutgoing": true,
+    "hasMedia": false,
+    "quotedMessage": null,
+    "mentions": [],
+    "isGroup": false,
+    "mediaPath": null,
+    "archived": "2025-08-18T08:33:50.322Z"
+  },
+  {
+    "id": "3A630A92CDF03DAD2EEB",
+    "from": "2347018091555@s.whatsapp.net",
+    "body": "Hi",
+    "type": "text",
+    "timestamp": "2025-08-18T08:34:26.000Z",
+    "isOutgoing": false,
+    "hasMedia": false,
+    "quotedMessage": null,
+    "mentions": [],
+    "isGroup": false,
+    "mediaPath": null,
+    "archived": "2025-08-18T08:34:26.345Z"
+  },
+  {
+    "id": "3ACD3B3C893F6EC020E9",
+    "from": "2347046040727@s.whatsapp.net",
+    "body": ".help",
+    "type": "text",
+    "timestamp": "2025-08-18T08:34:52.000Z",
+    "isOutgoing": true,
+    "hasMedia": false,
+    "quotedMessage": null,
+    "mentions": [],
+    "isGroup": false,
+    "mediaPath": null,
+    "archived": "2025-08-18T08:34:53.365Z"
+  },
+  {
+    "id": "4EC5F9F19A6F7DA11F43324E929F30E0",
+    "from": "120363394351718221@newsletter",
+    "body": "Ah shit here we go again 😪",
+    "type": "image",
+    "timestamp": "2025-08-18T08:35:25.000Z",
+    "isOutgoing": false,
+    "hasMedia": true,
+    "quotedMessage": null,
+    "mentions": [],
+    "isGroup": false,
+    "mediaPath": null,
+    "archived": "2025-08-18T08:35:28.380Z"
   }
 ]

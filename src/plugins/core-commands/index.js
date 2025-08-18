@@ -1,6 +1,6 @@
-const { commands } = require('./commands');
-const { envCommands } = require('./envCommands');
-const { states } = require('./states');
+const commands = require('./commands');
+const envCommands = require('./envCommands');
+const states = require('./states');
 
 class CoreCommandsPlugin {
     constructor(options) {
