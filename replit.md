@@ -65,9 +65,12 @@ The system follows a **personal assistant architecture** with multi-session supp
 - Enhanced access control system with better debugging and command permission logic
 - Fixed `.allow` and `.disallow` commands to properly target chat users instead of command sender
 - Added `getAccessController()` method to BotClient for plugin access
+- Fixed allowed commands data loading from JSON to Map conversion
+- Added detailed logging for command permission debugging
 - Verified all 6 plugins are loading and working correctly
 - Bot successfully connects via QR code or pairing code authentication
 - Access control system properly denies non-owner access and manages allowed commands
+- **CONFIRMED**: Allowed users can now successfully execute permitted commands
 - All core functionality tested and operational
 
 ### Current Working Features:

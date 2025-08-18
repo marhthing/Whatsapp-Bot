@@ -38,8 +38,10 @@ class AccessController {
                 
                 // Load allowed commands
                 if (data.allowedCommands) {
+                    this.allowedCommands.clear(); // Clear existing data first
                     for (const [userJid, commands] of Object.entries(data.allowedCommands)) {
                         this.allowedCommands.set(userJid, new Set(commands));
+                        console.log(`🔄 Loaded allowed commands for ${userJid}: ${commands.join(', ')}`);
                     }
                 }
 
@@ -144,8 +146,12 @@ class AccessController {
     }
 
     isCommandAllowed(userJid, command) {
-        return this.allowedCommands.has(userJid) && 
-               this.allowedCommands.get(userJid).has(command);
+        const hasUser = this.allowedCommands.has(userJid);
+        const hasCommand = hasUser && this.allowedCommands.get(userJid).has(command);
+        
+        console.log(`🔍 isCommandAllowed check: User ${userJid}, Command '${command}' - HasUser: ${hasUser}, HasCommand: ${hasCommand}`);
+        
+        return hasCommand;
     }
 
     getUserAllowedCommands(userJid) {
