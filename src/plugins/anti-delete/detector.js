@@ -82,6 +82,12 @@ class Detector {
                 return;
             }
             
+            // Check if this is a view-once message and skip it
+            if (this.isViewOnceMessage(before)) {
+                console.log('🔐 Skipping view-once message deletion - handled by anti-view-once plugin');
+                return;
+            }
+            
             // Extract proper data from Baileys message structure
             const messageText = this.extractMessageText(before);
             const senderJid = this.extractSenderJid(before);
@@ -375,6 +381,38 @@ class Detector {
         return ['image', 'video', 'audio', 'document', 'sticker', 
                 'imageMessage', 'videoMessage', 'audioMessage', 
                 'documentMessage', 'stickerMessage'].includes(messageType);
+    }
+
+    isViewOnceMessage(message) {
+        // Check if message contains view-once content
+        if (message.message?.viewOnceMessage?.message) {
+            return true;
+        }
+        
+        // Check for view-once v2 format (viewOnceMessageV2)
+        if (message.message?.viewOnceMessageV2?.message) {
+            return true;
+        }
+        
+        // Check if the message has viewOnce property set to true
+        if (message.message?.imageMessage?.viewOnce || message.message?.videoMessage?.viewOnce) {
+            return true;
+        }
+        
+        // Check for system events that might be view-once related
+        if (message.messageStubType && message.messageStubType === 'REVOKE') {
+            // Additional check for view-once specific revocations
+            // View-once messages often appear as system events when deleted
+            const messageBody = this.extractMessageText(message);
+            if (messageBody === '[System Event]' || messageBody === '[System Message]') {
+                // This could be a view-once deletion, but we'll be conservative and only skip if we're sure
+                // For now, let's allow these through but add logging
+                console.log('🔐 Potential view-once system event detected, allowing anti-delete processing');
+                return false;
+            }
+        }
+        
+        return false;
     }
 
     async notifyOwner(deletionEntry) {

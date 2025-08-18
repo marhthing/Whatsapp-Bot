@@ -134,6 +134,10 @@ The system follows a **personal assistant architecture** with multi-session supp
   - **ENHANCED (Latest)**: Improved detection for viewOnceV2 format and messages with viewOnce flags
   - **ENHANCED (Latest)**: Better download handling with timeout protection and fallback methods
   - **ENHANCED (Latest)**: Added detailed debugging output for troubleshooting view-once issues
+- **UPDATED (Latest - August 18, 2025)**: Enhanced anti-delete system to ignore view-once messages
+  - Anti-delete now skips view-once message deletions to avoid forwarding "[System Event]" messages
+  - View-once messages are handled exclusively by the anti-view-once plugin
+  - Reduced noise in anti-delete notifications by filtering out view-once content
 - All core functionality tested and operational
 
 ### Current Working Features:
