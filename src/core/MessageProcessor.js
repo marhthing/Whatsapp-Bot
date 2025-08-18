@@ -49,9 +49,24 @@ class MessageProcessor extends EventEmitter {
             
             // Update the archived message with the media path if media was stored
             if (storedMedia && storedMedia.relativePath) {
-                // Don't await this - let it happen in background for better performance
-                this.messageArchiver.updateMessageMediaPath(message.key.id, storedMedia.relativePath)
-                    .catch(error => console.warn('⚠️ Failed to update media path:', error));
+                // Add a small delay and retry mechanism for media path updates
+                setTimeout(async () => {
+                    let retries = 3;
+                    while (retries > 0) {
+                        try {
+                            const success = await this.messageArchiver.updateMessageMediaPath(
+                                message.key.id, 
+                                storedMedia.relativePath, 
+                                storedMedia
+                            );
+                            if (success) break;
+                        } catch (error) {
+                            console.warn(`⚠️ Failed to update media path (${retries} retries left):`, error);
+                        }
+                        retries--;
+                        if (retries > 0) await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }, 250); // Wait 250ms for archiving to complete
             }
 
             // Only process messages that start with command prefix - optimize performance
@@ -212,15 +227,6 @@ class MessageProcessor extends EventEmitter {
 
             const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
             console.log(`✅ Media stored: ${storedMedia.filename} (${this.formatSize(buffer.length)})`);
-
-            // Update the archived message with media path and metadata
-            if (storedMedia && message.key?.id) {
-                await this.messageArchiver.updateMessageMediaPath(
-                    message.key.id, 
-                    storedMedia.relativePath,
-                    storedMedia
-                );
-            }
 
             return storedMedia;
 
