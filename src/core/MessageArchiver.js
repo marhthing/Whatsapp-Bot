@@ -77,10 +77,10 @@ class MessageArchiver {
             await this.cleanupOldMessages();
         }, 24 * 60 * 60 * 1000);
 
-        // Run initial cleanup after 5 minutes
+        // Run initial cleanup after 10 minutes to allow full startup
         setTimeout(async () => {
             await this.cleanupOldMessages();
-        }, 5 * 60 * 1000);
+        }, 10 * 60 * 1000);
     }
 
     async cleanupOldMessages() {

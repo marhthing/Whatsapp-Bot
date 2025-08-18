@@ -34,13 +34,13 @@ class MessageProcessor extends EventEmitter {
                 await this.downloadAndStoreMedia(message);
             }
 
-            // Skip command processing for outgoing messages (sent by bot)
-            if (isOutgoing) {
+            // Extract command if present (for both incoming and outgoing messages)
+            const command = this.extractCommand(message);
+            
+            // Skip non-command outgoing messages, but process command outgoing messages
+            if (isOutgoing && !command) {
                 return;
             }
-
-            // Extract command if present for incoming messages
-            const command = this.extractCommand(message);
             
             // Check access control
             const accessResult = this.accessController.canProcessMessage(message, command);

@@ -81,10 +81,10 @@ class MediaVault {
             await this.cleanupOldMedia();
         }, 24 * 60 * 60 * 1000);
 
-        // Run initial cleanup after 5 minutes
+        // Run initial cleanup after 10 minutes to allow full startup
         setTimeout(async () => {
             await this.cleanupOldMedia();
-        }, 5 * 60 * 1000);
+        }, 10 * 60 * 1000);
     }
 
     async cleanupOldMedia() {

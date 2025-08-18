@@ -117,8 +117,8 @@ class AccessControlService extends EventEmitter {
             messageText = message.body;
         }
 
-        // Always allow owner
-        if (this.isOwner(senderJid)) {
+        // Always allow owner (including outgoing messages from owner)
+        if (this.isOwner(senderJid) || message.key?.fromMe) {
             return {
                 allowed: true,
                 reason: 'owner',
