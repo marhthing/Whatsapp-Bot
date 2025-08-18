@@ -31,6 +31,7 @@ The system follows a **personal assistant architecture** with multi-session supp
 - **Fully Self-Contained**: Each plugin folder contains `index.js` (main class), `plugin.json` (config), and `README.md` (docs).
 - **Hot-Reload Capability**: Automatic detection and reloading of plugin changes.
 - **Unified Interface**: All plugins implement `executeCommand` method with a standard context.
+- **Developer Guide**: Complete plugin development guide available in `PLUGIN_DEVELOPMENT_GUIDE.md`
 
 ### Data Storage Architecture
 - **Message Archival**: Complete conversation and media storage.
@@ -144,6 +145,11 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Enhanced access control to prevent unauthorized command execution
   - Added intelligent @lid matching for owner's group messages with WhatsApp format variations
   - **RESOLVED**: Owner can now use bot in groups with proper @lid recognition (185534701924401@lid)
+- **PLUGIN SYSTEM DOCUMENTATION (Latest - August 18, 2025)**: Created comprehensive plugin development guide
+  - Complete step-by-step guide for creating standalone plugins
+  - Exact structure requirements and validation rules  
+  - Examples and templates for rapid plugin development
+  - Hot-reload compatible architecture documentation
 - All core functionality tested and operational
 
 ### Current Working Features:
