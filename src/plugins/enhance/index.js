@@ -227,47 +227,50 @@ class EnhancePlugin {
     }
 
     /**
-     * Find stored media by message ID
+     * Find stored media by message ID using MediaVault
      */
     async findStoredMedia(messageId) {
         try {
-            console.log(`🔍 Searching for stored media with ID: ${messageId}`);
+            console.log(`🔍 Searching for stored media with message ID: ${messageId}`);
             
-            // First try to get from media manager cache
-            if (this.botClient?.mediaManager) {
-                const mediaCache = this.botClient.mediaManager.mediaCache;
-                console.log(`🔍 Searching through ${mediaCache.size} cached media items`);
-                
-                // Search through cache for matching message ID
-                for (const [mediaId, metadata] of mediaCache.entries()) {
-                    console.log(`🔍 Checking cached media: ${mediaId}, messageId: ${metadata.messageId}`);
-                    if (metadata.messageId === messageId) {
-                        console.log(`🎯 Found media in cache: ${mediaId}`);
-                        return metadata;
-                    }
-                    // Also try partial match for Baileys format
-                    if (metadata.messageId && metadata.messageId.includes(messageId)) {
-                        console.log(`🎯 Found media in cache with partial match: ${mediaId}`);
-                        return metadata;
-                    }
-                }
+            // Access MediaVault from the bot client
+            const mediaVault = this.botClient?.mediaVault;
+            if (!mediaVault) {
+                console.log(`❌ MediaVault not available`);
+                return null;
             }
             
-            // Fallback: search through media index in storage
-            const mediaIndex = await storageService.load('media', 'index');
-            if (mediaIndex && mediaIndex.files) {
-                console.log(`🔍 Searching through storage index with ${Object.keys(mediaIndex.files).length} files`);
-                for (const [mediaId, metadata] of Object.entries(mediaIndex.files)) {
-                    console.log(`🔍 Checking storage media: ${mediaId}, messageId: ${metadata.messageId}`);
-                    if (metadata.messageId === messageId) {
-                        console.log(`🎯 Found media in storage index: ${mediaId}`);
-                        return metadata;
-                    }
-                    // Also try partial match for Baileys format
-                    if (metadata.messageId && metadata.messageId.includes(messageId)) {
-                        console.log(`🎯 Found media in storage index with partial match: ${mediaId}`);
-                        return metadata;
-                    }
+            console.log(`🔍 Searching through ${mediaVault.metadataCache.size} cached media items`);
+            
+            // Search through MediaVault metadata cache for matching message ID
+            for (const [storedId, metadata] of mediaVault.metadataCache.entries()) {
+                console.log(`🔍 Checking stored media: ${storedId}, messageId: ${metadata.messageId}`);
+                
+                // Direct match on original message ID
+                if (metadata.messageId === messageId) {
+                    console.log(`🎯 Found media by message ID: ${storedId}`);
+                    // Return metadata with correct path structure for enhance plugin
+                    return {
+                        messageId: metadata.messageId,
+                        filePath: metadata.path,
+                        mimetype: metadata.mimetype,
+                        size: metadata.size,
+                        filename: metadata.filename,
+                        originalName: metadata.originalName
+                    };
+                }
+                
+                // Also check if the message ID is part of the stored ID (first 10 chars)
+                if (messageId.startsWith(metadata.messageId.substring(0, 10))) {
+                    console.log(`🎯 Found media by partial message ID match: ${storedId}`);
+                    return {
+                        messageId: metadata.messageId,
+                        filePath: metadata.path,
+                        mimetype: metadata.mimetype,
+                        size: metadata.size,
+                        filename: metadata.filename,
+                        originalName: metadata.originalName
+                    };
                 }
             }
             
