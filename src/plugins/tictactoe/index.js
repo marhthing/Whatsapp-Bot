@@ -143,10 +143,16 @@ class TicTacToePlugin {
                     console.log('🎯 Found opponent from args:', opponent);
                 }
             }
+            // In private chat, if no opponent specified, use the chat partner as opponent
+            else if (chatId.endsWith('@s.whatsapp.net') && chatId !== player) {
+                // Private chat - the chat ID itself is the opponent
+                opponent = chatId;
+                console.log('🎯 Found private chat opponent:', opponent);
+            }
             
             // Opponent is REQUIRED - no AI mode
             if (!opponent) {
-                await reply('❌ Please tag someone to play with:\n\n• Tag: .tictactoe @username\n• Reply to their message: .tictactoe\n\nExample: .tictactoe @friend');
+                await reply('❌ Please tag someone to play with:\n\n• Tag: .tictactoe @username\n• Reply to their message: .tictactoe\n• In private chat: just type .tictactoe\n\nExample: .tictactoe @friend');
                 return { success: false, message: 'No opponent specified' };
             }
             
