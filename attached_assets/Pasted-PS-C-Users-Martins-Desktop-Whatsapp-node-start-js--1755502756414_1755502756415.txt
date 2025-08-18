@@ -1,0 +1,112 @@
+PS C:\Users\Martins\Desktop\Whatsapp> node start.js
+
+╔═══════════════════════════════════════════╗
+║        WhatsApp Personal Assistant        ║
+║              Bot Starter v1.0             ║
+╚═══════════════════════════════════════════╝
+
+
+Created directory: C:\Users\Martins\Desktop\Whatsapp\sessions
+No existing sessions found. Creating new session...
+
+Enter session name (or press Enter for auto-generated): martins
+Authentication Methods:
+1. QR Code (scan with your phone)
+2. 8-digit pairing code (link to existing WhatsApp)
+
+Select authentication method (1 or 2): 1
+QR Code authentication selected.
+A QR code will be displayed for you to scan with your WhatsApp.
+The bot will use your WhatsApp account to send and receive messages.
+
+After successful authentication, your JID will be automatically detected.
+
+Session 'martins' created successfully!
+Ready to authenticate with WhatsApp...
+
+Starting session: martins
+JID will be detected after authentication
+Auth Method: QR Code
+
+Loading main bot application...
+The bot will authenticate and then use your WhatsApp account.
+After authentication, your actual JID will be detected automatically.
+
+🔧 Initializing WhatsApp Personal Assistant Bot...
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+🔧 Initializing performance monitor...
+👀 Started performance monitoring
+✅ Performance monitor initialized
+🔧 Initializing bot client components...
+🔧 Initializing WhatsApp client for session: martins
+📱 QR Code generated for authentication
+🔗 Scan this QR code with your WhatsApp to link the bot to your account
+🔧 Initializing access controller...
+✅ Access controller initialized
+🔧 Initializing message archiver...
+✅ Message archiver initialized
+❌ Failed to initialize bot client: Error: Invalid size format: 52428800
+    at MediaVault.parseSize (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:328:19)
+    at new MediaVault (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:11:33)       
+    at BotClient.initialize (C:\Users\Martins\Desktop\Whatsapp\src\core\BotClient.js:53:31)  
+    at async WhatsAppBot.initialize (C:\Users\Martins\Desktop\Whatsapp\src\index.js:44:13)   
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)       
+❌ Failed to initialize bot: Error: Invalid size format: 52428800
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+🔧 Initializing performance monitor...
+👀 Started performance monitoring
+✅ Performance monitor initialized
+🔧 Initializing bot client components...
+🔧 Initializing WhatsApp client for session: martins
+📱 QR Code generated for authentication
+🔗 Scan this QR code with your WhatsApp to link the bot to your account
+🔧 Initializing access controller...
+✅ Access controller initialized
+🔧 Initializing message archiver...
+✅ Message archiver initialized
+❌ Failed to initialize bot client: Error: Invalid size format: 52428800
+    at MediaVault.parseSize (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:328:19)
+    at new MediaVault (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:11:33)
+    at BotClient.initialize (C:\Users\Martins\Desktop\Whatsapp\src\core\BotClient.js:53:31)
+    at async WhatsAppBot.initialize (C:\Users\Martins\Desktop\Whatsapp\src\index.js:44:13)
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)
+❌ Failed to initialize bot: Error: Invalid size format: 52428800
+🔧 Initializing access controller...
+✅ Access controller initialized
+🔧 Initializing message archiver...
+✅ Message archiver initialized
+❌ Failed to initialize bot client: Error: Invalid size format: 52428800
+    at MediaVault.parseSize (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:328:19)
+    at new MediaVault (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:11:33)
+    at BotClient.initialize (C:\Users\Martins\Desktop\Whatsapp\src\core\BotClient.js:53:31)
+    at async WhatsAppBot.initialize (C:\Users\Martins\Desktop\Whatsapp\src\index.js:44:13)
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)
+❌ Failed to initialize bot: Error: Invalid size format: 52428800
+❌ Failed to initialize bot client: Error: Invalid size format: 52428800
+    at MediaVault.parseSize (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:328:19)
+    at new MediaVault (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:11:33)
+    at BotClient.initialize (C:\Users\Martins\Desktop\Whatsapp\src\core\BotClient.js:53:31)
+    at async WhatsAppBot.initialize (C:\Users\Martins\Desktop\Whatsapp\src\index.js:44:13)
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)
+❌ Failed to initialize bot: Error: Invalid size format: 52428800
+    at BotClient.initialize (C:\Users\Martins\Desktop\Whatsapp\src\core\BotClient.js:53:31)
+    at async WhatsAppBot.initialize (C:\Users\Martins\Desktop\Whatsapp\src\index.js:44:13)
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)
+❌ Failed to initialize bot: Error: Invalid size format: 52428800
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)
+❌ Failed to initialize bot: Error: Invalid size format: 52428800
+❌ Failed to initialize bot: Error: Invalid size format: 52428800
+    at MediaVault.parseSize (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:328:19)
+    at new MediaVault (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:11:33)
+    at BotClient.initialize (C:\Users\Martins\Desktop\Whatsapp\src\core\BotClient.js:53:31)
+    at async WhatsAppBot.initialize (C:\Users\Martins\Desktop\Whatsapp\src\index.js:44:13)
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)
+💥 Failed to start bot: Error: Invalid size format: 52428800
+    at MediaVault.parseSize (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:328:19)
+    at new MediaVault (C:\Users\Martins\Desktop\Whatsapp\src\core\MediaVault.js:11:33)
+    at BotClient.initialize (C:\Users\Martins\Desktop\Whatsapp\src\core\BotClient.js:53:31)
+    at async WhatsAppBot.initialize (C:\Users\Martins\Desktop\Whatsapp\src\index.js:44:13)
+    at async WhatsAppBot.start (C:\Users\Martins\Desktop\Whatsapp\src\index.js:200:13)
+PS C:\Users\Martins\Desktop\Whatsapp>
