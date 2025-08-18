@@ -1,0 +1,38 @@
+{
+  "name": "tictactoe",
+  "displayName": "Tic-Tac-Toe Game",
+  "description": "Interactive Tic-Tac-Toe game with AI opponent support",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": false,
+  "priority": 60,
+  "dependencies": [],
+  "commands": [
+    {
+      "name": "tictactoe",
+      "description": "Start a Tic-Tac-Toe game",
+      "usage": "tictactoe [@user]",
+      "ownerOnly": false,
+      "allowInGames": false
+    },
+    {
+      "name": "ttt",
+      "description": "Start a Tic-Tac-Toe game (short form)",
+      "usage": "ttt [@user]",
+      "ownerOnly": false,
+      "allowInGames": false
+    }
+  ],
+  "features": [
+    "multiplayer-games",
+    "ai-opponent",
+    "interactive-entertainment"
+  ],
+  "permissions": [
+    "games:start",
+    "games:manage",
+    "chat:multi-user"
+  ],
+  "multiUserSupport": true
+}

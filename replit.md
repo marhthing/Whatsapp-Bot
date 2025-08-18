@@ -28,9 +28,11 @@ The system follows a personal assistant architecture with multi-session support 
 4. **Loading Feedback**: Visual reaction system with emoji indicators.
 
 ### Plugin System Design
-- **Fully Self-Contained**: Each plugin folder contains `index.js` (main class), `plugin.json` (config), and `README.md` (docs).
+- **Fully Self-Contained**: Each plugin folder contains `index.js` (main class), `plugin.json` (config), and optional documentation.
 - **Hot-Reload Capability**: Automatic detection and reloading of plugin changes.
 - **Unified Interface**: All plugins implement `executeCommand` method with a standard context.
+- **Standalone Games Architecture**: Games are individual plugins rather than grouped together, making it extremely easy to add new games.
+- **Game Development Guide**: Complete guide available in `GAME_PLUGIN_GUIDE.md` for creating new games.
 
 ### Data Storage Architecture
 - **Message Archival**: Complete conversation and media storage.
@@ -52,7 +54,10 @@ The system follows a personal assistant architecture with multi-session support 
 - **Anti-Delete**: Automatically captures all messages and media, detects deletions in real-time, and forwards deleted content to the bot owner. Includes recovery commands.
 - **Anti-View-Once**: Automatically captures view-once messages (images and videos). Provides commands to retrieve the latest capture and auto-forward them.
 - **Core Commands**: help, menu, info, status, settings, allow, disallow, reload, env, shutdown, restart.
-- **Games Plugin**: tictactoe, wordguess, endgame, gameinfo, gamestats.
+- **Standalone Game Plugins**: Each game is now a separate plugin for easy expansion:
+  - **TicTacToe Plugin**: `tictactoe`, `ttt` - Interactive tic-tac-toe with AI opponent
+  - **WordGuess Plugin**: `wordguess`, `wg` - Word guessing with difficulty levels
+  - **EndGame Plugin**: `endgame`, `quit` - Universal game ending command
 - **Admin Tools**: systeminfo, plugins, users, permissions, logs, cleanup, backup.
 - **Media Tools**: convert, upscale, analyze, mediainfo, compress, extract.
 - **Access Control**: Proper owner detection, command permissions, game participation.

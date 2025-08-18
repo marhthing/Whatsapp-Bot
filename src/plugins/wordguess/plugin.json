@@ -1,0 +1,38 @@
+{
+  "name": "wordguess",
+  "displayName": "Word Guess Game",
+  "description": "Interactive word guessing game with difficulty levels",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": false,
+  "priority": 61,
+  "dependencies": [],
+  "commands": [
+    {
+      "name": "wordguess",
+      "description": "Start a word guessing game",
+      "usage": "wordguess [easy|medium|hard]",
+      "ownerOnly": false,
+      "allowInGames": false
+    },
+    {
+      "name": "wg",
+      "description": "Start a word guessing game (short form)",
+      "usage": "wg [easy|medium|hard]",
+      "ownerOnly": false,
+      "allowInGames": false
+    }
+  ],
+  "features": [
+    "single-player-game",
+    "difficulty-levels",
+    "hint-system",
+    "interactive-entertainment"
+  ],
+  "permissions": [
+    "games:start",
+    "games:manage"
+  ],
+  "multiUserSupport": false
+}

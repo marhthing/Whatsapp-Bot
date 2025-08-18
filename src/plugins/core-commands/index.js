@@ -536,30 +536,12 @@ class CoreCommandsPlugin {
             // Allow time for the message to be sent
             setTimeout(() => {
                 console.log('🔄 Restarting MATDEV Bot...');
+                console.log('💡 NOTE: In Replit environment, restart will stop the bot');
+                console.log('💡 The workflow will need to be restarted manually from the Replit interface');
                 
-                // Try process spawning first, then fallback to exit code
-                try {
-                    const { spawn } = require('child_process');
-                    
-                    // Spawn new process in background
-                    const child = spawn('node', ['index.js'], {
-                        detached: true,
-                        stdio: 'ignore',
-                        cwd: process.cwd()
-                    });
-                    
-                    child.unref();
-                    
-                    // Exit current process after brief delay
-                    setTimeout(() => {
-                        process.exit(0);
-                    }, 1000);
-                    
-                } catch (spawnError) {
-                    console.log('Spawn failed, using exit code method...');
-                    // Fallback: exit with code 1 to trigger workflow restart
-                    process.exit(1);
-                }
+                // In Replit, workflows don't auto-restart, so we just exit cleanly
+                // The user will need to restart manually from the Replit console
+                process.exit(0);
                 
             }, 2000);
             

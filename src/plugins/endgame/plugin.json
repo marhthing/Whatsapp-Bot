@@ -1,0 +1,35 @@
+{
+  "name": "endgame",
+  "displayName": "End Game",
+  "description": "Universal command to end any active game",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": false,
+  "priority": 70,
+  "dependencies": [],
+  "commands": [
+    {
+      "name": "endgame",
+      "description": "End the current active game",
+      "usage": "endgame",
+      "ownerOnly": false,
+      "allowInGames": true
+    },
+    {
+      "name": "quit",
+      "description": "Quit the current active game",
+      "usage": "quit",
+      "ownerOnly": false,
+      "allowInGames": true
+    }
+  ],
+  "features": [
+    "game-management",
+    "universal-game-ending"
+  ],
+  "permissions": [
+    "games:manage"
+  ],
+  "multiUserSupport": true
+}

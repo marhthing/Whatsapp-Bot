@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T15:45:50.614Z",
+  "lastUpdated": "2025-08-18T15:52:33.968Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:49.902Z",
+      "loadedAt": "2025-08-18T15:52:33.707Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -21,7 +21,7 @@
       "name": "anti-delete",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:49.907Z",
+      "loadedAt": "2025-08-18T15:52:33.731Z",
       "commands": [
         "delete"
       ]
@@ -30,16 +30,45 @@
       "name": "anti-view-once",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:49.908Z",
+      "loadedAt": "2025-08-18T15:52:33.739Z",
       "commands": [
         "vv"
+      ]
+    },
+    {
+      "name": "core-commands",
+      "version": "2.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:52:33.742Z",
+      "commands": [
+        "help",
+        "info",
+        "status",
+        "settings",
+        "allow",
+        "disallow",
+        "reload",
+        "env",
+        "shutdown",
+        "restart",
+        "menu"
+      ]
+    },
+    {
+      "name": "endgame",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:52:33.749Z",
+      "commands": [
+        "endgame",
+        "quit"
       ]
     },
     {
       "name": "jid",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:49.914Z",
+      "loadedAt": "2025-08-18T15:52:33.757Z",
       "commands": [
         "jid"
       ]
@@ -48,7 +77,7 @@
       "name": "media-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:49.920Z",
+      "loadedAt": "2025-08-18T15:52:33.776Z",
       "commands": [
         "convert",
         "upscale",
@@ -62,60 +91,48 @@
       "name": "ping",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:49.922Z",
+      "loadedAt": "2025-08-18T15:52:33.779Z",
       "commands": [
         "ping",
         "pinginfo"
       ]
     },
     {
+      "name": "tictactoe",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:52:33.780Z",
+      "commands": [
+        "tictactoe",
+        "ttt"
+      ]
+    },
+    {
       "name": "tiktok-downloader",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:49.924Z",
+      "loadedAt": "2025-08-18T15:52:33.802Z",
       "commands": [
         "tiktok"
+      ]
+    },
+    {
+      "name": "wordguess",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:52:33.815Z",
+      "commands": [
+        "wordguess",
+        "wg"
       ]
     },
     {
       "name": "youtube-downloader",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:44:50.042Z",
+      "loadedAt": "2025-08-18T15:52:33.968Z",
       "commands": [
         "ytv"
-      ]
-    },
-    {
-      "name": "games",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:45:37.605Z",
-      "commands": [
-        "tictactoe",
-        "wordguess",
-        "endgame",
-        "gameinfo",
-        "gamestats"
-      ]
-    },
-    {
-      "name": "core-commands",
-      "version": "2.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:45:50.613Z",
-      "commands": [
-        "help",
-        "info",
-        "status",
-        "settings",
-        "allow",
-        "disallow",
-        "reload",
-        "env",
-        "shutdown",
-        "restart",
-        "menu"
       ]
     }
   ]
