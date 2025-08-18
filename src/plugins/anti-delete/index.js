@@ -82,6 +82,23 @@ class AntiDeletePlugin {
         }
     }
 
+    async executeCommand(commandName, context) {
+        if (!this.isInitialized) {
+            throw new Error('Anti-Delete plugin not initialized');
+        }
+
+        if (!this.commands[commandName]) {
+            throw new Error(`Command '${commandName}' not found in anti-delete plugin`);
+        }
+
+        try {
+            return await this.commands[commandName](context);
+        } catch (error) {
+            console.error(`❌ Error executing anti-delete command '${commandName}':`, error);
+            throw error;
+        }
+    }
+
     async shutdown() {
         try {
             console.log('🛑 Shutting down Anti-Delete plugin...');
