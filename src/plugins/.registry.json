@@ -1,0 +1,105 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-08-18T21:57:49.339Z",
+  "plugins": [
+    {
+      "name": "admin-tools",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.048Z",
+      "commands": [
+        "systeminfo",
+        "plugins",
+        "users",
+        "permissions",
+        "logs",
+        "cleanup",
+        "backup"
+      ]
+    },
+    {
+      "name": "anti-delete",
+      "version": "2.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.052Z",
+      "commands": [
+        "delete"
+      ]
+    },
+    {
+      "name": "anti-view-once",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.053Z",
+      "commands": [
+        "vv"
+      ]
+    },
+    {
+      "name": "core-commands",
+      "version": "2.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.055Z",
+      "commands": [
+        "help",
+        "info",
+        "status",
+        "settings",
+        "allow",
+        "disallow",
+        "reload",
+        "env",
+        "shutdown",
+        "restart",
+        "menu"
+      ]
+    },
+    {
+      "name": "jid",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.059Z",
+      "commands": [
+        "jid"
+      ]
+    },
+    {
+      "name": "ping",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.061Z",
+      "commands": [
+        "ping",
+        "pinginfo"
+      ]
+    },
+    {
+      "name": "tiktok-downloader",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.063Z",
+      "commands": [
+        "tiktok"
+      ]
+    },
+    {
+      "name": "youtube-downloader",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:50:54.171Z",
+      "commands": [
+        "ytv"
+      ]
+    },
+    {
+      "name": "enhance",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T21:57:49.339Z",
+      "commands": [
+        "enhance",
+        "enhancestatus"
+      ]
+    }
+  ]
+}
