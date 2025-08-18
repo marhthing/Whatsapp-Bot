@@ -90,6 +90,12 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Increased batch size from 10 to 20 messages for more efficient archiving
   - Added download timeouts (10 seconds) to prevent hanging media downloads
   - Fixed directory naming inconsistency ("groups" vs "group") in message archiver
+  - **MEDIA TYPE CLASSIFICATION FIXES**: Enhanced sticker vs image detection with priority-based processing
+  - Fixed media category determination to properly distinguish stickers from regular images
+  - Improved message content extraction with better fallback handling for incomplete messages
+  - Enhanced media archiving to include stickers in hasMedia detection
+  - Reduced "no extractable content" warnings with better system message handling
+  - Added support for broadcast/newsletter message types to prevent archiving errors
 - All core functionality tested and operational
 
 ### Current Working Features:

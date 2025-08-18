@@ -98,7 +98,7 @@ class MessageProcessor extends EventEmitter {
     }
 
     hasMedia(message) {
-        // Check if message has media content
+        // Check if message has media content - comprehensive check
         if (message.message) {
             return !!(message.message.imageMessage || 
                      message.message.videoMessage || 
@@ -106,7 +106,18 @@ class MessageProcessor extends EventEmitter {
                      message.message.documentMessage || 
                      message.message.stickerMessage);
         }
-        return !!message.hasMedia;
+        
+        // Additional checks for different message formats
+        if (message.hasMedia) return true;
+        
+        // Check for raw media properties
+        if (message.type === 'image' || message.type === 'video' || 
+            message.type === 'audio' || message.type === 'sticker' || 
+            message.type === 'document') {
+            return true;
+        }
+        
+        return false;
     }
 
     hasValidMediaKey(message) {
@@ -130,11 +141,18 @@ class MessageProcessor extends EventEmitter {
 
             console.log('📥 Downloading media...');
 
-            // Use Baileys downloadMediaMessage function
+            // Use Baileys downloadMediaMessage function with better timeout and retry logic
             const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
+            
+            const downloadPromise = downloadMediaMessage(message, 'buffer', {}, { 
                 logger: require('pino')({ level: 'silent' })
             });
+            
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Download timeout')), 10000) // 10 second timeout
+            );
+            
+            const buffer = await Promise.race([downloadPromise, timeoutPromise]);
 
             if (!buffer) {
                 console.warn('⚠️ Failed to download media - no buffer received');
@@ -146,7 +164,12 @@ class MessageProcessor extends EventEmitter {
             let mimetype = 'application/octet-stream';
             let filename = 'file';
 
-            if (message.message.imageMessage) {
+            // Priority order: sticker first, then other types
+            if (message.message.stickerMessage) {
+                mediaType = 'sticker';
+                mimetype = message.message.stickerMessage.mimetype || 'image/webp';
+                filename = 'sticker.webp';
+            } else if (message.message.imageMessage) {
                 mediaType = 'image';
                 mimetype = message.message.imageMessage.mimetype || 'image/jpeg';
                 filename = message.message.imageMessage.caption ? 
@@ -154,19 +177,16 @@ class MessageProcessor extends EventEmitter {
             } else if (message.message.videoMessage) {
                 mediaType = 'video';
                 mimetype = message.message.videoMessage.mimetype || 'video/mp4';
-                filename = 'video.mp4';
+                filename = message.message.videoMessage.caption ? 
+                    `video_${Date.now()}.mp4` : 'video.mp4';
             } else if (message.message.audioMessage) {
                 mediaType = 'audio';
                 mimetype = message.message.audioMessage.mimetype || 'audio/ogg';
-                filename = 'audio.ogg';
+                filename = message.message.audioMessage.ptt ? 'voice.ogg' : 'audio.ogg';
             } else if (message.message.documentMessage) {
                 mediaType = 'document';
                 mimetype = message.message.documentMessage.mimetype || 'application/octet-stream';
-                filename = message.message.documentMessage.fileName || 'document';
-            } else if (message.message.stickerMessage) {
-                mediaType = 'sticker';
-                mimetype = message.message.stickerMessage.mimetype || 'image/webp';
-                filename = 'sticker.webp';
+                filename = message.message.documentMessage.fileName || `document_${Date.now()}`;
             }
 
             // Store in media vault with caption

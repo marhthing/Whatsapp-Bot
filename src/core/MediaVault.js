@@ -150,8 +150,16 @@ class MediaVault {
             // Always create unique files - no deduplication for anti-delete functionality
             // This ensures each message gets its own copy for proper deletion recovery
 
+            // Determine media type from message for better categorization
+            let messageMediaType = null;
+            if (message.message?.stickerMessage) messageMediaType = 'sticker';
+            else if (message.message?.imageMessage) messageMediaType = 'image';
+            else if (message.message?.videoMessage) messageMediaType = 'video';
+            else if (message.message?.audioMessage) messageMediaType = 'audio';
+            else if (message.message?.documentMessage) messageMediaType = 'document';
+
             // Determine file category and extension
-            const category = this.getMediaCategory(mediaData.mimetype);
+            const category = this.getMediaCategory(mediaData.mimetype, messageMediaType);
             const extension = this.getFileExtension(mediaData.mimetype, mediaData.filename);
             
             // Generate unique filename with message ID to ensure uniqueness per message
@@ -218,11 +226,20 @@ class MediaVault {
         };
     }
 
-    getMediaCategory(mimetype) {
+    getMediaCategory(mimetype, messageType = null) {
         if (!mimetype) return 'documents';
 
+        // Use message type to determine category more accurately
+        if (messageType === 'sticker') {
+            return 'stickers';
+        }
+
         if (mimetype.startsWith('image/')) {
-            return mimetype === 'image/webp' ? 'stickers' : 'images';
+            // More specific sticker detection
+            if (mimetype === 'image/webp' && messageType !== 'image') {
+                return 'stickers';
+            }
+            return 'images';
         }
         if (mimetype.startsWith('video/')) return 'videos';
         if (mimetype.startsWith('audio/')) return 'audio';

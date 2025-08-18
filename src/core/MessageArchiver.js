@@ -228,9 +228,17 @@ class MessageArchiver {
                 } else if (message.message?.pollCreationMessage) {
                     messageBody = `[Poll: ${message.message.pollCreationMessage.name}]`;
                     messageType = 'poll';
+                } else if (message.messageStubType) {
+                    // Handle WhatsApp system messages (group changes, etc.)
+                    messageBody = '[System Event]';
+                    messageType = 'system';
+                } else if (message.broadcast || message.key?.remoteJid?.includes('@newsletter')) {
+                    // Handle newsletter/broadcast messages
+                    messageBody = '[Broadcast Message]';
+                    messageType = 'broadcast';
                 } else {
-                    // Skip completely empty messages to avoid noise
-                    console.log(`⚠️ Skipping message with no extractable content: ${JSON.stringify(message, null, 2).substring(0, 200)}...`);
+                    // Skip completely empty messages but log less verbosely
+                    console.log(`⚠️ Skipping message with no extractable content: ${message.key?.id || 'unknown'}`);
                     return null;
                 }
             }
@@ -243,7 +251,7 @@ class MessageArchiver {
                 type: messageType,
                 timestamp: message.messageTimestamp ? new Date(message.messageTimestamp * 1000) : new Date(),
                 isOutgoing,
-                hasMedia: !!message.hasMedia || !!message.message?.imageMessage || !!message.message?.videoMessage || !!message.message?.audioMessage || !!message.message?.documentMessage,
+                hasMedia: !!message.hasMedia || !!message.message?.imageMessage || !!message.message?.videoMessage || !!message.message?.audioMessage || !!message.message?.documentMessage || !!message.message?.stickerMessage,
                 quotedMessage: message.message?.extendedTextMessage?.contextInfo?.quotedMessage ? {
                     id: message.message.extendedTextMessage.contextInfo.stanzaId,
                     body: this.extractQuotedMessageBody(message.message.extendedTextMessage.contextInfo.quotedMessage),
