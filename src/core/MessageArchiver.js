@@ -62,6 +62,7 @@ class MessageArchiver {
             message,
             timestamp: Date.now(),
             isOutgoing,
+            storedMedia,
             archived: false
         });
     }
@@ -155,7 +156,7 @@ class MessageArchiver {
             const batch = this.archiveQueue.splice(0, 10); // Process in batches of 10
             
             for (const item of batch) {
-                await this.saveMessage(item.message, item.isOutgoing);
+                await this.saveMessage(item.message, item.isOutgoing, item.storedMedia);
                 item.archived = true;
             }
             
@@ -170,7 +171,7 @@ class MessageArchiver {
         }
     }
 
-    async saveMessage(message, isOutgoing = false) {
+    async saveMessage(message, isOutgoing = false, storedMedia = null) {
         try {
             // Extract message content properly
             let messageBody = '';
@@ -335,7 +336,8 @@ class MessageArchiver {
 
             // Log media storage completion (direct linking - no more two-step process!)
             if (storedMedia) {
-                console.log(`✅ Media stored and linked: ${storedMedia.filename} (${this.formatSize(storedMedia.size)})`);
+                const sizeText = storedMedia.size ? `${Math.round(storedMedia.size / 1024)}KB` : 'unknown size';
+                console.log(`✅ Media stored and linked: ${storedMedia.filename} (${sizeText})`);
             }
 
             return messageData;
