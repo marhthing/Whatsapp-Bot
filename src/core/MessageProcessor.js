@@ -52,7 +52,8 @@ class MessageProcessor extends EventEmitter {
             }
             
             // Check access control
-            const accessResult = this.accessController.canProcessMessage(message, command);
+            const commandName = command ? command.name : null;
+            const accessResult = this.accessController.canProcessMessage(message, commandName);
             
             if (!accessResult.allowed) {
                 // Log access denied with proper JID extraction
