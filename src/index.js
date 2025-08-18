@@ -132,6 +132,12 @@ class WhatsAppBot {
                 console.log('🔐 Client authenticated successfully');
             });
 
+            this.botClient.on('pairing_code', (code) => {
+                console.log('🔐 Pairing Code generated:');
+                console.log(`📱 Enter this code in WhatsApp: ${code}`);
+                console.log('📲 Go to WhatsApp Settings > Linked Devices > Link a Device');
+            });
+
             this.botClient.on('auth_failure', (msg) => {
                 console.error('❌ Authentication failed:', msg);
             });

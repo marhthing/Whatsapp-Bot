@@ -119,14 +119,61 @@ class WhatsAppBotStarter {
         const sessionId = await this.promptUser('Enter session name (or press Enter for auto-generated): ');
         const finalSessionId = sessionId.trim() || `session_${Date.now()}`;
         
-        const ownerJid = await this.promptUser('Enter your WhatsApp JID (phone number with country code, e.g., 1234567890@s.whatsapp.net): ');
+        // Ask for authentication method
+        console.log(`${colors.blue}Authentication Methods:${colors.reset}`);
+        console.log(`${colors.cyan}1.${colors.reset} QR Code (scan with your phone)`);
+        console.log(`${colors.cyan}2.${colors.reset} 8-digit pairing code (link to existing WhatsApp)\n`);
         
-        if (!ownerJid.includes('@s.whatsapp.net')) {
-            console.error(`${colors.red}Invalid JID format. Please include @s.whatsapp.net${colors.reset}`);
+        const authMethod = await this.promptUser('Select authentication method (1 or 2): ');
+        
+        let phoneNumber = '';
+        if (authMethod === '1') {
+            console.log(`${colors.green}QR Code authentication selected.${colors.reset}`);
+            console.log(`${colors.yellow}You will scan a QR code with your WhatsApp to link this bot to your account.${colors.reset}\n`);
+            phoneNumber = await this.promptUser('Enter your phone number (with country code, e.g., +2347046040727): ');
+        } else if (authMethod === '2') {
+            console.log(`${colors.green}8-digit pairing code authentication selected.${colors.reset}`);
+            console.log(`${colors.yellow}You will enter an 8-digit code from WhatsApp settings to link this bot.${colors.reset}\n`);
+            phoneNumber = await this.promptUser('Enter your phone number (with country code, e.g., +2347046040727): ');
+        } else {
+            console.error(`${colors.red}Invalid authentication method selected.${colors.reset}`);
             process.exit(1);
         }
 
-        await this.initializeSession(finalSessionId, ownerJid);
+        // Clean and validate phone number
+        const cleanedPhone = this.cleanPhoneNumber(phoneNumber);
+        if (!cleanedPhone) {
+            console.error(`${colors.red}Invalid phone number format. Please include country code.${colors.reset}`);
+            process.exit(1);
+        }
+
+        console.log(`${colors.green}Phone number: ${cleanedPhone}${colors.reset}`);
+        console.log(`${colors.blue}The bot will use your WhatsApp account to send and receive messages.${colors.reset}`);
+        console.log(`${colors.blue}After successful authentication, your JID will be automatically detected.${colors.reset}\n`);
+
+        await this.initializeSession(finalSessionId, cleanedPhone, authMethod);
+    }
+
+    /**
+     * Clean and validate phone number
+     */
+    cleanPhoneNumber(phoneNumber) {
+        if (!phoneNumber) return null;
+        
+        // Remove all non-digit characters except +
+        let cleaned = phoneNumber.replace(/[^\d+]/g, '');
+        
+        // Remove leading + if present
+        if (cleaned.startsWith('+')) {
+            cleaned = cleaned.substring(1);
+        }
+        
+        // Validate: should be 10-15 digits
+        if (!/^\d{10,15}$/.test(cleaned)) {
+            return null;
+        }
+        
+        return cleaned;
     }
 
     /**
@@ -155,17 +202,20 @@ class WhatsAppBotStarter {
     /**
      * Initialize a new session
      */
-    async initializeSession(sessionId, ownerJid) {
+    async initializeSession(sessionId, phoneNumber, authMethod) {
         const sessionDir = path.join(this.sessionsDir, sessionId);
         
         try {
             await fs.mkdir(sessionDir, { recursive: true });
             await fs.mkdir(path.join(sessionDir, 'auth'), { recursive: true });
 
-            // Create session config
+            // Create session config (JID will be updated after authentication)
             const sessionConfig = {
                 id: sessionId,
-                ownerJid: ownerJid,
+                phoneNumber: phoneNumber,
+                ownerJid: null, // Will be set after successful authentication
+                authMethod: authMethod,
+                authStatus: 'pending',
                 createdAt: new Date().toISOString(),
                 lastActive: new Date().toISOString()
             };
@@ -177,8 +227,10 @@ class WhatsAppBotStarter {
 
             // Create metadata
             const metadata = {
-                OWNER_JID: ownerJid,
-                sessionId: sessionId,
+                SESSION_ID: sessionId,
+                PHONE_NUMBER: phoneNumber,
+                OWNER_JID: null, // Will be updated after authentication
+                AUTH_METHOD: authMethod,
                 version: '1.0.0'
             };
 
@@ -191,6 +243,7 @@ class WhatsAppBotStarter {
             await this.updateSessionRegistry(sessionConfig);
 
             console.log(`${colors.green}Session '${sessionId}' created successfully!${colors.reset}`);
+            console.log(`${colors.yellow}Ready to authenticate with WhatsApp...${colors.reset}\n`);
             
             await this.startSession(sessionConfig);
 
@@ -231,11 +284,21 @@ class WhatsAppBotStarter {
      */
     async startSession(sessionConfig) {
         console.log(`${colors.green}Starting session: ${sessionConfig.id}${colors.reset}`);
-        console.log(`${colors.blue}Owner JID: ${sessionConfig.ownerJid}${colors.reset}\n`);
+        
+        if (sessionConfig.ownerJid) {
+            console.log(`${colors.blue}Owner JID: ${sessionConfig.ownerJid}${colors.reset}`);
+        } else {
+            console.log(`${colors.blue}Phone Number: ${sessionConfig.phoneNumber}${colors.reset}`);
+            console.log(`${colors.yellow}JID will be detected after authentication${colors.reset}`);
+        }
+        
+        console.log(`${colors.blue}Auth Method: ${sessionConfig.authMethod === '1' ? 'QR Code' : '8-digit Pairing Code'}${colors.reset}\n`);
 
         // Set environment variables for the session
         process.env.WHATSAPP_SESSION_ID = sessionConfig.id;
-        process.env.OWNER_JID = sessionConfig.ownerJid;
+        process.env.PHONE_NUMBER = sessionConfig.phoneNumber;
+        process.env.OWNER_JID = sessionConfig.ownerJid || '';
+        process.env.AUTH_METHOD = sessionConfig.authMethod;
         process.env.SESSION_DIR = path.join(this.sessionsDir, sessionConfig.id);
 
         // Check if src/index.js exists
@@ -244,6 +307,8 @@ class WhatsAppBotStarter {
         try {
             await fs.access(mainFile);
             console.log(`${colors.cyan}Loading main bot application...${colors.reset}`);
+            console.log(`${colors.yellow}The bot will authenticate and then use your WhatsApp account.${colors.reset}`);
+            console.log(`${colors.yellow}After authentication, your actual JID will be detected automatically.${colors.reset}\n`);
             
             // Close readline interface before requiring the main app
             this.rl.close();
@@ -254,14 +319,21 @@ class WhatsAppBotStarter {
         } catch (error) {
             console.log(`${colors.yellow}Main bot application not found at src/index.js${colors.reset}`);
             console.log(`${colors.blue}Session initialized successfully. Ready for bot implementation.${colors.reset}`);
-            console.log(`${colors.green}You can now create the src/ directory and implement the bot core.${colors.reset}\n`);
+            console.log(`${colors.green}You can now implement the WhatsApp authentication in src/index.js${colors.reset}\n`);
             
             // Show session info
             console.log('Session Information:');
             console.log(`- Session ID: ${sessionConfig.id}`);
-            console.log(`- Owner JID: ${sessionConfig.ownerJid}`);
+            console.log(`- Phone Number: ${sessionConfig.phoneNumber}`);
+            console.log(`- Auth Method: ${sessionConfig.authMethod === '1' ? 'QR Code' : '8-digit Pairing Code'}`);
             console.log(`- Session Directory: ${path.join(this.sessionsDir, sessionConfig.id)}`);
             console.log(`- Environment variables set for bot initialization\n`);
+            
+            console.log(`${colors.cyan}Next Steps:${colors.reset}`);
+            console.log(`1. Implement WhatsApp authentication in src/index.js`);
+            console.log(`2. Use the auth method preference: ${sessionConfig.authMethod === '1' ? 'QR Code' : '8-digit Pairing Code'}`);
+            console.log(`3. After successful auth, detect and save the actual JID`);
+            console.log(`4. Bot will then operate using your WhatsApp account\n`);
             
             this.rl.close();
             process.exit(0);

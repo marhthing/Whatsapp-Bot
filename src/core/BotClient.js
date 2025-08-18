@@ -94,13 +94,22 @@ class BotClient extends EventEmitter {
     }
 
     async initializeWhatsAppClient() {
-        const sessionName = process.env.SESSION_NAME || 'main';
-        const sessionPath = path.join(process.cwd(), 'sessions', `session_${sessionName}`);
+        const sessionId = process.env.WHATSAPP_SESSION_ID || 'main';
+        const sessionDir = process.env.SESSION_DIR || path.join(process.cwd(), 'sessions', sessionId);
+        const authMethod = process.env.AUTH_METHOD || '1';
+        const phoneNumber = process.env.PHONE_NUMBER;
 
-        this.client = new Client({
+        console.log(`🔧 Initializing WhatsApp client for session: ${sessionId}`);
+        if (phoneNumber) {
+            console.log(`📱 Phone number: ${phoneNumber}`);
+            console.log(`🔐 Auth method: ${authMethod === '1' ? 'QR Code' : '8-digit Pairing Code'}`);
+        }
+
+        // Client configuration
+        const clientConfig = {
             authStrategy: new LocalAuth({
-                clientId: sessionName,
-                dataPath: sessionPath
+                clientId: sessionId,
+                dataPath: path.join(sessionDir, 'auth')
             }),
             puppeteer: {
                 headless: true,
@@ -115,17 +124,37 @@ class BotClient extends EventEmitter {
                     '--disable-gpu'
                 ]
             }
-        });
+        };
+
+        // Add pairing code configuration if using method 2
+        if (authMethod === '2' && phoneNumber) {
+            clientConfig.pairingCodeRequested = true;
+            clientConfig.pairingCodeTimeoutMs = 120000; // 2 minutes timeout
+        }
+
+        this.client = new Client(clientConfig);
 
         // Setup WhatsApp client event handlers
         this.client.on('qr', (qr) => {
+            console.log('📱 QR Code generated for authentication');
+            console.log('🔗 Scan this QR code with your WhatsApp to link the bot to your account');
             this.qrCode = qr;
             this.emit('qr', qr);
         });
 
         this.client.on('authenticated', () => {
+            console.log('🔐 WhatsApp authentication successful!');
             this.emit('authenticated');
         });
+
+        // Handle pairing code for method 2
+        if (authMethod === '2' && phoneNumber) {
+            this.client.on('code', (code) => {
+                console.log(`🔐 Your pairing code: ${code}`);
+                console.log('📱 Enter this code in WhatsApp Settings > Linked Devices > Link a Device');
+                this.emit('pairing_code', code);
+            });
+        }
 
         this.client.on('auth_failure', (msg) => {
             this.emit('auth_failure', msg);
@@ -134,11 +163,16 @@ class BotClient extends EventEmitter {
         this.client.on('ready', async () => {
             this.qrCode = null;
             
-            // Get owner JID
+            // Get owner JID - this is the actual user's JID that the bot will use as its identity
             this.ownerJid = this.client.info.wid._serialized;
             await this.accessController.setOwnerJid(this.ownerJid);
 
-            console.log(`🔐 Bot ready for owner: ${this.ownerJid}`);
+            console.log(`🔐 Bot ready! Operating as: ${this.ownerJid}`);
+            console.log(`✅ Bot will send messages using your WhatsApp account`);
+            
+            // Save the detected JID to session config
+            await this.updateSessionJid(this.ownerJid);
+            
             this.emit('ready');
         });
 
@@ -165,6 +199,54 @@ class BotClient extends EventEmitter {
 
         // Initialize client
         await this.client.initialize();
+    }
+
+    /**
+     * Update session configuration with detected JID
+     */
+    async updateSessionJid(detectedJid) {
+        try {
+            const sessionDir = process.env.SESSION_DIR;
+            if (!sessionDir) return;
+
+            const fs = require('fs').promises;
+            
+            // Update session config
+            const configPath = path.join(sessionDir, 'config.json');
+            try {
+                const configData = await fs.readFile(configPath, 'utf8');
+                const config = JSON.parse(configData);
+                
+                config.ownerJid = detectedJid;
+                config.authStatus = 'authenticated';
+                config.lastActive = new Date().toISOString();
+                
+                await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+                console.log(`💾 Updated session config with JID: ${detectedJid}`);
+            } catch (error) {
+                console.warn('⚠️ Could not update session config:', error.message);
+            }
+
+            // Update metadata
+            const metadataPath = path.join(sessionDir, 'metadata.json');
+            try {
+                const metadataData = await fs.readFile(metadataPath, 'utf8');
+                const metadata = JSON.parse(metadataData);
+                
+                metadata.OWNER_JID = detectedJid;
+                
+                await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+                console.log(`💾 Updated session metadata with JID`);
+            } catch (error) {
+                console.warn('⚠️ Could not update session metadata:', error.message);
+            }
+
+            // Update environment variable
+            process.env.OWNER_JID = detectedJid;
+            
+        } catch (error) {
+            console.error('❌ Failed to update session JID:', error);
+        }
     }
 
     async sendMessage(chatId, content, options = {}) {
