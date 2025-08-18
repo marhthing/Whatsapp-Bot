@@ -232,8 +232,11 @@ class AccessController {
             chatId = message.from;
         }
 
-        // Debug when needed (uncomment for troubleshooting)
-        // console.log(`🔍 Access check - FromMe: ${message.key?.fromMe}, Sender: ${senderJid}, Owner: ${this.ownerJid}, Chat: ${chatId}`);
+        // Debug group message handling
+        const isGroup = chatId && chatId.endsWith('@g.us');
+        if (isGroup) {
+            console.log(`🔍 Group access check - FromMe: ${message.key?.fromMe}, Sender: ${senderJid}, Owner: ${this.ownerJid}, Chat: ${chatId}`);
+        }
 
         // Owner can always process any message
         if (this.isOwner(senderJid)) {
