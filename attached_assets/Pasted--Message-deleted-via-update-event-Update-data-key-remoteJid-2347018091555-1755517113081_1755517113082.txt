@@ -1,0 +1,64 @@
+🗑️ Message deleted via update event
+🔍 Update data: {
+  "key": {
+    "remoteJid": "2347018091555@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AAC0779BC8BAA3D9C31"
+  },
+  "update": {
+    "message": null,
+    "messageStubType": 1,
+    "key": {
+      "remoteJid": "2347018091555@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3A5B28A0035E7966ABB5"
+    }
+  }
+}
+🗑️ Message deletion detected in processor: [
+  {
+    "remoteJid": "2347018091555@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AAC0779BC8BAA3D9C31"
+  }
+]
+🔍 Processing 1 deleted message(s)
+🔍 Looking for archived message - ID: 3AAC0779BC8BAA3D9C31, Chat: 2347018091555@s.whatsapp.net
+🔍 Searching for message ID: 3AAC0779BC8BAA3D9C31
+🔍 Searching in /home/runner/workspace/data/messages/2025/08/individual/18.json - Found 19 messages
+✅ Found message with ID: 3AAC0779BC8BAA3D9C31
+📋 Found archived message for deletion: 3AAC0779BC8BAA3D9C31
+🔄 Forwarding deletion to anti-delete plugin
+🗑️ Anti-delete plugin handling deleted message
+🔍 Anti-delete handling deletion data: {
+  "after": {
+    "remoteJid": "2347018091555@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AAC0779BC8BAA3D9C31"
+  },
+  "before": {
+    "id": "3AAC0779BC8BAA3D9C31",
+    "from": "2347018091555@s.whatsapp.net",
+    "body": "[Sticker]",
+    "type": "sticker",
+    "timestamp": "2025-08-18T11:37:46.000Z",
+    "isOutgoing": false,
+    "hasMedia": false,
+    "quotedMessage": null,
+    "mentions": [],
+    "isGroup": false,
+    "mediaPath": null,
+    "archived": "2025-08-18T11:37:47.084Z"
+  }
+}
+🔍 Processing deletion - Chat: 2347018091555@s.whatsapp.net, Sender: 2347018091555@s.whatsapp.net, MessageID: 3AAC0779BC8BAA3D9C31
+🔍 Message deletion detected: del_1755517075668_2h3bjp
+🔍 Message deletion detected: del_1755517075668_2h3bjp
+Could not retrieve original message from storage: TypeError: this.botClient.getMessageStorage is not a function
+    at Detector.forwardDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/detector.js:165:55)
+    at Detector.handleDeletion (/home/runner/workspace/src/plugins/anti-delete/detector.js:135:24)
+    at async AntiDeletePlugin.handleDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/index.js:143:17)
+    at async MessageProcessor.processDeletedMessage (/home/runner/workspace/src/core/MessageProcessor.js:498:29)
+    at async EventEmitter.<anonymous> (/home/runner/workspace/src/core/BotClient.js:237:25)
+🔍 Logged message deletion: 3AAC0779BC8BAA3D9C31
+📁 Archived 1 messages

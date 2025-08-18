@@ -71,11 +71,14 @@ The system follows a **personal assistant architecture** with multi-session supp
 - Bot successfully connects via QR code or pairing code authentication
 - Access control system properly denies non-owner access and manages allowed commands
 - **CONFIRMED**: Allowed users can now successfully execute permitted commands
-- **UPDATED (Latest)**: Improved anti-delete system with proper media forwarding and tagging
-  - Now forwards original deleted content (text/media) with proper tag structure
+- **UPDATED (Latest - August 18, 2025)**: Enhanced anti-delete system with improved media handling and tagging
+  - Fixed integration with MessageArchiver using proper `getMessageById()` method
+  - Implemented direct media file retrieval from storage using archived media paths
+  - Now forwards original deleted content (text/media) with proper contextInfo tagging structure
   - Skips placeholder messages - only sends content if original is available
-  - Media messages are properly forwarded with correct contextInfo tagging
+  - Media messages are properly forwarded with correct sender tagging for WhatsApp quote structure
   - No fallback notifications - clean forwarding of actual deleted content only
+  - Fixed media buffer retrieval errors for stickers and other media types
 - All core functionality tested and operational
 
 ### Current Working Features:

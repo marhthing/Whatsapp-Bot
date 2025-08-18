@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T11:37:28.354Z",
+  "lastUpdated": "2025-08-18T11:40:39.054Z",
   "plugins": [
     {
       "name": "admin-tools",
@@ -74,7 +74,7 @@
       "name": "anti-delete",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T11:37:28.354Z",
+      "loadedAt": "2025-08-18T11:40:39.053Z",
       "commands": [
         "delete"
       ]
