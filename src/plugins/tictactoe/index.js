@@ -187,10 +187,17 @@ class TicTacToePlugin {
             }
             // Handle phone numbers or usernames from args
             else if (args.length > 0) {
-                let userInput = args[0].replace('@', '').replace(/\D/g, '');
-                if (userInput) {
+                let userInput = args[0].replace('@', '');
+                
+                // Check if it's a phone number (digits only)
+                if (/^\d+$/.test(userInput)) {
                     opponent = userInput + '@s.whatsapp.net';
-                    console.log('🎯 Found opponent from args:', opponent);
+                    console.log('🎯 Found opponent from phone number:', opponent);
+                }
+                // Handle username - we'll need to ask for phone number instead
+                else if (userInput.length > 0) {
+                    await reply(`❌ Cannot find user "${userInput}". Please use their phone number instead:\n\nExample: .tictactoe @2348012345678\n\nOr reply to their message: .tictactoe`);
+                    return { success: false, message: 'Username not supported, need phone number' };
                 }
             }
             // In private chat, if no opponent specified, use the bot owner as opponent
@@ -204,7 +211,7 @@ class TicTacToePlugin {
             
             // Opponent is REQUIRED - no AI mode
             if (!opponent) {
-                await reply('❌ Please tag someone to play with:\n\n• Tag: .tictactoe @username\n• Reply to their message: .tictactoe\n• In private chat: just type .tictactoe\n\nExample: .tictactoe @friend');
+                await reply('❌ Please specify someone to play with:\n\n• Use phone number: .tictactoe @2348012345678\n• Reply to their message: .tictactoe\n• In private chat: just type .tictactoe\n\nNote: Usernames don\'t work, please use phone numbers.');
                 return { success: false, message: 'No opponent specified' };
             }
             
