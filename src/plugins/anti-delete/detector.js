@@ -183,16 +183,19 @@ class Detector {
             };
             
             // Forward based on message type
-            if (deletionEntry.hasMedia && this.isMediaType(deletionEntry.mediaType)) {
+            const isMediaMessage = this.hasMedia(originalMessage) || this.isMediaType(deletionEntry.mediaType);
+            
+            if (isMediaMessage) {
                 console.log(`📸 Forwarding deleted ${deletionEntry.mediaType} as tagged message...`);
                 await this.forwardDeletedMediaAsTagged(originalMessage, targetJid, contextInfo, deletionEntry);
-            } else if (deletionEntry.messageBody) {
+            } else if (deletionEntry.messageBody && deletionEntry.messageBody !== '[Sticker]') {
                 // Forward text as tagged message - just the plain text, no emojis
-                await this.botClient.sendMessage(targetJid, { 
-                    text: deletionEntry.messageBody,
+                await this.botClient.sendMessage(targetJid, deletionEntry.messageBody, { 
                     contextInfo: contextInfo
                 });
                 console.log(`✅ Deleted text message forwarded as tagged message`);
+            } else {
+                console.log(`⚠️ Skipping deletion forward - no recoverable content for ${deletionEntry.mediaType}`);
             }
             // If it's not text or media, don't send anything (no placeholders)
             
@@ -329,8 +332,8 @@ class Detector {
                     return; // Don't send anything for unknown types
             }
             
-            // Send the media message with tag
-            await this.botClient.sendMessage(targetJid, messageToSend);
+            // Send the media message with tag using the client directly for better control
+            await this.botClient.client.sendMessage(targetJid, messageToSend);
             console.log(`✅ Successfully forwarded deleted ${mediaType} as tagged message`);
 
         } catch (error) {
@@ -539,7 +542,8 @@ class Detector {
                      message.message.documentMessage || 
                      message.message.stickerMessage);
         }
-        return !!message.hasMedia;
+        // For archived messages, also check the type
+        return !!message.hasMedia || this.isMediaType(message.type);
     }
 
     getMediaType(message) {
