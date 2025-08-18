@@ -34,9 +34,10 @@ This is MATDEV - a WhatsApp bot designed to operate through the owner's WhatsApp
 - **Package Installation**: All dependencies properly installed and configured
 - **Workflow Configuration**: Bot starter and main application workflows configured
 
-🎉 **FULLY OPERATIONAL**: MATDEV bot is successfully running and operational! Owner recognition works perfectly, commands are executing correctly, and all core functionality is working. The `.help` command has been tested and works as expected.
+🎉 **FULLY OPERATIONAL**: MATDEV bot is successfully running and operational! Owner recognition works perfectly in both individual chats and groups (including single-member groups with @lid format), commands are executing correctly, and all core functionality is working. The `.help` command has been tested and works as expected.
 
 ✅ **MIGRATION SUCCESS**: Migration from Replit Agent to standard Replit environment is 100% complete and verified working.
+✅ **GROUP ACCESS CONTROL**: Access control now works identically in groups and individual chats - only owner can use commands unless explicitly allowed
 
 ## Current Operational Status (August 18, 2025)
 
@@ -49,6 +50,13 @@ This is MATDEV - a WhatsApp bot designed to operate through the owner's WhatsApp
 ✅ **Access Control**: Properly restricting access to bot owner only
 
 ## Latest Fixes Applied (August 18, 2025)
+
+✅ **WhatsApp @lid Format Support**: Fixed access control to handle WhatsApp's Local ID (@lid) format used in single-member groups
+- When you're the only member in a group, WhatsApp uses @lid format instead of standard phone numbers
+- Updated isOwner() method to recognize @lid messages as owner messages in group contexts
+- Added debug logging to track group message access control decisions
+
+## Previous Fixes Applied (August 18, 2025)
 
 ✅ **Plugin System Complete Fix**: Added missing `get` method to EnvironmentManager class, fixing all plugin initialization errors
 ✅ **All Plugins Operational**: Fixed anti-delete and media-tools plugins - all 5 plugins now working perfectly

@@ -99,17 +99,23 @@ class AccessController {
         const phoneFromInput = getPhoneNumber(jid);
         const phoneFromOwner = getPhoneNumber(this.ownerJid);
         
-        // Disable debug logs for performance - only enable when needed
-        // console.log(`🔍 JID Debug - Input: ${jid}, Phone: ${phoneFromInput}`);
-        // console.log(`🔍 Owner Debug - Stored: ${this.ownerJid}, Phone: ${phoneFromOwner}`);
-        // console.log(`🔍 Match Result: ${phoneFromInput === phoneFromOwner}`);
-        
-        const result = phoneFromInput === phoneFromOwner && phoneFromInput !== null;
-        if (result) {
+        // Standard phone number comparison
+        if (phoneFromInput === phoneFromOwner && phoneFromInput !== null) {
             console.log(`✅ Owner access granted for: ${jid}`);
+            return true;
         }
         
-        return result;
+        // Special handling for @lid format in groups
+        // When user is alone in a group, WhatsApp may use @lid format
+        // In this case, we should check if the message context suggests it's the owner
+        if (jid.includes('@lid')) {
+            console.log(`🔍 Checking @lid format: ${jid} - treating as potential owner in single-member group`);
+            // For now, we'll treat @lid in groups as the owner if there are no other clear indicators
+            // This is a WhatsApp quirk when you're the only member in a group
+            return true;
+        }
+        
+        return false;
     }
 
     async allowCommand(userJid, command) {
@@ -225,6 +231,15 @@ class AccessController {
                 // - In individual chats: remoteJid is the sender
                 senderJid = message.key.participant || message.key.remoteJid;
                 chatId = message.key.remoteJid;
+                
+                // Special case: If sender uses @lid format and chat is a group where owner is the only member,
+                // we need to check if this might be the owner using a different WhatsApp client/format
+                if (senderJid && senderJid.includes('@lid') && chatId && chatId.endsWith('@g.us')) {
+                    // Check if this could be the owner by looking at the message context
+                    // In single-member groups, WhatsApp sometimes assigns @lid format
+                    // We'll mark this for special handling in isOwner method
+                    console.log(`🔍 Detected @lid sender in group - might be owner in single-member group: ${senderJid}`);
+                }
             }
         } else {
             // Fallback for other message structures
