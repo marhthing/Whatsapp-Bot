@@ -1,4 +1,4 @@
-const { EnvironmentManager } = require('../core/EnvironmentManager');
+const EnvironmentManager = require('../core/EnvironmentManager');
 
 class LoadingReactionMiddleware {
     constructor() {
@@ -8,13 +8,15 @@ class LoadingReactionMiddleware {
         this.isInitialized = false;
     }
 
-    async initialize(botClient, eventBus) {
+    async initialize(dependencies) {
         try {
-            this.botClient = botClient;
-            this.eventBus = eventBus;
+            this.botClient = dependencies.client;
+            this.eventBus = dependencies.eventBus;
+            this.loadingReaction = dependencies.loadingReaction;
             await this.envManager.initialize();
             
             this.isInitialized = true;
+            console.log('⏳ Loading reaction middleware initialized');
             return this;
             
         } catch (error) {
@@ -41,15 +43,9 @@ class LoadingReactionMiddleware {
             
             if (isOwner && context.metadata.accessGranted) {
                 // Show loading reaction for owner's commands
-                await this.botClient.showLoadingReaction(message);
-                
-                context.metadata.loadingReactionShown = true;
-                
-                // Set up automatic removal after timeout
-                const loadingReaction = this.botClient.getLoadingReaction();
-                if (loadingReaction) {
-                    // The loading reaction will auto-remove after timeout
-                    // but we'll also remove it when command processing completes
+                if (this.loadingReaction) {
+                    await this.loadingReaction.showLoadingReaction(message);
+                    context.metadata.loadingReactionShown = true;
                 }
             }
             
@@ -68,11 +64,4 @@ class LoadingReactionMiddleware {
     }
 }
 
-module.exports = {
-    loadingReaction: {
-        initialize: async (botClient, eventBus) => {
-            const middleware = new LoadingReactionMiddleware();
-            return await middleware.initialize(botClient, eventBus);
-        }
-    }
-};
+module.exports = new LoadingReactionMiddleware();

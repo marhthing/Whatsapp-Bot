@@ -8,7 +8,18 @@ class MediaVault {
         this.mediaPath = path.join(process.cwd(), 'data', 'media');
         this.metadataCache = new Map();
         this.isInitialized = false;
-        this.maxFileSize = this.parseSize(process.env.MAX_MEDIA_SIZE || '50MB');
+        
+        // Get max file size from config or environment
+        const configSize = require('../../config/default.json').media?.maxFileSize;
+        const envSize = process.env.MAX_MEDIA_SIZE;
+        
+        if (configSize && typeof configSize === 'number') {
+            this.maxFileSize = configSize;
+        } else if (envSize) {
+            this.maxFileSize = this.parseSize(envSize);
+        } else {
+            this.maxFileSize = this.parseSize('50MB');
+        }
     }
 
     async initialize() {
@@ -321,17 +332,34 @@ class MediaVault {
     }
 
     parseSize(sizeStr) {
-        const units = { B: 1, KB: 1024, MB: 1024**2, GB: 1024**3 };
-        const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)$/i);
-        
-        if (!match) {
-            throw new Error(`Invalid size format: ${sizeStr}`);
+        // Handle numeric values (already in bytes)
+        if (typeof sizeStr === 'number') {
+            return sizeStr;
         }
-
-        const value = parseFloat(match[1]);
-        const unit = match[2].toUpperCase();
         
-        return value * units[unit];
+        // Handle string representations
+        if (typeof sizeStr === 'string') {
+            // Check if it's a plain number string
+            const numericValue = parseInt(sizeStr);
+            if (!isNaN(numericValue) && sizeStr === numericValue.toString()) {
+                return numericValue;
+            }
+            
+            // Parse formatted size strings like "50MB"
+            const units = { B: 1, KB: 1024, MB: 1024**2, GB: 1024**3 };
+            const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)$/i);
+            
+            if (!match) {
+                throw new Error(`Invalid size format: ${sizeStr}`);
+            }
+
+            const value = parseFloat(match[1]);
+            const unit = match[2].toUpperCase();
+            
+            return value * units[unit];
+        }
+        
+        throw new Error(`Invalid size format: ${sizeStr}`);
     }
 
     formatSize(bytes) {

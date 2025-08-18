@@ -1,20 +1,23 @@
-const { EnvironmentManager } = require('../core/EnvironmentManager');
+const EnvironmentManager = require('../core/EnvironmentManager');
 
 class AllowedCommandsMiddleware {
     constructor() {
         this.envManager = new EnvironmentManager();
         this.botClient = null;
         this.eventBus = null;
+        this.allowedCommands = null;
         this.isInitialized = false;
     }
 
-    async initialize(botClient, eventBus) {
+    async initialize(dependencies) {
         try {
-            this.botClient = botClient;
-            this.eventBus = eventBus;
+            this.botClient = dependencies.client;
+            this.eventBus = dependencies.eventBus;
+            this.allowedCommands = dependencies.allowedCommands;
             await this.envManager.initialize();
             
             this.isInitialized = true;
+            console.log('✅ Allowed commands middleware initialized');
             return this;
             
         } catch (error) {
@@ -79,11 +82,4 @@ class AllowedCommandsMiddleware {
     }
 }
 
-module.exports = {
-    allowedCommands: {
-        initialize: async (botClient, eventBus) => {
-            const middleware = new AllowedCommandsMiddleware();
-            return await middleware.initialize(botClient, eventBus);
-        }
-    }
-};
+module.exports = new AllowedCommandsMiddleware();

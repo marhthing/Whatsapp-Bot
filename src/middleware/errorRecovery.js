@@ -1,4 +1,4 @@
-const { EnvironmentManager } = require('../core/EnvironmentManager');
+const EnvironmentManager = require('../core/EnvironmentManager');
 
 class ErrorRecoveryMiddleware {
     constructor() {
@@ -10,13 +10,14 @@ class ErrorRecoveryMiddleware {
         this.lastErrors = new Map(); // Track last error per chat
     }
 
-    async initialize(botClient, eventBus) {
+    async initialize(dependencies) {
         try {
-            this.botClient = botClient;
-            this.eventBus = eventBus;
+            this.botClient = dependencies.client;
+            this.eventBus = dependencies.eventBus;
             await this.envManager.initialize();
             
             this.isInitialized = true;
+            console.log('🔧 Error recovery middleware initialized');
             return this;
             
         } catch (error) {
@@ -133,11 +134,4 @@ class ErrorRecoveryMiddleware {
     }
 }
 
-module.exports = {
-    errorRecovery: {
-        initialize: async (botClient, eventBus) => {
-            const middleware = new ErrorRecoveryMiddleware();
-            return await middleware.initialize(botClient, eventBus);
-        }
-    }
-};
+module.exports = new ErrorRecoveryMiddleware();
