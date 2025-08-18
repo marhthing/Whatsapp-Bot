@@ -137,43 +137,13 @@ class TicTacToePlugin {
             console.log('  - Conversation text:', message.message?.conversation);
             console.log('  - Extended text:', message.message?.extendedTextMessage?.text);
             
-            // Check for mentions in multiple possible locations
-            let mention = null;
+            // Extract mentions using comprehensive approach
+            const mentions = this.extractAllMentions(message);
+            console.log('🎯 Extracted mentions:', mentions);
             
-            // Method 1: Check extendedTextMessage contextInfo
-            if (message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
-                mention = message.message.extendedTextMessage.contextInfo.mentionedJid[0];
-                console.log('🎯 Found mention in extendedTextMessage:', mention);
-            }
-            
-            // Method 2: Check direct contextInfo
-            else if (message.message?.contextInfo?.mentionedJid?.length > 0) {
-                mention = message.message.contextInfo.mentionedJid[0];
-                console.log('🎯 Found mention in contextInfo:', mention);
-            }
-            
-            // Method 3: Check if there's a mentionedJid array at message level
-            else if (message.mentionedJid?.length > 0) {
-                mention = message.mentionedJid[0];
-                console.log('🎯 Found mention at message level:', mention);
-            }
-            
-            // Method 4: Parse mentions from text using @<number> pattern
-            else {
-                const messageText = message.message?.conversation || 
-                                 message.message?.extendedTextMessage?.text || 
-                                 args.join(' ');
-                const mentionRegex = /@(\d+)/g;
-                const mentionMatch = mentionRegex.exec(messageText);
-                if (mentionMatch) {
-                    mention = mentionMatch[1] + '@s.whatsapp.net';
-                    console.log('🎯 Found mention from text parsing:', mention);
-                }
-            }
-            
-            if (mention) {
-                opponent = mention;
-                console.log('🎯 Final mentioned opponent:', opponent);
+            if (mentions.length > 0) {
+                opponent = mentions[0];
+                console.log('🎯 Found mentioned opponent:', opponent);
             } 
             // Check if replying to someone's message
             else if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
@@ -449,6 +419,49 @@ class TicTacToePlugin {
                 message: '❌ Error ending game'
             };
         }
+    }
+
+    /**
+     * Extract all possible mentions from a message
+     */
+    extractAllMentions(message) {
+        const mentions = [];
+        
+        // Method 1: Check extendedTextMessage contextInfo
+        const extendedMentions = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+        if (extendedMentions && extendedMentions.length > 0) {
+            mentions.push(...extendedMentions);
+            console.log('🎯 Found mentions in extendedTextMessage:', extendedMentions);
+        }
+        
+        // Method 2: Check direct contextInfo
+        const directMentions = message.message?.contextInfo?.mentionedJid;
+        if (directMentions && directMentions.length > 0) {
+            mentions.push(...directMentions);
+            console.log('🎯 Found mentions in contextInfo:', directMentions);
+        }
+        
+        // Method 3: Check message level mentions
+        if (message.mentionedJid && message.mentionedJid.length > 0) {
+            mentions.push(...message.mentionedJid);
+            console.log('🎯 Found mentions at message level:', message.mentionedJid);
+        }
+        
+        // Method 4: Extract from WhatsApp internal message structure
+        const internalMentions = message.message?.conversation?.match(/@(\d+)/g) || 
+                               message.message?.extendedTextMessage?.text?.match(/@(\d+)/g);
+        if (internalMentions) {
+            const jids = internalMentions.map(m => m.replace('@', '') + '@s.whatsapp.net');
+            mentions.push(...jids);
+            console.log('🎯 Found mentions from text parsing:', jids);
+        }
+        
+        // Remove duplicates and filter valid JIDs
+        const uniqueMentions = [...new Set(mentions)].filter(jid => 
+            jid && jid.includes('@') && (jid.endsWith('@s.whatsapp.net') || jid.endsWith('@g.us'))
+        );
+        
+        return uniqueMentions;
     }
 
     async shutdown() {
