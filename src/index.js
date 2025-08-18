@@ -1,4 +1,4 @@
-const { Client } = require('whatsapp-web.js');
+const { default: makeWASocket } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 const http = require('http');

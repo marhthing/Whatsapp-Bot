@@ -1,4 +1,11 @@
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const { 
+    default: makeWASocket, 
+    DisconnectReason, 
+    useMultiFileAuthState,
+    generateWAMessageFromContent,
+    downloadMediaMessage 
+} = require('@whiskeysockets/baileys');
+const pino = require('pino');
 const EventEmitter = require('events');
 const path = require('path');
 
@@ -105,110 +112,104 @@ class BotClient extends EventEmitter {
             console.log(`🔐 Auth method: ${authMethod === '1' ? 'QR Code' : '8-digit Pairing Code'}`);
         }
 
-        // Client configuration optimized for Replit environment
-        const clientConfig = {
-            authStrategy: new LocalAuth({
-                clientId: sessionId,
-                dataPath: path.join(sessionDir, 'auth')
-            }),
-            puppeteer: {
-                headless: 'new',
-                executablePath: '/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium',
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-accelerated-2d-canvas',
-                    '--no-first-run',
-                    '--no-zygote',
-                    '--single-process',
-                    '--disable-gpu',
-                    '--disable-web-security',
-                    '--disable-features=VizDisplayCompositor',
-                    '--disable-background-timer-throttling',
-                    '--disable-backgrounding-occluded-windows',
-                    '--disable-renderer-backgrounding',
-                    '--disable-ipc-flooding-protection',
-                    '--use-gl=swiftshader',
-                    '--disable-software-rasterizer',
-                    '--disable-extensions'
-                ]
-            }
-        };
+        // Initialize Baileys auth state
+        const authPath = path.join(sessionDir, 'auth');
+        const { state, saveCreds } = await useMultiFileAuthState(authPath);
 
-        // Add pairing code configuration if using method 2
-        if (authMethod === '2' && phoneNumber) {
-            clientConfig.pairingCodeRequested = true;
-            clientConfig.pairingCodeTimeoutMs = 120000; // 2 minutes timeout
-        }
-
-        this.client = new Client(clientConfig);
-
-        // Setup WhatsApp client event handlers
-        this.client.on('qr', (qr) => {
-            console.log('📱 QR Code generated for authentication');
-            console.log('🔗 Scan this QR code with your WhatsApp to link the bot to your account');
-            this.qrCode = qr;
-            this.emit('qr', qr);
+        // Create Baileys socket
+        this.client = makeWASocket({
+            auth: state,
+            logger: pino({ level: 'silent' }), // Reduce log noise
+            printQRInTerminal: false, // We'll handle QR ourselves
+            browser: ['WhatsApp Personal Assistant', 'Chrome', '1.0.0'],
+            defaultQueryTimeoutMs: 60000
         });
 
-        this.client.on('authenticated', () => {
-            console.log('🔐 WhatsApp authentication successful!');
-            this.emit('authenticated');
+        // Save credentials when updated
+        this.client.ev.on('creds.update', saveCreds);
+
+        // Setup Baileys event handlers
+        this.client.ev.on('connection.update', async (update) => {
+            const { connection, lastDisconnect, qr } = update;
+            
+            if (qr) {
+                console.log('📱 QR Code generated for authentication');
+                console.log('🔗 Scan this QR code with your WhatsApp to link the bot to your account');
+                this.qrCode = qr;
+                this.emit('qr', qr);
+            }
+
+            if (connection === 'close') {
+                const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+                console.log('🔌 Connection closed due to:', lastDisconnect?.error, ', reconnecting:', shouldReconnect);
+                
+                if (shouldReconnect) {
+                    // Reconnect automatically
+                    setTimeout(() => this.initializeWhatsAppClient(), 3000);
+                } else {
+                    this.emit('auth_failure', 'Logged out');
+                }
+                
+                this.emit('disconnected', lastDisconnect?.error);
+            } else if (connection === 'open') {
+                console.log('🔐 WhatsApp connection opened successfully!');
+                
+                // Get owner JID - this is the actual user's JID that the bot will use as its identity
+                this.ownerJid = this.client.user.id;
+                await this.accessController.setOwnerJid(this.ownerJid);
+
+                console.log(`🔐 Bot ready! Operating as: ${this.ownerJid}`);
+                console.log(`✅ Bot will send messages using your WhatsApp account`);
+                
+                // Save the detected JID to session config
+                await this.updateSessionJid(this.ownerJid);
+                
+                this.qrCode = null;
+                this.emit('ready');
+            }
         });
 
         // Handle pairing code for method 2
         if (authMethod === '2' && phoneNumber) {
-            this.client.on('code', (code) => {
+            try {
+                const code = await this.client.requestPairingCode(phoneNumber);
                 console.log(`🔐 Your pairing code: ${code}`);
                 console.log('📱 Enter this code in WhatsApp Settings > Linked Devices > Link a Device');
                 this.emit('pairing_code', code);
-            });
+            } catch (error) {
+                console.error('❌ Failed to request pairing code:', error);
+                this.emit('auth_failure', error.message);
+            }
         }
 
-        this.client.on('auth_failure', (msg) => {
-            this.emit('auth_failure', msg);
-        });
-
-        this.client.on('ready', async () => {
-            this.qrCode = null;
-            
-            // Get owner JID - this is the actual user's JID that the bot will use as its identity
-            this.ownerJid = this.client.info.wid._serialized;
-            await this.accessController.setOwnerJid(this.ownerJid);
-
-            console.log(`🔐 Bot ready! Operating as: ${this.ownerJid}`);
-            console.log(`✅ Bot will send messages using your WhatsApp account`);
-            
-            // Save the detected JID to session config
-            await this.updateSessionJid(this.ownerJid);
-            
-            this.emit('ready');
-        });
-
-        this.client.on('message', async (message) => {
-            try {
-                await this.messageProcessor.processMessage(message);
-            } catch (error) {
-                console.error('❌ Error processing message:', error);
-                this.eventBus.emit('error', { type: 'message_processing', error, message });
+        // Handle incoming messages
+        this.client.ev.on('messages.upsert', async (m) => {
+            const messages = m.messages;
+            for (const message of messages) {
+                if (message.key.fromMe) continue; // Skip messages sent by the bot
+                try {
+                    if (this.messageProcessor) {
+                        await this.messageProcessor.processMessage(message);
+                    }
+                } catch (error) {
+                    console.error('❌ Error processing message:', error);
+                    this.eventBus.emit('error', { type: 'message_processing', error, message });
+                }
             }
         });
 
-        this.client.on('message_revoke_everyone', async (after, before) => {
+        // Handle message deletions
+        this.client.ev.on('messages.delete', async (messageDelete) => {
             try {
-                await this.messageProcessor.processDeletedMessage(after, before);
+                if (this.messageProcessor) {
+                    await this.messageProcessor.processDeletedMessage(messageDelete);
+                }
             } catch (error) {
                 console.error('❌ Error processing deleted message:', error);
             }
         });
 
-        this.client.on('disconnected', (reason) => {
-            this.emit('disconnected', reason);
-        });
-
-        // Initialize client
-        await this.client.initialize();
+        console.log('🔧 WhatsApp client initialization started...');
     }
 
     /**
@@ -268,15 +269,18 @@ class BotClient extends EventEmitter {
             let message;
             
             if (typeof content === 'string') {
-                message = await this.client.sendMessage(chatId, content, options);
-            } else if (content instanceof MessageMedia) {
-                message = await this.client.sendMessage(chatId, content, options);
+                message = await this.client.sendMessage(chatId, { text: content, ...options });
+            } else if (content.mimetype) {
+                // Media message
+                message = await this.client.sendMessage(chatId, content);
             } else {
                 throw new Error('Invalid message content type');
             }
 
             // Archive sent message
-            await this.messageArchiver.archiveMessage(message);
+            if (this.messageArchiver) {
+                await this.messageArchiver.archiveMessage(message);
+            }
             
             return message;
 
@@ -292,7 +296,13 @@ class BotClient extends EventEmitter {
         }
 
         try {
-            await message.react(emoji);
+            const reactionMessage = {
+                react: {
+                    text: emoji,
+                    key: message.key
+                }
+            };
+            await this.client.sendMessage(message.key.remoteJid, reactionMessage);
             return true;
         } catch (error) {
             console.error('❌ Failed to send reaction:', error);
@@ -301,12 +311,15 @@ class BotClient extends EventEmitter {
     }
 
     async downloadMedia(message) {
-        if (!message.hasMedia) {
+        if (!message.message?.imageMessage && !message.message?.videoMessage && 
+            !message.message?.audioMessage && !message.message?.documentMessage &&
+            !message.message?.stickerMessage) {
             return null;
         }
 
         try {
-            return await message.downloadMedia();
+            const buffer = await downloadMediaMessage(message, 'buffer', {});
+            return buffer;
         } catch (error) {
             console.error('❌ Failed to download media:', error);
             return null;
@@ -314,13 +327,13 @@ class BotClient extends EventEmitter {
     }
 
     isReady() {
-        return this.client && this.client.info && this.isInitialized;
+        return this.client && this.client.user && this.isInitialized;
     }
 
     getStatus() {
         return {
             ready: this.isReady(),
-            authenticated: this.client?.info ? true : false,
+            authenticated: this.client?.user ? true : false,
             ownerJid: this.ownerJid,
             qrCode: this.qrCode,
             uptime: process.uptime()
@@ -330,7 +343,7 @@ class BotClient extends EventEmitter {
     async destroy() {
         try {
             if (this.client) {
-                await this.client.destroy();
+                await this.client.logout();
             }
             
             if (this.messageProcessor) {
