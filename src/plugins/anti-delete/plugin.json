@@ -1,0 +1,26 @@
+{
+  "name": "anti-delete",
+  "displayName": "Anti-Delete Recovery",
+  "description": "Detects and recovers deleted messages from archived data",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": true,
+  "priority": 30,
+  "dependencies": [],
+  "commands": [
+    "recover",
+    "deleted",
+    "antilog"
+  ],
+  "features": [
+    "message-recovery",
+    "deletion-detection",
+    "archive-integration"
+  ],
+  "permissions": [
+    "messages:recover",
+    "archive:read",
+    "logs:read"
+  ]
+}

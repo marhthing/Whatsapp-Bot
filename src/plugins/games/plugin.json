@@ -1,0 +1,33 @@
+{
+  "name": "games",
+  "displayName": "Interactive Games",
+  "description": "Multi-user interactive games including tic-tac-toe and word guessing",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": false,
+  "priority": 50,
+  "dependencies": [],
+  "commands": [
+    "tictactoe",
+    "wordguess",
+    "endgame",
+    "gameinfo",
+    "gamestats"
+  ],
+  "features": [
+    "multiplayer-games",
+    "interactive-entertainment",
+    "state-management"
+  ],
+  "permissions": [
+    "games:start",
+    "games:manage",
+    "chat:multi-user"
+  ],
+  "multiUserSupport": true,
+  "gameTypes": [
+    "tictactoe",
+    "wordguess"
+  ]
+}

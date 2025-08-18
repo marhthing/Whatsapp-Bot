@@ -1,0 +1,34 @@
+{
+  "name": "core-commands",
+  "displayName": "Core Commands",
+  "description": "Essential bot commands for system management and configuration",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": true,
+  "priority": 1,
+  "dependencies": [],
+  "commands": [
+    "help",
+    "info",
+    "settings",
+    "allow",
+    "disallow",
+    "status",
+    "reload",
+    "env"
+  ],
+  "features": [
+    "system-management",
+    "configuration",
+    "help-system",
+    "environment-management"
+  ],
+  "permissions": [
+    "system:read",
+    "system:write",
+    "environment:read",
+    "environment:write",
+    "users:manage"
+  ]
+}

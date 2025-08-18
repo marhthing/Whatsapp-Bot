@@ -1,0 +1,33 @@
+{
+  "name": "media-tools",
+  "displayName": "Media Processing Tools",
+  "description": "Advanced media processing including format conversion, upscaling, and analysis",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": true,
+  "priority": 40,
+  "dependencies": [],
+  "commands": [
+    "convert",
+    "upscale",
+    "analyze",
+    "mediainfo",
+    "compress",
+    "extract"
+  ],
+  "features": [
+    "media-conversion",
+    "image-upscaling",
+    "media-analysis",
+    "format-support",
+    "compression"
+  ],
+  "permissions": [
+    "media:convert",
+    "media:analyze",
+    "media:process",
+    "files:read",
+    "files:write"
+  ]
+}

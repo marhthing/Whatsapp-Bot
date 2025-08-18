@@ -1,0 +1,33 @@
+{
+  "name": "admin-tools",
+  "displayName": "Admin Tools",
+  "description": "Administrative utilities for system management and user control",
+  "version": "1.0.0",
+  "author": "WhatsApp Bot System",
+  "enabled": true,
+  "ownerOnly": true,
+  "priority": 10,
+  "dependencies": [],
+  "commands": [
+    "systeminfo",
+    "plugins",
+    "users",
+    "permissions",
+    "logs",
+    "cleanup",
+    "backup"
+  ],
+  "features": [
+    "system-administration",
+    "user-management",
+    "plugin-management",
+    "system-monitoring"
+  ],
+  "permissions": [
+    "system:admin",
+    "users:manage",
+    "plugins:manage",
+    "logs:read",
+    "backup:create"
+  ]
+}
