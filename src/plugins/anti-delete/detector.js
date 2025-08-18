@@ -153,33 +153,15 @@ class Detector {
                 return;
             }
             
-            // Create contextInfo for tagging the deleted message as a quote
-            const contextInfo = {
-                quotedMessage: {
-                    conversation: "" // Empty quoted message to show as tag
-                },
-                participant: deletionEntry.sender, // Original sender JID
-                remoteJid: deletionEntry.chatId // Original chat JID
-            };
-            
-            // Send the original message content as a tagged message
+            // Send the original message content directly (will be tagged automatically by WhatsApp)
             if (deletionEntry.messageBody) {
-                await this.botClient.sendMessage(targetJid, {
-                    text: deletionEntry.messageBody,
-                    contextInfo: contextInfo
-                });
+                await this.botClient.sendMessage(targetJid, deletionEntry.messageBody);
             } else if (deletionEntry.hasMedia) {
-                // For media messages, send a placeholder text with tag
-                await this.botClient.sendMessage(targetJid, {
-                    text: `[${deletionEntry.mediaType.toUpperCase()}]`,
-                    contextInfo: contextInfo
-                });
+                // For media messages, send a placeholder text
+                await this.botClient.sendMessage(targetJid, `[${deletionEntry.mediaType.toUpperCase()}]`);
             } else {
                 // Fallback for unknown content
-                await this.botClient.sendMessage(targetJid, {
-                    text: "[DELETED MESSAGE]",
-                    contextInfo: contextInfo
-                });
+                await this.botClient.sendMessage(targetJid, "[DELETED MESSAGE]");
             }
             
             // Mark as notified

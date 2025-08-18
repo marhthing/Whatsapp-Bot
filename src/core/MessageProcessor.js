@@ -87,10 +87,10 @@ class MessageProcessor extends EventEmitter {
     hasMedia(message) {
         // Check if message has media content
         if (message.message) {
-            return !!(message.message.imageMessage || 
-                     message.message.videoMessage || 
-                     message.message.audioMessage || 
-                     message.message.documentMessage || 
+            return !!(message.message.imageMessage ||
+                     message.message.videoMessage ||
+                     message.message.audioMessage ||
+                     message.message.documentMessage ||
                      message.message.stickerMessage);
         }
         return !!message.hasMedia;
@@ -119,7 +119,7 @@ class MessageProcessor extends EventEmitter {
 
             // Use Baileys downloadMediaMessage function
             const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
+            const buffer = await downloadMediaMessage(message, 'buffer', {}, {
                 logger: require('pino')({ level: 'silent' })
             });
 
@@ -198,7 +198,7 @@ class MessageProcessor extends EventEmitter {
         } catch (error) {
             console.error(`❌ Error executing command '${command.name}':`, error);
             await this.sendMessage(
-                message.key.remoteJid || message.from, 
+                message.key.remoteJid || message.from,
                 `❌ Error executing command: ${error.message}`
             );
         }
@@ -403,7 +403,7 @@ class MessageProcessor extends EventEmitter {
 
             // Use Baileys downloadMediaMessage function
             const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-            const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
+            const buffer = await downloadMediaMessage(message, 'buffer', {}, {
                 logger: require('pino')({ level: 'silent' })
             });
 
@@ -473,30 +473,35 @@ class MessageProcessor extends EventEmitter {
                 messageKeys = [deletionData];
             }
 
+            console.log(`🔍 Message deletion detected: ${messageKeys.length} message(s)`);
+
             for (const messageKey of messageKeys) {
-                try {
-                    const messageId = messageKey.id || messageKey;
-                    const chatId = messageKey.remoteJid || messageKey.from;
+                const messageId = messageKey.id;
+                const chatId = messageKey.remoteJid;
 
-                    // Try to recover from archive
-                    const archivedMessage = await this.messageArchiver.getMessageById(messageId);
+                // Try to find the message in our archive
+                const archivedMessage = await this.messageArchiver.findMessageById(messageId, chatId);
 
-                    if (archivedMessage) {
-                        // Get anti-delete plugin
-                        const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
+                if (archivedMessage) {
+                    console.log(`🔍 Message deletion detected: ${messageId.substring(0, 12)}...`);
 
-                        if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
-                            await antiDeletePlugin.handleDeletedMessage(messageKey, null, archivedMessage);
-                        }
-                    } else {
-                        // Still notify anti-delete plugin about the deletion attempt
-                        const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
-                        if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
-                            await antiDeletePlugin.handleDeletedMessage(messageKey, null, null);
+                    // Emit deletion detected event with the archived message
+                    this.eventBus.emit('message_deleted', {
+                        messageKey,
+                        archivedMessage,
+                        deletedAt: new Date()
+                    });
+
+                    // Let plugins handle the deletion
+                    for (const [pluginName, plugin] of this.pluginDiscovery.loadedPlugins) {
+                        if (plugin && typeof plugin.handleDeletedMessage === 'function') {
+                            try {
+                                await plugin.handleDeletedMessage(null, null, archivedMessage);
+                            } catch (error) {
+                                console.error(`❌ Error in plugin ${pluginName} handling deletion:`, error);
+                            }
                         }
                     }
-                } catch (msgError) {
-                    console.error(`❌ Error processing individual deletion for ${messageKey}:`, msgError);
                 }
             }
 

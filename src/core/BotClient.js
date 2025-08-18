@@ -232,8 +232,6 @@ class BotClient extends EventEmitter {
             try {
                 for (const update of updates) {
                     if (update.update && update.update.message === null) {
-                        console.log('🗑️ Message deleted via update event');
-                        console.log('🔍 Update data:', JSON.stringify(update, null, 2));
                         await this.messageProcessor.processDeletedMessage([update.key]);
                     }
                 }
