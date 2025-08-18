@@ -92,9 +92,15 @@ class GameStateManagerMiddleware {
                 sender = ownerJid;
                 console.log('🎮 Sender detected as bot owner (fromMe=true):', sender);
             } else {
-                // Message from someone else
+                // Message from someone else - but could still be the bot owner in some cases
                 sender = message.key.participant || message.key.remoteJid;
                 console.log('🎮 Sender detected as other user (fromMe=false):', sender);
+                
+                // Check if this sender is actually the bot owner (normalize and compare)
+                if (jidManager.areEqual(sender, ownerJid)) {
+                    console.log('🎮 Sender is actually the bot owner (JID match despite fromMe=false)');
+                    sender = ownerJid; // Use the canonical owner JID
+                }
             }
 
             console.log('🎮 GameStateManager Debug:');
