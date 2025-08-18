@@ -372,47 +372,80 @@ class EnhancePlugin {
     }
 
     /**
-     * Simple image enhancement using Node.js image processing
+     * Advanced image enhancement using Sharp and Jimp
      */
     async simpleEnhancement(inputPath) {
         try {
-            // Try to use sharp if available, otherwise return original with some processing
+            // Try Sharp first for high-quality processing
             let sharp;
             try {
                 sharp = require('sharp');
-            } catch (e) {
-                console.log('📦 Sharp not available, using basic enhancement');
-                // Return the original image with a slight modification
-                return await fs.readFile(inputPath);
+                console.log('📦 Using Sharp for advanced enhancement');
+                
+                const inputBuffer = await fs.readFile(inputPath);
+                const metadata = await sharp(inputBuffer).metadata();
+                
+                // Advanced enhancement with Sharp
+                const enhancedBuffer = await sharp(inputBuffer)
+                    // Upscale by 1.5x for better quality without making file too large
+                    .resize(Math.round(metadata.width * 1.5), Math.round(metadata.height * 1.5), {
+                        kernel: sharp.kernel.lanczos3,
+                        withoutEnlargement: false
+                    })
+                    // Apply advanced sharpening
+                    .sharpen(2.0, 1.0, 2.5)
+                    // Enhance colors and brightness
+                    .modulate({
+                        brightness: 1.08,  // Slight brightness boost
+                        saturation: 1.12,  // More vibrant colors
+                        hue: 0
+                    })
+                    // Apply gamma correction for better contrast
+                    .gamma(1.1)
+                    // Reduce noise while preserving details
+                    .median(1)
+                    // Output as high-quality PNG
+                    .png({ 
+                        quality: 95, 
+                        progressive: true,
+                        compressionLevel: 6
+                    })
+                    .toBuffer();
+                
+                console.log(`🎨 Enhanced image: ${metadata.width}x${metadata.height} → ${Math.round(metadata.width * 1.5)}x${Math.round(metadata.height * 1.5)}`);
+                return enhancedBuffer;
+                
+            } catch (sharpError) {
+                console.log('📦 Sharp not available, trying Jimp for enhancement');
+                
+                // Fallback to Jimp with better enhancement
+                const Jimp = require('jimp');
+                const image = await Jimp.read(inputPath);
+                
+                const enhancedImage = image
+                    .scale(1.3) // Upscale by 1.3x
+                    .brightness(0.05) // Slight brightness increase
+                    .contrast(0.15) // Increase contrast more
+                    .color([
+                        { apply: 'saturate', params: [20] }, // Increase saturation
+                        { apply: 'lighten', params: [8] }    // Lighten more
+                    ]);
+                
+                const enhancedBuffer = await enhancedImage.getBufferAsync(Jimp.MIME_PNG);
+                console.log(`🎨 Enhanced image using Jimp: ${image.getWidth()}x${image.getHeight()} → ${enhancedImage.getWidth()}x${enhancedImage.getHeight()}`);
+                return enhancedBuffer;
             }
-
-            // Use Sharp for enhancement
-            const buffer = await sharp(inputPath)
-                .resize(null, null, {
-                    kernel: sharp.kernel.lanczos3,
-                    fastShrinkOnLoad: false
-                })
-                .sharpen({
-                    sigma: 1,
-                    flat: 1,
-                    jagged: 2
-                })
-                .normalize()
-                .modulate({
-                    brightness: 1.05,
-                    saturation: 1.1,
-                    hue: 0
-                })
-                .png({ quality: 100, compressionLevel: 0 })
-                .toBuffer();
-
-            console.log('✅ Enhanced image using Sharp library');
-            return buffer;
-
+            
         } catch (error) {
-            console.error('❌ Simple enhancement error:', error);
-            // Return original image as fallback
-            return await fs.readFile(inputPath);
+            console.error('❌ Enhancement error:', error);
+            // Last resort: return original image
+            try {
+                console.log('📦 Falling back to original image');
+                return await fs.readFile(inputPath);
+            } catch (readError) {
+                console.error('❌ Could not read original image:', readError);
+                return null;
+            }
         }
     }
 
