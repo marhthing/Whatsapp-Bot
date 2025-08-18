@@ -1,0 +1,70 @@
+Message deleted via update event
+🔍 Update data: {
+  "key": {
+    "remoteJid": "2347018091555@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AC595EFDA4B6A851B81"
+  },
+  "update": {
+    "message": null,
+    "messageStubType": 1,
+    "key": {
+      "remoteJid": "2347018091555@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3A99C3163A6549E8B821"
+    }
+  }
+}
+🗑️ Message deletion detected in processor: [
+  {
+    "remoteJid": "2347018091555@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AC595EFDA4B6A851B81"
+  }
+]
+🔍 Processing 1 deleted message(s)
+🔍 Looking for archived message - ID: 3AC595EFDA4B6A851B81, Chat: 2347018091555@s.whatsapp.net
+🔍 Searching for message ID: 3AC595EFDA4B6A851B81
+🔍 Searching in /home/runner/workspace/data/messages/2025/08/individual/18.json - Found 36 messages
+✅ Found message with ID: 3AC595EFDA4B6A851B81
+📋 Found archived message for deletion: 3AC595EFDA4B6A851B81
+🔄 Forwarding deletion to anti-delete plugin
+🗑️ Anti-delete plugin handling deleted message
+🔍 Anti-delete handling deletion data: {
+  "after": {
+    "remoteJid": "2347018091555@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AC595EFDA4B6A851B81"
+  },
+  "before": {
+    "id": "3AC595EFDA4B6A851B81",
+    "from": "2347018091555@s.whatsapp.net",
+    "body": "Hi",
+    "type": "text",
+    "timestamp": "2025-08-18T11:11:17.000Z",
+    "isOutgoing": false,
+    "hasMedia": false,
+    "quotedMessage": null,
+    "mentions": [],
+    "isGroup": false,
+    "mediaPath": null,
+    "archived": "2025-08-18T11:11:18.755Z"
+  }
+}
+🔍 Processing deletion - Chat: 2347018091555@s.whatsapp.net, Sender: 2347018091555@s.whatsapp.net, MessageID: 3AC595EFDA4B6A851B81
+🔍 Message deletion detected: del_1755515483871_n7y09x
+❌ Failed to send message: Error: Invalid message content type
+    at BotClient.sendMessage (/home/runner/workspace/src/core/BotClient.js:310:23)
+    at Detector.forwardDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/detector.js:183:34)
+    at Detector.handleDeletion (/home/runner/workspace/src/plugins/anti-delete/detector.js:135:24)
+    at async AntiDeletePlugin.handleDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/index.js:143:17)
+    at async MessageProcessor.processDeletedMessage (/home/runner/workspace/src/core/MessageProcessor.js:498:29)
+    at async EventEmitter.<anonymous> (/home/runner/workspace/src/core/BotClient.js:237:25)
+Error forwarding deleted message: Error: Invalid message content type
+    at BotClient.sendMessage (/home/runner/workspace/src/core/BotClient.js:310:23)
+    at Detector.forwardDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/detector.js:183:34)
+    at Detector.handleDeletion (/home/runner/workspace/src/plugins/anti-delete/detector.js:135:24)
+    at async AntiDeletePlugin.handleDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/index.js:143:17)
+    at async MessageProcessor.processDeletedMessage (/home/runner/workspace/src/core/MessageProcessor.js:498:29)
+    at async EventEmitter.<anonymous> (/home/runner/workspace/src/core/BotClient.js:237:25)
+🔍 Logged message deletion: 3AC595EFDA4B6A851B81
