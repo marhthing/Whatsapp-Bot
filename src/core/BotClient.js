@@ -173,6 +173,15 @@ class BotClient extends EventEmitter {
                 // Save the detected JID to session config
                 await this.updateSessionJid(this.ownerJid);
                 
+                // Send confirmation message to owner
+                try {
+                    const confirmationMessage = `🤖 *WhatsApp Personal Assistant Connected*\n\n✅ Bot is now active and ready to serve!\n🔗 Connected at: ${new Date().toLocaleString()}\n📱 Operating as: ${this.ownerJid}\n\nType *.help* to see available commands.`;
+                    await this.client.sendMessage(this.ownerJid, { text: confirmationMessage });
+                    console.log('📱 Connection confirmation sent to owner');
+                } catch (error) {
+                    console.error('❌ Failed to send confirmation message:', error);
+                }
+                
                 this.qrCode = null;
                 this.emit('ready');
             }
@@ -195,9 +204,9 @@ class BotClient extends EventEmitter {
         this.client.ev.on('messages.upsert', async (m) => {
             const messages = m.messages;
             for (const message of messages) {
-                if (message.key.fromMe) continue; // Skip messages sent by the bot
                 try {
                     if (this.messageProcessor) {
+                        // Process both incoming and outgoing messages for archival
                         await this.messageProcessor.processMessage(message);
                     }
                 } catch (error) {

@@ -97,9 +97,9 @@ class Detector {
             // Emit deletion detected event
             this.eventBus.emit('deletion_detected', deletionEntry);
             
-            // Notify owner if enabled
+            // Notify and forward deleted message if enabled
             if (this.envManager.get('ENABLE_ANTI_DELETE') === 'true') {
-                await this.notifyOwner(deletionEntry);
+                await this.forwardDeletedMessage(deletionEntry);
             }
             
             console.log(`🔍 Logged message deletion: ${deletionEntry.originalMessageId}`);
@@ -109,42 +109,61 @@ class Detector {
         }
     }
 
-    async notifyOwner(deletionEntry) {
+    async forwardDeletedMessage(deletionEntry) {
         try {
-            const accessController = this.botClient.getAccessController();
+            // Get forward destination
+            const forwardJid = this.envManager.get('ANTI_DELETE_FORWARD_JID', 'owner');
+            let targetJid;
             
-            if (!accessController.ownerJid) {
-                return;
+            if (forwardJid === 'owner') {
+                const accessController = this.botClient.getAccessController();
+                targetJid = accessController.ownerJid;
+                if (!targetJid) {
+                    console.warn('⚠️ Owner JID not available for anti-delete forwarding');
+                    return;
+                }
+            } else {
+                targetJid = forwardJid;
             }
             
             const senderPhone = deletionEntry.sender.split('@')[0];
             const chatPhone = deletionEntry.chatId.split('@')[0];
             
-            let notificationText = `🚨 **Message Deleted**\n\n`;
+            let notificationText = `🗑️ **DELETED MESSAGE RECOVERED**\n\n`;
             notificationText += `👤 **Sender:** ${senderPhone}\n`;
-            notificationText += `💬 **Chat:** ${chatPhone}\n`;
+            notificationText += `💬 **From Chat:** ${chatPhone}\n`;
             notificationText += `📅 **Original:** ${new Date(deletionEntry.originalTimestamp).toLocaleString()}\n`;
             notificationText += `🗑️ **Deleted:** ${new Date(deletionEntry.deletedTimestamp).toLocaleString()}\n\n`;
             
             if (deletionEntry.messageBody) {
-                notificationText += `📝 **Content:**\n"${deletionEntry.messageBody}"\n\n`;
+                notificationText += `💬 **Deleted Content:**\n"${deletionEntry.messageBody}"\n\n`;
+            } else {
+                notificationText += `💬 **Content:** (No text content)\n\n`;
             }
             
             if (deletionEntry.hasMedia) {
-                notificationText += `📎 **Media:** ${deletionEntry.mediaType}\n\n`;
+                notificationText += `📎 **Had Media:** ${deletionEntry.mediaType}\n\n`;
             }
             
             notificationText += `💡 Use \`.recover ${deletionEntry.id}\` to restore this message`;
             
-            await this.botClient.sendMessage(accessController.ownerJid, notificationText);
+            await this.botClient.sendMessage(targetJid, notificationText);
             
             // Mark as notified
             deletionEntry.notifiedOwner = true;
             await this.saveDeletionLog();
             
+            console.log(`📤 Forwarded deleted message to: ${targetJid}`);
+            
         } catch (error) {
-            console.error('Error notifying owner of deletion:', error);
+            console.error('Error forwarding deleted message:', error);
         }
+    }
+
+    async notifyOwner(deletionEntry) {
+        // This method is now replaced by forwardDeletedMessage
+        // Keeping for backward compatibility if needed
+        await this.forwardDeletedMessage(deletionEntry);
     }
 
     async getLog(context) {

@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T08:18:48.894Z",
+  "lastUpdated": "2025-08-18T08:25:53.412Z",
   "plugins": [
     {
       "name": "games",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T08:18:48.891Z",
+      "loadedAt": "2025-08-18T08:25:53.409Z",
       "commands": [
         "tictactoe",
         "wordguess",

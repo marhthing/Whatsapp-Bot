@@ -44,6 +44,11 @@ class Commands {
                            `${prefix}wordguess - Start a word guessing game\n` +
                            `${prefix}endgame - End current game\n\n` +
                            
+                           `**Anti-Delete Commands:**\n` +
+                           `${prefix}delete on - Enable anti-delete protection\n` +
+                           `${prefix}delete off - Disable anti-delete protection\n` +
+                           `${prefix}delete <jid> - Set where deleted messages are forwarded\n\n` +
+                           
                            `**Admin Commands:**\n` +
                            `${prefix}systeminfo - Show system information\n` +
                            `${prefix}plugins - List loaded plugins\n\n` +
@@ -72,6 +77,7 @@ class Commands {
             disallow: '**disallow** - Remove command permission from a user\nUsage: .disallow <command>\nNote: Use this in the target user\'s chat',
             reload: '**reload** - Reload all plugins or a specific plugin\nUsage: .reload [plugin-name]',
             env: '**env** - Manage environment variables\nSubcommands: list, set, get, remove\nUsage: .env <subcommand> [args]',
+            delete: '**delete** - Manage anti-delete functionality\nUsage: .delete on|off|<jid>\nControls where deleted messages are recovered and sent',
             tictactoe: '**tictactoe** - Start a tic-tac-toe game\nUsage: .tictactoe [@user]\nGame controls: Send numbers 1-9 for positions, or "quit" to end',
             wordguess: '**wordguess** - Start a word guessing game\nUsage: .wordguess\nGame controls: Send letters to guess, or "quit" to end'
         };
@@ -296,6 +302,68 @@ class Commands {
         } catch (error) {
             console.error('Error in reload command:', error);
             await context.reply('❌ Error reloading plugins');
+        }
+    }
+
+    async delete(context) {
+        try {
+            const { args, reply } = context;
+            
+            if (args.length === 0) {
+                // Show current anti-delete status
+                const isEnabled = this.envManager.get('ENABLE_ANTI_DELETE', 'false') === 'true';
+                const forwardJid = this.envManager.get('ANTI_DELETE_FORWARD_JID', 'owner');
+                
+                const statusText = `🔍 **Anti-Delete Status**\n\n` +
+                                 `**Status:** ${isEnabled ? '✅ Enabled' : '❌ Disabled'}\n` +
+                                 `**Forward to:** ${forwardJid === 'owner' ? 'Owner (You)' : forwardJid}\n\n` +
+                                 `**Usage:**\n` +
+                                 `.delete on - Enable anti-delete\n` +
+                                 `.delete off - Disable anti-delete\n` +
+                                 `.delete <jid> - Set forward destination`;
+                                 
+                await reply(statusText);
+                return;
+            }
+            
+            const action = args[0].toLowerCase();
+            
+            switch (action) {
+                case 'on':
+                case 'enable':
+                    await this.envManager.set('ENABLE_ANTI_DELETE', 'true');
+                    await reply('✅ Anti-delete protection enabled!\nDeleted messages will now be recovered and forwarded.');
+                    break;
+                    
+                case 'off':
+                case 'disable':
+                    await this.envManager.set('ENABLE_ANTI_DELETE', 'false');
+                    await reply('❌ Anti-delete protection disabled.\nDeleted messages will no longer be recovered.');
+                    break;
+                    
+                default:
+                    // Assume it's a JID for forwarding
+                    const targetJid = args[0];
+                    
+                    if (targetJid === 'owner' || targetJid === 'me') {
+                        await this.envManager.set('ANTI_DELETE_FORWARD_JID', 'owner');
+                        await reply('📤 Anti-delete messages will be forwarded to you (owner)');
+                    } else {
+                        // Validate JID format
+                        if (!targetJid.includes('@')) {
+                            await reply('❌ Invalid JID format. Please provide a valid WhatsApp JID.');
+                            return;
+                        }
+                        
+                        await this.envManager.set('ANTI_DELETE_FORWARD_JID', targetJid);
+                        await reply(`📤 Anti-delete messages will be forwarded to: ${targetJid}`);
+                    }
+                    break;
+            }
+            
+        } catch (error) {
+            console.error('Error in delete command:', error);
+            await context.reply('❌ Error managing anti-delete settings');
         }
     }
 

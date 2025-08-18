@@ -96,23 +96,60 @@ class MessageArchiver {
 
     async saveMessage(message, isOutgoing = false) {
         try {
+            // Extract message content properly
+            let messageBody = '';
+            let messageType = 'text';
+            
+            // Handle different message types and content extraction
+            if (message.message) {
+                if (message.message.conversation) {
+                    messageBody = message.message.conversation;
+                } else if (message.message.extendedTextMessage?.text) {
+                    messageBody = message.message.extendedTextMessage.text;
+                } else if (message.message.imageMessage?.caption) {
+                    messageBody = message.message.imageMessage.caption;
+                    messageType = 'image';
+                } else if (message.message.videoMessage?.caption) {
+                    messageBody = message.message.videoMessage.caption;
+                    messageType = 'video';
+                } else if (message.message.documentMessage?.caption) {
+                    messageBody = message.message.documentMessage.caption;
+                    messageType = 'document';
+                } else if (message.message.audioMessage) {
+                    messageType = 'audio';
+                } else if (message.message.stickerMessage) {
+                    messageType = 'sticker';
+                } else if (message.message.locationMessage) {
+                    messageType = 'location';
+                    messageBody = `Location: ${message.message.locationMessage.degreesLatitude}, ${message.message.locationMessage.degreesLongitude}`;
+                } else if (message.message.contactMessage) {
+                    messageType = 'contact';
+                    messageBody = message.message.contactMessage.displayName || 'Contact';
+                }
+            }
+            
+            // Fallback to direct body property
+            if (!messageBody && message.body) {
+                messageBody = message.body;
+            }
+
             const messageData = {
-                id: message.id?.id || message.id?._serialized || Date.now().toString(),
-                from: message.from,
+                id: message.key?.id || message.id?.id || message.id?._serialized || Date.now().toString(),
+                from: message.key?.remoteJid || message.from,
                 to: message.to,
-                body: message.body || '',
-                type: message.type || 'text',
-                timestamp: message.timestamp ? new Date(message.timestamp * 1000) : new Date(),
+                body: messageBody,
+                type: messageType,
+                timestamp: message.messageTimestamp ? new Date(message.messageTimestamp * 1000) : new Date(),
                 isOutgoing,
-                hasMedia: !!message.hasMedia,
-                quotedMessage: message.quotedMessage ? {
-                    id: message.quotedMessage.id?.id || message.quotedMessage.id?._serialized,
-                    body: message.quotedMessage.body,
-                    from: message.quotedMessage.from
+                hasMedia: !!message.hasMedia || !!message.message?.imageMessage || !!message.message?.videoMessage || !!message.message?.audioMessage || !!message.message?.documentMessage,
+                quotedMessage: message.message?.extendedTextMessage?.contextInfo?.quotedMessage ? {
+                    id: message.message.extendedTextMessage.contextInfo.stanzaId,
+                    body: this.extractQuotedMessageBody(message.message.extendedTextMessage.contextInfo.quotedMessage),
+                    from: message.message.extendedTextMessage.contextInfo.participant
                 } : null,
-                mentions: message.mentionedIds || [],
-                isGroup: message.from?.includes('@g.us') || false,
-                author: message.author, // For group messages
+                mentions: message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [],
+                isGroup: message.key?.remoteJid?.includes('@g.us') || false,
+                author: message.key?.participant || message.author, // For group messages
                 mediaPath: null, // Will be updated by MediaVault
                 archived: new Date().toISOString()
             };
@@ -161,6 +198,22 @@ class MessageArchiver {
             console.error('❌ Error saving message:', error);
             throw error;
         }
+    }
+
+    extractQuotedMessageBody(quotedMessage) {
+        if (!quotedMessage) return '';
+        
+        if (quotedMessage.conversation) {
+            return quotedMessage.conversation;
+        } else if (quotedMessage.extendedTextMessage?.text) {
+            return quotedMessage.extendedTextMessage.text;
+        } else if (quotedMessage.imageMessage?.caption) {
+            return quotedMessage.imageMessage.caption;
+        } else if (quotedMessage.videoMessage?.caption) {
+            return quotedMessage.videoMessage.caption;
+        }
+        
+        return '';
     }
 
     async recoverMissedMessages(client) {

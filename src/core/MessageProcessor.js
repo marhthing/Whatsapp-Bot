@@ -21,18 +21,25 @@ class MessageProcessor extends EventEmitter {
 
     async processMessage(message) {
         try {
+            const isOutgoing = message.key.fromMe;
+            
             // Emit message received event
             this.eventBus?.emitMessageReceived(message);
 
-            // Always archive the message first
-            await this.messageArchiver.archiveMessage(message);
+            // Always archive the message first (both incoming and outgoing)
+            await this.messageArchiver.archiveMessage(message, isOutgoing);
 
             // Download media if present
             if (message.hasMedia && process.env.AUTO_DOWNLOAD_MEDIA === 'true') {
                 await this.downloadAndStoreMedia(message);
             }
 
-            // Extract command if present
+            // Skip command processing for outgoing messages (sent by bot)
+            if (isOutgoing) {
+                return;
+            }
+
+            // Extract command if present for incoming messages
             const command = this.extractCommand(message);
             
             // Check access control
