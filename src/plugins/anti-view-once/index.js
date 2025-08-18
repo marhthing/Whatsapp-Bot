@@ -70,19 +70,25 @@ class AntiViewOncePlugin {
         try {
             console.log('🔐 Capturing view-once message...');
             
-            // Extract view-once content - handle both wrapped and unwrapped formats
-            let viewOnceMessage = message.message?.viewOnceMessage?.message;
+            // Extract view-once content - handle different formats
+            let viewOnceMessage = null;
+            let isViewOnceV2 = false;
             
-            // If not wrapped in viewOnceMessage, check if it's a direct media message without mediaKey
-            if (!viewOnceMessage) {
-                if (message.message?.imageMessage || message.message?.videoMessage) {
-                    const mediaMsg = message.message.imageMessage || message.message.videoMessage;
-                    // Check if it has URL but no mediaKey (common view-once pattern)
-                    if ((mediaMsg.url || mediaMsg.directPath) && !mediaMsg.mediaKey) {
-                        console.log('🔐 Processing unwrapped view-once message');
-                        viewOnceMessage = message.message;
-                    }
-                }
+            // Check for standard viewOnceMessage wrapper
+            if (message.message?.viewOnceMessage?.message) {
+                viewOnceMessage = message.message.viewOnceMessage.message;
+                console.log('🔐 Processing wrapped view-once message');
+            }
+            // Check for viewOnceMessageV2 wrapper
+            else if (message.message?.viewOnceMessageV2?.message) {
+                viewOnceMessage = message.message.viewOnceMessageV2.message;
+                isViewOnceV2 = true;
+                console.log('🔐 Processing view-once v2 message');
+            }
+            // Check for direct messages with viewOnce flag
+            else if (message.message?.imageMessage?.viewOnce || message.message?.videoMessage?.viewOnce) {
+                viewOnceMessage = message.message;
+                console.log('🔐 Processing direct view-once message');
             }
             
             if (!viewOnceMessage) {
@@ -99,30 +105,63 @@ class AntiViewOncePlugin {
             let storedMedia = null;
             if (viewOnceMessage.imageMessage || viewOnceMessage.videoMessage) {
                 try {
-                    // Create a modified message structure for media download
-                    const mediaMessage = {
-                        key: message.key,
-                        message: viewOnceMessage
-                    };
-                    
                     console.log('📥 Downloading view-once media...');
                     const { downloadMediaMessage } = require('@whiskeysockets/baileys');
                     
-                    // For view-once messages, we might need special handling
-                    // Try the standard download first
+                    // Create the proper message structure for download
+                    let downloadMessage;
+                    if (isViewOnceV2) {
+                        // For v2, use the original message structure
+                        downloadMessage = {
+                            key: message.key,
+                            message: message.message
+                        };
+                    } else {
+                        // For standard view-once, create wrapper if needed
+                        downloadMessage = {
+                            key: message.key,
+                            message: message.message?.viewOnceMessage ? message.message : { viewOnceMessage: { message: viewOnceMessage } }
+                        };
+                    }
+                    
                     let buffer;
                     try {
-                        buffer = await downloadMediaMessage(mediaMessage, 'buffer', {}, { 
-                            logger: require('pino')({ level: 'silent' })
-                        });
-                    } catch (downloadError) {
-                        console.log('🔐 Standard download failed, trying alternative method for view-once...');
+                        // Download with timeout and proper error handling
+                        buffer = await Promise.race([
+                            downloadMediaMessage(downloadMessage, 'buffer', {}, { 
+                                logger: require('pino')({ level: 'silent' })
+                            }),
+                            new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Download timeout')), 15000)
+                            )
+                        ]);
                         
-                        // For messages without mediaKey, try downloading using the URL directly
-                        const mediaMsg = viewOnceMessage.imageMessage || viewOnceMessage.videoMessage;
-                        if (mediaMsg && (mediaMsg.url || mediaMsg.directPath)) {
-                            // This is a fallback - in practice, view-once URLs are encrypted and need special handling
-                            console.warn('⚠️ View-once media requires special decryption handling');
+                        console.log('✅ Successfully downloaded view-once media');
+                    } catch (downloadError) {
+                        console.error('❌ Failed to download view-once media:', downloadError.message);
+                        
+                        // Try direct message download as fallback
+                        try {
+                            const directMessage = {
+                                key: message.key,
+                                message: viewOnceMessage
+                            };
+                            buffer = await downloadMediaMessage(directMessage, 'buffer', {}, { 
+                                logger: require('pino')({ level: 'silent' })
+                            });
+                            console.log('✅ Successfully downloaded using fallback method');
+                        } catch (fallbackError) {
+                            console.error('❌ Fallback download also failed:', fallbackError.message);
+                            // Log the message structure for debugging
+                            console.log('🔍 Message structure debug:', JSON.stringify({
+                                hasViewOnceMessage: !!message.message?.viewOnceMessage,
+                                hasViewOnceV2: !!message.message?.viewOnceMessageV2,
+                                hasImageMessage: !!viewOnceMessage?.imageMessage,
+                                hasVideoMessage: !!viewOnceMessage?.videoMessage,
+                                hasMediaKey: !!(viewOnceMessage?.imageMessage?.mediaKey || viewOnceMessage?.videoMessage?.mediaKey),
+                                hasUrl: !!(viewOnceMessage?.imageMessage?.url || viewOnceMessage?.videoMessage?.url),
+                                viewOnceFlag: viewOnceMessage?.imageMessage?.viewOnce || viewOnceMessage?.videoMessage?.viewOnce
+                            }, null, 2));
                             throw downloadError;
                         }
                     }

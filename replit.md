@@ -60,6 +60,7 @@ The system follows a **personal assistant architecture** with multi-session supp
 **✅ COMPLETED** - Successfully migrated from Replit Agent to standard Replit environment (August 18, 2025)
 **✅ UPDATED** - Fixed critical anti-delete media handling issues (August 18, 2025)  
 **✅ FIXED** - Resolved media storage and retrieval issues during bulk deletions (August 18, 2025)
+**✅ ENHANCED** - Improved anti-view-once detection and handling (August 18, 2025)
 
 ### Migration Changes Made:
 - Fixed missing `getClientInfo()` method in BotClient for .info command
@@ -129,6 +130,9 @@ The system follows a **personal assistant architecture** with multi-session supp
   - **Memory Management**: Keeps last 10 view-once messages in memory for quick access
   - **Owner-Only Access**: Secure access control - only bot owner can use view-once recovery
   - **Enhanced Debugging**: Added comprehensive logging for view-once detection and forwarding
+  - **ENHANCED (Latest)**: Improved detection for viewOnceV2 format and messages with viewOnce flags
+  - **ENHANCED (Latest)**: Better download handling with timeout protection and fallback methods
+  - **ENHANCED (Latest)**: Added detailed debugging output for troubleshooting view-once issues
 - All core functionality tested and operational
 
 ### Current Working Features:

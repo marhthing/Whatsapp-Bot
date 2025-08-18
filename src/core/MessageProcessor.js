@@ -33,8 +33,9 @@ class MessageProcessor extends EventEmitter {
             // Emit message received event
             this.eventBus?.emitMessageReceived(message);
 
-            // Check for view-once messages and capture them
+            // Check for view-once messages and capture them - this must happen BEFORE archiving
             if (this.hasViewOnceMessage(message)) {
+                console.log('🔐 View-once message detected in processor, handling immediately...');
                 await this.handleViewOnceMessage(message);
             }
 
@@ -166,18 +167,20 @@ class MessageProcessor extends EventEmitter {
     hasViewOnceMessage(message) {
         // Check if message contains view-once content
         if (message.message?.viewOnceMessage?.message) {
+            console.log('🔐 Detected wrapped view-once message');
             return true;
         }
         
-        // Additional check: messages with media URL but no media key might be view-once
-        // This catches view-once messages that don't come wrapped in viewOnceMessage
-        if (message.message?.imageMessage || message.message?.videoMessage) {
-            const mediaMsg = message.message.imageMessage || message.message.videoMessage;
-            // View-once messages often have URL but no mediaKey
-            if ((mediaMsg.url || mediaMsg.directPath) && !mediaMsg.mediaKey) {
-                console.log('🔐 Detected potential view-once message (has URL but no mediaKey)');
-                return true;
-            }
+        // Check for view-once v2 format (viewOnceMessageV2)
+        if (message.message?.viewOnceMessageV2?.message) {
+            console.log('🔐 Detected view-once v2 message');
+            return true;
+        }
+        
+        // Check if the message has viewOnce property set to true
+        if (message.message?.imageMessage?.viewOnce || message.message?.videoMessage?.viewOnce) {
+            console.log('🔐 Detected view-once message with viewOnce flag');
+            return true;
         }
         
         return false;
