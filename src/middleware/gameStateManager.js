@@ -32,7 +32,18 @@ class GameStateManagerMiddleware {
             if (!this.isInitialized) return;
 
             const { message } = context;
-            const messageText = message.body || '';
+            // Extract message text properly from different message types
+            let messageText = message.body || '';
+            
+            if (!messageText && message.message) {
+                if (message.message.conversation) {
+                    messageText = message.message.conversation;
+                } else if (message.message.extendedTextMessage?.text) {
+                    messageText = message.message.extendedTextMessage.text;
+                }
+            }
+            
+            console.log('🎮 GameStateManager extracted message text:', `"${messageText}"`);
 
             // Only process if games are enabled
             if (this.envManager.get('ENABLE_GAMES') !== 'true') {
@@ -44,13 +55,18 @@ class GameStateManagerMiddleware {
             const accessController = this.botClient.getAccessController();
             const activeGame = accessController.getActiveGame(chatId);
 
+            console.log('🎮 GameStateManager process - Chat:', chatId, 'Message:', messageText, 'ActiveGame:', activeGame ? activeGame.type : 'none');
+
             if (activeGame) {
                 // Check if this message is game input
                 if (this.isValidGameInput(messageText, activeGame)) {
+                    console.log('🎮 Valid game input detected, processing...');
                     context.metadata.isGameInput = true;
                     context.metadata.gameInfo = activeGame;
                     await this.handleGameInput(context);
                     return;
+                } else {
+                    console.log('🎮 Message is not valid game input:', messageText);
                 }
             }
 
