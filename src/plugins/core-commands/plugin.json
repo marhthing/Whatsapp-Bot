@@ -65,6 +65,20 @@
       "usage": "env <list|get|set|remove> [key] [value]",
       "ownerOnly": true,
       "examples": [".env list", ".env get BOT_NAME", ".env set DEBUG true"]
+    },
+    {
+      "name": "shutdown",
+      "description": "Safely shutdown the bot",
+      "usage": "shutdown",
+      "ownerOnly": true,
+      "examples": [".shutdown"]
+    },
+    {
+      "name": "restart",
+      "description": "Restart the bot (creates new process)",
+      "usage": "restart",
+      "ownerOnly": true,
+      "examples": [".restart"]
     }
   ],
   "features": [

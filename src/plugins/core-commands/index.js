@@ -61,6 +61,10 @@ class CoreCommandsPlugin {
                 return await this.handleReload(context);
             case 'env':
                 return await this.handleEnv(context);
+            case 'shutdown':
+                return await this.handleShutdown(context);
+            case 'restart':
+                return await this.handleRestart(context);
             default:
                 throw new Error(`Unknown command: ${commandName}`);
         }
@@ -82,7 +86,9 @@ class CoreCommandsPlugin {
                        `${prefix}info - Show bot information\n` +
                        `${prefix}status - Show bot status and statistics\n` +
                        `${prefix}settings - Show current bot settings\n` +
-                       `${prefix}reload - Reload plugins\n\n` +
+                       `${prefix}reload - Reload plugins\n` +
+                       `${prefix}shutdown - Safely shutdown the bot\n` +
+                       `${prefix}restart - Restart the bot in a new process\n\n` +
                        
                        `**Permission Commands:**\n` +
                        `${prefix}allow <command> - Allow a user to use a specific command (use in their chat)\n` +
@@ -131,6 +137,8 @@ class CoreCommandsPlugin {
             disallow: '**disallow** - Remove command permission from a user\nUsage: .disallow <command>\nNote: Use this in the target user\'s chat',
             reload: '**reload** - Reload all plugins or a specific plugin\nUsage: .reload [plugin-name]',
             env: '**env** - Manage environment variables\nSubcommands: list, set, get, remove\nUsage: .env <subcommand> [args]',
+            shutdown: '**shutdown** - Safely shutdown the bot\nUsage: .shutdown\nNote: This will stop the bot completely. Use .restart for automatic restart.',
+            restart: '**restart** - Restart the bot in a new process\nUsage: .restart\nNote: The bot will automatically reconnect after restart.',
             ping: '**ping** - Test bot response time and connectivity\nUsage: .ping',
             pinginfo: '**pinginfo** - Show ping plugin statistics\nUsage: .pinginfo'
         };
@@ -338,6 +346,51 @@ class CoreCommandsPlugin {
                 break;
             default:
                 await reply('❌ Invalid subcommand. Use: list, get, set, or remove');
+        }
+    }
+
+    async handleShutdown(context) {
+        const { reply } = context;
+        
+        try {
+            await reply('🛑 **Shutting down bot...**\n\n⚠️ This will completely stop the bot process. You will need to manually restart it from the Replit console.');
+            
+            console.log('🛑 Bot shutdown requested by owner');
+            console.log('🛑 Initiating graceful shutdown...');
+            
+            // Allow time for the message to be sent
+            setTimeout(() => {
+                console.log('🛑 Shutting down MATDEV Bot...');
+                process.exit(0);
+            }, 2000);
+            
+        } catch (error) {
+            console.error('❌ Error during shutdown:', error);
+            await reply('❌ Failed to shutdown bot');
+        }
+    }
+
+    async handleRestart(context) {
+        const { reply } = context;
+        
+        try {
+            await reply('🔄 **Restarting bot...**\n\n⚡ The bot will restart automatically in a new process. Please wait a moment for reconnection.');
+            
+            console.log('🔄 Bot restart requested by owner');
+            console.log('🔄 Initiating restart process...');
+            
+            // Allow time for the message to be sent
+            setTimeout(() => {
+                console.log('🔄 Restarting MATDEV Bot...');
+                
+                // Exit with code 1 to trigger automatic restart in Replit
+                // Replit workflows automatically restart on non-zero exit codes
+                process.exit(1);
+            }, 2000);
+            
+        } catch (error) {
+            console.error('❌ Error during restart:', error);
+            await reply('❌ Failed to restart bot');
         }
     }
 

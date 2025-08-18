@@ -158,7 +158,7 @@ The system follows a **personal assistant architecture** with multi-session supp
 - All core functionality tested and operational
 
 ### Current Working Features:
-- **Core Commands**: help, info, status, settings, allow, disallow, reload, env
+- **Core Commands**: help, info, status, settings, allow, disallow, reload, env, shutdown, restart
 - **Ping Plugin**: ping, pinginfo (working for allowed users)
 - **Games Plugin**: tictactoe, wordguess, endgame, gameinfo, gamestats
 - **Admin Tools**: systeminfo, plugins, users, permissions, logs, cleanup, backup
