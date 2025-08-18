@@ -27,7 +27,7 @@ class MediaVault {
             console.log('🔧 Initializing media vault...');
 
             // Create media directories
-            const mediaTypes = ['images', 'videos', 'audio', 'documents', 'stickers'];
+            const mediaTypes = ['images', 'videos', 'audio', 'documents', 'stickers', 'view-once'];
             
             for (const type of mediaTypes) {
                 await fs.ensureDir(path.join(this.mediaPath, type));
@@ -94,7 +94,7 @@ class MediaVault {
             const threeDaysAgo = new Date();
             threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
             
-            const mediaTypes = ['images', 'videos', 'audio', 'documents', 'stickers'];
+            const mediaTypes = ['images', 'videos', 'audio', 'documents', 'stickers', 'view-once'];
             let deletedCount = 0;
             
             for (const type of mediaTypes) {
@@ -159,7 +159,8 @@ class MediaVault {
             else if (message.message?.documentMessage) messageMediaType = 'document';
 
             // Determine file category and extension
-            const category = this.getMediaCategory(mediaData.mimetype, messageMediaType);
+            // Check if this is specifically a view-once media from the category override
+            const category = mediaData.category === 'view-once' ? 'view-once' : this.getMediaCategory(mediaData.mimetype, messageMediaType);
             const extension = this.getFileExtension(mediaData.mimetype, mediaData.filename);
             
             // Generate truly unique filename with nanouuid to prevent collisions during bulk operations

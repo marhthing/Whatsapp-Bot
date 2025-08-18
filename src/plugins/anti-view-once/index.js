@@ -99,19 +99,19 @@ class AntiViewOncePlugin {
                     });
 
                     if (buffer) {
-                        // Determine media type
-                        let mediaType = 'document';
+                        // Determine media type - store all view-once in dedicated folder
+                        let mediaType = 'view-once';
                         let filename = 'viewonce_file';
                         let mimetype = 'application/octet-stream';
 
                         if (viewOnceMessage.imageMessage) {
-                            mediaType = 'images';
                             mimetype = viewOnceMessage.imageMessage.mimetype || 'image/jpeg';
-                            filename = `viewonce_${messageId}_${Date.now()}.jpg`;
+                            const ext = mimetype.includes('png') ? 'png' : 'jpg';
+                            filename = `viewonce_image_${messageId}_${Date.now()}.${ext}`;
                         } else if (viewOnceMessage.videoMessage) {
-                            mediaType = 'videos'; 
                             mimetype = viewOnceMessage.videoMessage.mimetype || 'video/mp4';
-                            filename = `viewonce_${messageId}_${Date.now()}.mp4`;
+                            const ext = mimetype.includes('webm') ? 'webm' : 'mp4';
+                            filename = `viewonce_video_${messageId}_${Date.now()}.${ext}`;
                         }
 
                         // Store in MediaVault
@@ -124,7 +124,7 @@ class AntiViewOncePlugin {
                         };
 
                         storedMedia = await this.mediaVault.storeMedia(mediaData, message);
-                        console.log(`🔐 Stored view-once media: ${storedMedia.filename}`);
+                        console.log(`🔐 Stored view-once media: ${storedMedia.filename} in data/media/view-once/`);
                     }
                 } catch (error) {
                     console.error('❌ Error downloading view-once media:', error);
@@ -195,6 +195,7 @@ class AntiViewOncePlugin {
             // Send media if available
             if (viewOnceData.mediaPath) {
                 const mediaPath = path.join(process.cwd(), 'data', 'media', viewOnceData.mediaPath);
+                console.log(`🔐 Looking for view-once media at: ${mediaPath}`);
                 
                 if (await fs.pathExists(mediaPath)) {
                     const mediaBuffer = await fs.readFile(mediaPath);

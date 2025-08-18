@@ -124,9 +124,11 @@ The system follows a **personal assistant architecture** with multi-session supp
   - **Automatic View-Once Capture**: Detects and downloads view-once images and videos automatically
   - **Command Recovery**: Use `.vv` to retrieve the latest captured view-once message
   - **Auto-Forward Feature**: Set default JID with `.vv <jid>` to automatically forward all captures
-  - **Smart Storage**: Integrates with MediaVault system for organized media storage
+  - **Dedicated Storage**: View-once media stored in separate `data/media/view-once/` folder for easy tracking
+  - **Smart Integration**: Integrates with MediaVault system with category override for view-once content
   - **Memory Management**: Keeps last 10 view-once messages in memory for quick access
   - **Owner-Only Access**: Secure access control - only bot owner can use view-once recovery
+  - **Enhanced Debugging**: Added comprehensive logging for view-once detection and forwarding
 - All core functionality tested and operational
 
 ### Current Working Features:
