@@ -5,6 +5,7 @@ MATDEV is a WhatsApp bot designed to operate through the owner's WhatsApp number
 
 ## Recent Changes (August 2025)
 - **Migration Complete**: Successfully migrated from Replit Agent to standard Replit environment
+- **Enhanced Image Enhancement Plugin**: Updated enhance command to use stored media system instead of re-downloading, saves enhanced images to `data/media/enhance`, and auto-deletes after 5 minutes for privacy
 - **Enhanced Game Input Processing**: Updated message processor to handle number-only inputs during active games without requiring command prefix
 - **Improved TicTacToe Plugin**: Redesigned for more natural chat-like gameplay with cleaner messaging
 - **Fixed JID Extraction**: Corrected sender JID detection in TicTacToe plugin following AccessController patterns

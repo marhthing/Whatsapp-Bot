@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T21:57:49.339Z",
+  "lastUpdated": "2025-08-18T21:59:26.864Z",
   "plugins": [
     {
       "name": "admin-tools",
@@ -95,7 +95,7 @@
       "name": "enhance",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T21:57:49.339Z",
+      "loadedAt": "2025-08-18T21:59:26.863Z",
       "commands": [
         "enhance",
         "enhancestatus"
