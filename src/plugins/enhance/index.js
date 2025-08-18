@@ -112,6 +112,17 @@ class EnhancePlugin {
             let targetMessageId = null;
             let sourceMedia = null;
             
+            console.log(`🔍 Enhance command - Message has media: ${message.hasMedia}, Has quoted: ${message.hasQuotedMsg}`);
+            console.log(`🔍 Message type: ${message.type}, Message ID: ${message.id._serialized || message.id}`);
+            console.log(`🔍 Message caption: ${message.caption || 'No caption'}`);
+            console.log(`🔍 Message body: ${message.body || 'No body'}`);
+            
+            // Special handling for messages with captions that contain .enhance
+            if (message.body && message.body.includes('.enhance') && message.hasMedia) {
+                targetMessageId = message.id._serialized || message.id;
+                console.log(`🎯 Found media with .enhance in caption/body: ${targetMessageId}`);
+            }
+            
             // Check if message has media directly (tagged with .enhance)
             if (message.hasMedia) {
                 targetMessageId = message.id._serialized || message.id;
@@ -128,6 +139,7 @@ class EnhancePlugin {
             
             // If no media found, show usage
             if (!targetMessageId) {
+                console.log(`❌ No target message ID found - message.hasMedia: ${message.hasMedia}, message.hasQuotedMsg: ${message.hasQuotedMsg}`);
                 await reply('❌ Please tag/reply to an image to enhance it!\n\n📝 Usage: Reply to an image with `.enhance` or tag an image with `.enhance`');
                 return;
             }
