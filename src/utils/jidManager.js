@@ -46,7 +46,13 @@ class JidManager {
         if (!this.ownerJid || !jid) return false;
         
         const normalizedJid = this.normalizeJid(jid);
-        return normalizedJid === this.ownerJid;
+        const normalizedOwner = this.normalizeJid(this.ownerJid);
+        
+        // Extract base JID (without device ID suffix like :79)
+        const baseJid = normalizedJid ? normalizedJid.split(':')[0] : null;
+        const baseOwner = normalizedOwner ? normalizedOwner.split(':')[0] : null;
+        
+        return baseJid === baseOwner;
     }
 
     /**
@@ -84,8 +90,8 @@ class JidManager {
             normalized = `${normalized}@s.whatsapp.net`;
         }
 
-        // Remove any extra characters
-        normalized = normalized.replace(/[^\d@\.a-z]/g, '');
+        // Remove any extra characters except colon for device ID
+        normalized = normalized.replace(/[^\d@\.a-z:]/g, '');
 
         // Validate the normalized JID
         if (!this.validateJid(normalized)) {

@@ -53,7 +53,9 @@ This is a WhatsApp personal assistant bot designed to operate through the owner'
 ✅ **Plugin System Complete Fix**: Added missing `get` method to EnvironmentManager class, fixing all plugin initialization errors
 ✅ **All Plugins Operational**: Fixed anti-delete and media-tools plugins - all 5 plugins now working perfectly
 ✅ **Command Prefix Fix**: Updated command processing to recognize both COMMAND_PREFIX and PREFIX environment variables
-✅ **Storage Management**: Implemented 3-day automatic cleanup for messages and media to prevent storage bloat
+✅ **Outgoing Command Processing**: Fixed bot to process commands from owner's outgoing messages while maintaining access control for incoming messages
+✅ **JID Matching Fix**: Resolved owner recognition issue by properly handling device ID suffixes (e.g., :79) in JID comparison
+✅ **Storage Management**: Implemented 3-day automatic cleanup for messages and media to prevent storage bloat (runs every 24h with 10-minute startup delay)
 ✅ **Command System Fully Functional**: All commands (.help, .info, .status, etc.) now responding correctly
 ✅ **Connection Confirmation**: Bot now sends a welcome message to owner when successfully connected to WhatsApp
 ✅ **Message Content Saving**: Fixed message body extraction to properly save message content from WhatsApp message structure

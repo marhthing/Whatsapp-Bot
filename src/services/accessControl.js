@@ -73,7 +73,7 @@ class AccessControlService extends EventEmitter {
     }
 
     setOwner(jid) {
-        const normalizedJid = jidManager.normalize(jid);
+        const normalizedJid = jidManager.normalizeJid(jid);
         this.ownerJid = normalizedJid;
         this.emit('owner_changed', { ownerJid: normalizedJid });
         this.saveAccessData();
@@ -83,10 +83,14 @@ class AccessControlService extends EventEmitter {
     isOwner(jid) {
         if (!this.ownerJid || !jid) return false;
         
-        const normalizedJid = jidManager.normalize(jid);
-        const normalizedOwner = jidManager.normalize(this.ownerJid);
+        const normalizedJid = jidManager.normalizeJid(jid);
+        const normalizedOwner = jidManager.normalizeJid(this.ownerJid);
         
-        return normalizedJid === normalizedOwner;
+        // Extract base JID (without device ID suffix like :79)
+        const baseJid = normalizedJid ? normalizedJid.split(':')[0] : null;
+        const baseOwner = normalizedOwner ? normalizedOwner.split(':')[0] : null;
+        
+        return baseJid === baseOwner;
     }
 
     canExecuteCommand(jid, command) {
@@ -96,7 +100,7 @@ class AccessControlService extends EventEmitter {
         }
 
         // Check if command is explicitly allowed for this user
-        const normalizedJid = jidManager.normalize(jid);
+        const normalizedJid = jidManager.normalizeJid(jid);
         const userCommands = this.allowedCommands.get(normalizedJid);
         
         return userCommands && userCommands.has(command);

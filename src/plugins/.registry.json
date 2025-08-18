@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T09:15:30.754Z",
+  "lastUpdated": "2025-08-18T09:19:09.918Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:15:30.735Z",
+      "loadedAt": "2025-08-18T09:19:09.902Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -21,7 +21,7 @@
       "name": "anti-delete",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:15:30.742Z",
+      "loadedAt": "2025-08-18T09:19:09.907Z",
       "commands": [
         "recover",
         "deleted",
@@ -32,7 +32,7 @@
       "name": "core-commands",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:15:30.744Z",
+      "loadedAt": "2025-08-18T09:19:09.909Z",
       "commands": [
         "help",
         "info",
@@ -48,7 +48,7 @@
       "name": "games",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:15:30.749Z",
+      "loadedAt": "2025-08-18T09:19:09.912Z",
       "commands": [
         "tictactoe",
         "wordguess",
@@ -61,7 +61,7 @@
       "name": "media-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:15:30.753Z",
+      "loadedAt": "2025-08-18T09:19:09.918Z",
       "commands": [
         "convert",
         "upscale",
