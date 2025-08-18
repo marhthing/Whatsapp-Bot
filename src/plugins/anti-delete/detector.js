@@ -159,28 +159,43 @@ class Detector {
                 return;
             }
             
-            const senderPhone = deletionEntry.sender.split('@')[0];
-            const chatPhone = deletionEntry.chatId.split('@')[0];
-            
-            let notificationText = `🗑️ **DELETED MESSAGE RECOVERED**\n\n`;
-            notificationText += `👤 **Sender:** ${senderPhone}\n`;
-            notificationText += `💬 **From Chat:** ${chatPhone}\n`;
-            notificationText += `📅 **Original:** ${new Date(deletionEntry.originalTimestamp).toLocaleString()}\n`;
-            notificationText += `🗑️ **Deleted:** ${new Date(deletionEntry.deletedTimestamp).toLocaleString()}\n\n`;
-            
-            if (deletionEntry.messageBody) {
-                notificationText += `💬 **Deleted Content:**\n"${deletionEntry.messageBody}"\n\n`;
-            } else {
-                notificationText += `💬 **Content:** (No text content)\n\n`;
+            // Attempt to get the original message from storage
+            let originalMessage = null;
+            try {
+                const messageStorage = this.botClient.getMessageStorage();
+                originalMessage = await messageStorage.findMessageById(deletionEntry.originalMessageId);
+            } catch (error) {
+                console.warn('Could not retrieve original message from storage:', error);
+                return; // Skip if we can't get the original message
             }
             
-            if (deletionEntry.hasMedia) {
-                notificationText += `📎 **Had Media:** ${deletionEntry.mediaType}\n\n`;
+            if (!originalMessage) {
+                console.warn('No original message found in storage, skipping anti-delete forward');
+                return; // Skip if no original message available
             }
             
-            notificationText += `💡 Use \`.recover ${deletionEntry.id}\` to restore this message`;
+            // Create proper contextInfo for tagging with actual sender JID
+            const contextInfo = {
+                quotedMessage: {
+                    conversation: "" // Empty as requested
+                },
+                participant: deletionEntry.sender, // Use actual sender JID
+                remoteJid: deletionEntry.chatId
+            };
             
-            await this.botClient.sendMessage(targetJid, notificationText);
+            // Forward based on message type
+            if (deletionEntry.hasMedia && this.isMediaType(deletionEntry.mediaType)) {
+                console.log(`📸 Forwarding deleted ${deletionEntry.mediaType} as tagged message...`);
+                await this.forwardDeletedMediaAsTagged(originalMessage, targetJid, contextInfo, deletionEntry);
+            } else if (deletionEntry.messageBody) {
+                // Forward text as tagged message - just the plain text, no emojis
+                await this.botClient.sendMessage(targetJid, { 
+                    text: deletionEntry.messageBody,
+                    contextInfo: contextInfo
+                });
+                console.log(`✅ Deleted text message forwarded as tagged message`);
+            }
+            // If it's not text or media, don't send anything (no placeholders)
             
             // Mark as notified
             deletionEntry.notifiedOwner = true;
@@ -191,6 +206,94 @@ class Detector {
         } catch (error) {
             console.error('Error forwarding deleted message:', error);
         }
+    }
+
+    async forwardDeletedMediaAsTagged(originalMessage, targetJid, contextInfo, deletionEntry) {
+        try {
+            const mediaType = deletionEntry.mediaType;
+            const messageId = deletionEntry.originalMessageId;
+
+            // Get media buffer from storage
+            const messageStorage = this.botClient.getMessageStorage();
+            const mediaBuffer = await messageStorage.getMediaBuffer(messageId);
+            
+            if (!mediaBuffer) {
+                console.warn(`No media buffer found for ${messageId}, skipping`);
+                return; // Don't send anything if media not available
+            }
+
+            console.log(`📤 Forwarding deleted ${mediaType} as tagged message`);
+
+            let messageToSend = {};
+            
+            switch (mediaType) {
+                case 'imageMessage':
+                case 'image':
+                    messageToSend = { 
+                        image: mediaBuffer, 
+                        caption: deletionEntry.messageBody || undefined,
+                        contextInfo: contextInfo
+                    };
+                    break;
+                    
+                case 'videoMessage':
+                case 'video':
+                    messageToSend = { 
+                        video: mediaBuffer, 
+                        caption: deletionEntry.messageBody || undefined,
+                        contextInfo: contextInfo
+                    };
+                    break;
+                    
+                case 'audioMessage':
+                case 'audio':
+                case 'voice':
+                    messageToSend = { 
+                        audio: mediaBuffer, 
+                        ptt: originalMessage.ptt || false,
+                        mimetype: originalMessage.mimetype || 'audio/mpeg',
+                        contextInfo: contextInfo
+                    };
+                    break;
+                    
+                case 'documentMessage':
+                case 'document':
+                    messageToSend = { 
+                        document: mediaBuffer, 
+                        fileName: originalMessage.fileName || 'deleted_document',
+                        mimetype: originalMessage.mimetype || 'application/octet-stream',
+                        caption: deletionEntry.messageBody || undefined,
+                        contextInfo: contextInfo
+                    };
+                    break;
+                    
+                case 'stickerMessage':
+                case 'sticker':
+                    messageToSend = { 
+                        sticker: mediaBuffer,
+                        contextInfo: contextInfo
+                    };
+                    break;
+                    
+                default:
+                    console.warn(`Unknown media type: ${mediaType}, skipping`);
+                    return; // Don't send anything for unknown types
+            }
+            
+            // Send the media message with tag
+            await this.botClient.sendMessage(targetJid, messageToSend);
+            console.log(`✅ Successfully forwarded deleted ${mediaType} as tagged message`);
+
+        } catch (error) {
+            console.error('❌ Error forwarding tagged media message:', error);
+            // Just log and exit - no placeholder messages
+        }
+    }
+
+    isMediaType(messageType) {
+        return ['image', 'video', 'audio', 'document', 'sticker', 
+                'imageMessage', 'videoMessage', 'audioMessage', 
+                'documentMessage', 'stickerMessage'].includes(messageType);
     }
 
     async notifyOwner(deletionEntry) {
