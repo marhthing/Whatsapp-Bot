@@ -107,30 +107,59 @@ class MessageArchiver {
                 } else if (message.message.extendedTextMessage?.text) {
                     messageBody = message.message.extendedTextMessage.text;
                 } else if (message.message.imageMessage?.caption) {
-                    messageBody = message.message.imageMessage.caption;
+                    messageBody = message.message.imageMessage.caption || '';
                     messageType = 'image';
                 } else if (message.message.videoMessage?.caption) {
-                    messageBody = message.message.videoMessage.caption;
+                    messageBody = message.message.videoMessage.caption || '';
                     messageType = 'video';
                 } else if (message.message.documentMessage?.caption) {
-                    messageBody = message.message.documentMessage.caption;
+                    messageBody = message.message.documentMessage.caption || '';
                     messageType = 'document';
                 } else if (message.message.audioMessage) {
                     messageType = 'audio';
+                    messageBody = '[Audio Message]';
                 } else if (message.message.stickerMessage) {
                     messageType = 'sticker';
+                    messageBody = '[Sticker]';
                 } else if (message.message.locationMessage) {
                     messageType = 'location';
                     messageBody = `Location: ${message.message.locationMessage.degreesLatitude}, ${message.message.locationMessage.degreesLongitude}`;
                 } else if (message.message.contactMessage) {
                     messageType = 'contact';
                     messageBody = message.message.contactMessage.displayName || 'Contact';
+                } else if (message.message.imageMessage) {
+                    messageType = 'image';
+                    messageBody = '[Image]';
+                } else if (message.message.videoMessage) {
+                    messageType = 'video';
+                    messageBody = '[Video]';
+                } else if (message.message.documentMessage) {
+                    messageType = 'document';
+                    messageBody = message.message.documentMessage.title || message.message.documentMessage.fileName || '[Document]';
                 }
             }
             
             // Fallback to direct body property
             if (!messageBody && message.body) {
                 messageBody = message.body;
+            }
+
+            // If still no content, check for protocol messages or system messages
+            if (!messageBody) {
+                if (message.message?.protocolMessage) {
+                    messageBody = '[System Message]';
+                    messageType = 'system';
+                } else if (message.message?.reactionMessage) {
+                    messageBody = `[Reaction: ${message.message.reactionMessage.text}]`;
+                    messageType = 'reaction';
+                } else if (message.message?.pollCreationMessage) {
+                    messageBody = `[Poll: ${message.message.pollCreationMessage.name}]`;
+                    messageType = 'poll';
+                } else {
+                    // Skip completely empty messages to avoid noise
+                    console.log(`⚠️ Skipping message with no extractable content: ${JSON.stringify(message, null, 2).substring(0, 200)}...`);
+                    return null;
+                }
             }
 
             const messageData = {

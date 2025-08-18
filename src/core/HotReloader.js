@@ -270,7 +270,7 @@ class HotReloader {
             delete require.cache[modulePath];
         });
 
-        console.log(`🧹 Cleared require cache for ${cachedModules.length} modules in ${pluginName}`);
+        console.log(`🧹 Cleared require cache for ${cachedModules.length} modules in plugin`);
     }
 
     async stop() {
