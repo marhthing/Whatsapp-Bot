@@ -171,6 +171,11 @@ class AntiViewOncePlugin {
 
     async forwardViewOnceMessage(viewOnceData, targetJid) {
         try {
+            if (!this.client) {
+                console.error('❌ Cannot forward view-once message: No client available');
+                return false;
+            }
+            
             const senderName = viewOnceData.senderJid.split('@')[0];
             const timestamp = new Date(viewOnceData.timestamp).toLocaleString();
             
@@ -183,6 +188,7 @@ class AntiViewOncePlugin {
                 message += `💬 Caption: ${viewOnceData.caption}\n`;
             }
 
+            console.log(`🔐 Sending view-once info to ${targetJid}`);
             // Send text info first
             await this.client.sendMessage(targetJid, { text: message });
 
@@ -237,7 +243,12 @@ class AntiViewOncePlugin {
     }
 
     async executeCommand(context) {
-        const { message, args, command } = context;
+        const { message, args, command, client } = context;
+        
+        // Ensure we have client access
+        if (!this.client && client) {
+            this.client = client;
+        }
         
         try {
             if (command === 'vv') {
@@ -262,13 +273,16 @@ class AntiViewOncePlugin {
                     }
                 }
 
+                // Debug: Log current storage state
+                console.log(`🔐 Checking view-once storage... Found ${this.viewOnceStorage.size} messages`);
+                
                 // Get most recent view-once message
                 const recentMessages = Array.from(this.viewOnceStorage.values()).sort((a, b) => b.timestamp - a.timestamp);
                 
                 if (recentMessages.length === 0) {
                     return {
-                        success: false,
-                        message: `🔐 *No View-Once Messages*\n\n❌ No captured view-once messages found.`
+                        success: true,
+                        message: `🔐 *No View-Once Messages*\n\n❌ No captured view-once messages found yet.\n\n💡 Send a view-once message to test the capture feature!`
                     };
                 }
 
@@ -276,12 +290,20 @@ class AntiViewOncePlugin {
                 const latestViewOnce = recentMessages[0];
                 const senderJid = message.key?.participant || message.key?.remoteJid;
                 
-                await this.forwardViewOnceMessage(latestViewOnce, senderJid);
+                console.log(`🔐 Attempting to forward view-once message to ${senderJid}`);
+                const success = await this.forwardViewOnceMessage(latestViewOnce, senderJid);
                 
-                return {
-                    success: true,
-                    message: `🔐 *View-Once Message Sent*\n\n✅ Latest captured view-once message has been sent to you.`
-                };
+                if (success) {
+                    return {
+                        success: true,
+                        message: `🔐 *View-Once Message Sent*\n\n✅ Latest captured view-once message has been sent to you.`
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: `❌ Failed to send view-once message. Check logs for details.`
+                    };
+                }
             }
 
         } catch (error) {
