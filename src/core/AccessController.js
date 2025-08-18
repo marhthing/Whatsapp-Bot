@@ -311,12 +311,26 @@ class AccessController {
         // Check if there's an active game and user is a player
         if (this.isGameActive(chatId)) {
             const game = this.getActiveGame(chatId);
+            console.log(`🎮 Active game check - Game:`, JSON.stringify(game, null, 2));
+            console.log(`🎮 Game players type:`, typeof game.players, `IsArray:`, Array.isArray(game.players));
+            
+            // Defensive check - ensure players is an array
+            if (!Array.isArray(game.players)) {
+                console.log(`⚠️ Game players is not an array, fixing...`);
+                game.players = Object.values(game.players || {});
+                // Save will happen async in background
+                this.saveAccessControlData().catch(console.error);
+            }
+            
             if (game.players.includes(senderJid)) {
+                console.log(`✅ Game player access granted - User: ${senderJid}, Game: ${game.type}`);
                 return {
                     allowed: true,
                     reason: 'game_player',
                     gameType: game.type
                 };
+            } else {
+                console.log(`❌ User not in game players - User: ${senderJid}, Players:`, game.players);
             }
         }
 
