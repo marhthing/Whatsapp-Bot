@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T17:09:44.319Z",
+  "lastUpdated": "2025-08-18T17:11:35.352Z",
   "plugins": [
     {
       "name": "admin-tools",
@@ -129,7 +129,7 @@
       "name": "tictactoe",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:09:44.319Z",
+      "loadedAt": "2025-08-18T17:11:35.352Z",
       "commands": [
         "tictactoe",
         "ttt"

@@ -99,24 +99,28 @@ class TicTacToePlugin {
             
             // Get the actual sender JID properly (following AccessController pattern)
             let player;
+            const accessController = this.botClient.getAccessController();
+            const ownerJid = accessController.getOwnerJid();
+            
             if (message.key) {
                 if (message.key.fromMe) {
-                    // For outgoing messages, this would be the owner, but we shouldn't get here
-                    // since the bot owner would use the access controller logic
-                    player = message.key.remoteJid;
+                    // For outgoing messages from bot owner
+                    player = ownerJid;
+                    console.log('🎯 Player is bot owner (fromMe=true):', player);
                 } else {
                     // For incoming messages:
                     // - In groups: participant is the sender
                     // - In individual chats: remoteJid is the sender
                     player = message.key.participant || message.key.remoteJid;
+                    console.log('🎯 Player is other user (fromMe=false):', player);
                 }
             } else {
                 // Fallback for other message structures
                 player = message.author || message.from;
+                console.log('🎯 Fallback player detection:', player);
             }
             
             // Check if game already active
-            const accessController = this.botClient.getAccessController();
             const activeGame = accessController.getActiveGame(chatId);
             
             if (activeGame) {
@@ -183,9 +187,16 @@ class TicTacToePlugin {
                         return { success: false, message: 'Username not supported' };
                     }
                 } else {
-                    // No args in private chat - play with the chat partner
-                    opponent = chatId;
-                    console.log('🎯 Found private chat opponent:', opponent);
+                    // No args in private chat - need to determine the chat partner
+                    if (message.key.fromMe) {
+                        // Bot owner sent the message, so the opponent is the chat partner
+                        opponent = chatId; // The person we're chatting with
+                        console.log('🎯 Bot owner in private chat, opponent is chat partner:', opponent);
+                    } else {
+                        // Someone else sent the message, so the bot owner is the opponent
+                        opponent = ownerJid;
+                        console.log('🎯 Other user in private chat, opponent is bot owner:', opponent);
+                    }
                 }
             }
             
