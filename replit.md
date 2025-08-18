@@ -51,7 +51,7 @@ The system follows a personal assistant architecture with multi-session support 
 ### Key Features
 - **Anti-Delete**: Automatically captures all messages and media, detects deletions in real-time, and forwards deleted content to the bot owner. Includes recovery commands.
 - **Anti-View-Once**: Automatically captures view-once messages (images and videos). Provides commands to retrieve the latest capture and auto-forward them.
-- **Core Commands**: help, info, status, settings, allow, disallow, reload, env, shutdown, restart.
+- **Core Commands**: help, menu, info, status, settings, allow, disallow, reload, env, shutdown, restart.
 - **Games Plugin**: tictactoe, wordguess, endgame, gameinfo, gamestats.
 - **Admin Tools**: systeminfo, plugins, users, permissions, logs, cleanup, backup.
 - **Media Tools**: convert, upscale, analyze, mediainfo, compress, extract.

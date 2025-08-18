@@ -65,6 +65,8 @@ class CoreCommandsPlugin {
                 return await this.handleShutdown(context);
             case 'restart':
                 return await this.handleRestart(context);
+            case 'menu':
+                return await this.handleMenu(context);
             default:
                 throw new Error(`Unknown command: ${commandName}`);
         }
@@ -83,6 +85,7 @@ class CoreCommandsPlugin {
         const helpText = `🤖 **MATDEV Bot**\n\n` +
                        `**Core Commands:**\n` +
                        `${prefix}help [command] - Show this help or help for specific command\n` +
+                       `${prefix}menu - Show organized command menu with categories\n` +
                        `${prefix}info - Show bot information\n` +
                        `${prefix}status - Show bot status and statistics\n` +
                        `${prefix}settings - Show current bot settings\n` +
@@ -139,6 +142,7 @@ class CoreCommandsPlugin {
             env: '**env** - Manage environment variables\nSubcommands: list, set, get, remove\nUsage: .env <subcommand> [args]',
             shutdown: '**shutdown** - Safely shutdown the bot\nUsage: .shutdown\nNote: This will stop the bot completely. Use .restart for automatic restart.',
             restart: '**restart** - Restart the bot in a new process\nUsage: .restart\nNote: The bot will automatically reconnect after restart.',
+            menu: '**menu** - Display organized command menu with categories\nUsage: .menu\nNote: Shows all available commands organized by category with system info.',
             ping: '**ping** - Test bot response time and connectivity\nUsage: .ping',
             pinginfo: '**pinginfo** - Show ping plugin statistics\nUsage: .pinginfo'
         };
@@ -346,6 +350,122 @@ class CoreCommandsPlugin {
                 break;
             default:
                 await reply('❌ Invalid subcommand. Use: list, get, set, or remove');
+        }
+    }
+
+    async handleMenu(context) {
+        const { reply } = context;
+        
+        try {
+            // Get system information
+            const uptime = process.uptime();
+            const uptimeMin = Math.floor(uptime / 60);
+            const uptimeSec = Math.floor(uptime % 60);
+            const memUsage = process.memoryUsage();
+            const memUsedMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+            const memTotalMB = Math.round(memUsage.heapTotal / 1024 / 1024);
+            
+            // Get current time and date
+            const now = new Date();
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'Africa/Lagos' // Nigerian time
+            };
+            const dateOptions = {
+                weekday: 'long',
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric',
+                timeZone: 'Africa/Lagos'
+            };
+            
+            const currentTime = now.toLocaleTimeString('en-US', timeOptions);
+            const currentDay = now.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Africa/Lagos' });
+            const currentDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Africa/Lagos' });
+            
+            // Get prefix from environment
+            const prefix = this.environmentManager.get('BOT_PREFIX', '.');
+            
+            // Get owner name (you can customize this)
+            const ownerName = 'M A R T I N S ✧';
+            
+            // Plugin count (get from bot client if available)
+            let pluginCount = 10; // default fallback
+            try {
+                if (this.botClient && this.botClient.pluginDiscovery && this.botClient.pluginDiscovery.plugins) {
+                    pluginCount = this.botClient.pluginDiscovery.plugins.size;
+                }
+            } catch (error) {
+                console.log('Could not get plugin count, using default');
+            }
+            
+            const menuText = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃          🤖 MATDEV BOT          ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃ 🎯 Prefix: ${prefix}
+┃ 👤 User: ${ownerName}
+┃ ⏰ Time: ${currentTime}
+┃ 📅 Day: ${currentDay}
+┃ 📆 Date: ${currentDate}
+┃ 🔧 Version: 4.0.0
+┃ 🧩 Plugins: ${pluginCount}
+┃ 💾 RAM: ${memUsedMB}/${memTotalMB}MB
+┃ ⏱️ Uptime: ${uptimeMin}m ${uptimeSec}s
+┃ 🖥️ Platform: Linux
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┌─── 🏠 CORE COMMANDS ───┐
+│ • HELP      • INFO      │
+│ • STATUS    • SETTINGS  │
+│ • ALLOW     • DISALLOW  │
+│ • RELOAD    • ENV       │
+│ • SHUTDOWN  • RESTART   │
+└─────────────────────────┘
+
+┌─── 🎮 GAMES & FUN ───┐
+│ • TICTACTOE  • WORDGUESS │
+│ • ENDGAME    • GAMEINFO  │
+│ • GAMESTATS             │
+└─────────────────────────┘
+
+┌─── 📥 DOWNLOADERS ───┐
+│ • TIKTOK    • YTV      │
+│ • FB        • INSTAGRAM │
+└─────────────────────────┘
+
+┌─── 🔒 ANTI-FEATURES ───┐
+│ • RECOVER   • DELETED   │
+│ • ANTILOG   • VV        │
+└─────────────────────────┘
+
+┌─── 🎨 MEDIA TOOLS ───┐
+│ • CONVERT   • UPSCALE   │
+│ • ANALYZE   • MEDIAINFO │
+│ • COMPRESS  • EXTRACT   │
+└─────────────────────────┘
+
+┌─── ⚙️ ADMIN TOOLS ───┐
+│ • SYSTEMINFO • PLUGINS │
+│ • USERS     • PERMISSIONS │
+│ • LOGS      • CLEANUP   │
+│ • BACKUP               │
+└─────────────────────────┘
+
+┌─── 🏓 UTILITIES ───┐
+│ • PING      • PINGINFO │
+│ • JID                  │
+└─────────────────────────┘
+
+📝 *Use ${prefix}help [command] for detailed info*
+🔹 *Available to bot owner and allowed users*`;
+
+            await reply(menuText);
+            
+        } catch (error) {
+            console.error('❌ Error generating menu:', error);
+            await reply('❌ Failed to generate menu');
         }
     }
 

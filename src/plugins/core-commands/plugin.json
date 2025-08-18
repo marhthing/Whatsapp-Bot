@@ -79,6 +79,13 @@
       "usage": "restart",
       "ownerOnly": true,
       "examples": [".restart"]
+    },
+    {
+      "name": "menu",
+      "description": "Display organized command menu with categories",
+      "usage": "menu",
+      "ownerOnly": false,
+      "examples": [".menu"]
     }
   ],
   "features": [
