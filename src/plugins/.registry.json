@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T10:19:03.407Z",
+  "lastUpdated": "2025-08-18T10:20:53.454Z",
   "plugins": [
     {
       "name": "admin-tools",
@@ -75,7 +75,7 @@
       "name": "ping",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T10:19:03.407Z",
+      "loadedAt": "2025-08-18T10:20:53.454Z",
       "commands": [
         "ping",
         "pinginfo"
