@@ -114,8 +114,16 @@ class TicTacToePlugin {
             const mention = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
             if (mention) {
                 opponent = mention;
-            } else if (args.length > 0) {
-                // Handle phone numbers or usernames
+            } 
+            // Check if replying to someone's message
+            else if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+                const quotedParticipant = message.message.extendedTextMessage.contextInfo.participant;
+                if (quotedParticipant) {
+                    opponent = quotedParticipant;
+                }
+            }
+            // Handle phone numbers or usernames from args
+            else if (args.length > 0) {
                 let userInput = args[0].replace('@', '').replace(/\D/g, '');
                 if (userInput) {
                     opponent = userInput + '@s.whatsapp.net';
@@ -124,7 +132,7 @@ class TicTacToePlugin {
             
             // Opponent is REQUIRED - no AI mode
             if (!opponent) {
-                await reply('❌ Please tag someone to play with: .tictactoe @username\n\nExample: .tictactoe @friend');
+                await reply('❌ Please tag someone to play with:\n\n• Tag: .tictactoe @username\n• Reply to their message: .tictactoe\n\nExample: .tictactoe @friend');
                 return { success: false, message: 'No opponent specified' };
             }
             
