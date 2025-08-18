@@ -102,10 +102,20 @@ class AccessControlService extends EventEmitter {
         return userCommands && userCommands.has(command);
     }
 
-    canProcessMessage(message) {
-        const senderJid = message.from;
-        const messageText = message.body || '';
-        const chatId = message.from;
+    canProcessMessage(message, command) {
+        // Extract sender JID properly from Baileys message structure
+        const senderJid = message.key?.participant || message.key?.remoteJid || message.author || message.from;
+        const chatId = message.key?.remoteJid || message.from;
+        
+        // Extract message text properly
+        let messageText = '';
+        if (message.message?.conversation) {
+            messageText = message.message.conversation;
+        } else if (message.message?.extendedTextMessage?.text) {
+            messageText = message.message.extendedTextMessage.text;
+        } else if (message.body) {
+            messageText = message.body;
+        }
 
         // Always allow owner
         if (this.isOwner(senderJid)) {
