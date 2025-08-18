@@ -68,10 +68,10 @@ class GameStateManagerMiddleware {
 
         } catch (error) {
             console.error('Error in Game State Manager middleware:', error);
-            this.eventBus.emit('middleware_error', { 
-                middleware: 'GameStateManager', 
-                error, 
-                message: context.message 
+            this.eventBus.emit('middleware_error', {
+                middleware: 'GameStateManager',
+                error,
+                message: context.message
             });
         }
     }
@@ -79,49 +79,73 @@ class GameStateManagerMiddleware {
     async handleGameInput(context) {
         const { message } = context;
         const gameInfo = context.metadata.gameInfo;
+        const messageText = message.body || '';
+        const chatId = message.key.remoteJid;
+        const accessController = this.botClient.getAccessController();
+        const ownerJid = accessController.ownerJid;
 
         try {
+            // Get the actual sender JID
+            let sender;
+            if (message.key.fromMe) {
+                // Message sent by the bot owner through the bot
+                sender = ownerJid;
+                console.log('🎮 Sender detected as bot owner (fromMe=true):', sender);
+            } else {
+                // Message from someone else
+                sender = message.key.participant || message.key.remoteJid;
+                console.log('🎮 Sender detected as other user (fromMe=false):', sender);
+            }
+
+            console.log('🎮 GameStateManager Debug:');
+            console.log('  - Chat ID:', chatId);
+            console.log('  - Message text:', messageText);
+            console.log('  - Message key:', JSON.stringify(message.key, null, 2));
+            console.log('  - Detected sender:', sender);
+            console.log('  - Owner JID:', ownerJid);
+            console.log('  - fromMe:', message.key.fromMe);
+
+            // Use jidManager for proper normalization
+            const normalizedSender = jidManager.normalizeJid(sender);
+            console.log('🎮 Normalized sender JID:', normalizedSender);
+
+
             // Mark as valid game input for further processing
             context.metadata.validGameInput = true;
             context.stopped = true; // Stop further processing - game plugin will handle this
 
-            const chatId = message.key.remoteJid;
-            // Extract player JID properly - same logic as in TicTacToe plugin
-            let player;
-            const accessController = this.botClient.getAccessController();
-            const ownerJid = accessController.ownerJid;
-            
-            if (message.key) {
-                if (message.key.fromMe) {
-                    // For outgoing messages from bot owner
-                    player = ownerJid;
-                } else {
-                    // For incoming messages:
-                    // - In groups: participant is the sender
-                    // - In individual chats: remoteJid is the sender
-                    player = message.key.participant || message.key.remoteJid;
-                }
-            } else {
-                // Fallback for other message structures
-                player = message.author || message.from || ownerJid;
-            }
-
-            // Use jidManager for proper normalization
-            const normalizedPlayer = jidManager.normalizeJid(player);
-            
-            console.log('🎮 GameStateManager - Extracted player JID:', player, 'Normalized:', normalizedPlayer, 'Chat:', chatId);
-
-            this.eventBus.emit('game_input_received', {
-                chatId: chatId,
-                gameType: gameInfo.type,
-                input: message.body.trim(),
-                player: player, // Keep original for logging
-                normalizedPlayer: normalizedPlayer, // Use for matching
-                gameInfo
+            console.log('🎮 Game move - Type:', gameInfo.type, 'Player:', sender, 'Input:', `"${messageText}"`, 'Chat:', chatId);
+            console.log('🎮 About to emit game_input_received event with data:', {
+                chatId,
+                input: messageText,
+                player: sender,
+                normalizedPlayer: normalizedSender,
+                gameType: gameInfo.type
             });
+
+            // Emit game input event
+            if (this.eventBus) {
+                this.eventBus.emit('game_input_received', {
+                    chatId,
+                    input: messageText,
+                    player: sender,
+                    normalizedPlayer: normalizedSender,
+                    gameType: gameInfo.type,
+                    gameInfo,
+                    message
+                });
+                console.log('🎮 Successfully emitted game_input_received event');
+            } else {
+                console.log('🎮 ERROR: EventBus not available, cannot emit game_input_received event');
+            }
 
         } catch (error) {
             console.error('Error handling game input:', error);
+            this.eventBus.emit('middleware_error', {
+                middleware: 'GameStateManager',
+                error,
+                message: context.message
+            });
         }
     }
 
