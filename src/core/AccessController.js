@@ -146,10 +146,17 @@ class AccessController {
     }
 
     isCommandAllowed(userJid, command) {
+        if (!userJid) {
+            console.log(`⚠️ isCommandAllowed: No userJid provided for command '${command}'`);
+            return false;
+        }
+        
         const hasUser = this.allowedCommands.has(userJid);
         const hasCommand = hasUser && this.allowedCommands.get(userJid).has(command);
         
-        console.log(`🔍 isCommandAllowed check: User ${userJid}, Command '${command}' - HasUser: ${hasUser}, HasCommand: ${hasCommand}`);
+        if (hasCommand) {
+            console.log(`✅ Command '${command}' allowed for user: ${userJid}`);
+        }
         
         return hasCommand;
     }
@@ -318,19 +325,18 @@ class AccessController {
 
     // Method that middleware calls to check command permissions
     async canExecuteCommand(userJid, command) {
-        console.log(`🔍 Checking if user ${userJid} can execute command '${command}'`);
+        if (!userJid) {
+            console.log(`⚠️ canExecuteCommand: No userJid provided for command '${command}'`);
+            return false;
+        }
         
         // Owner can execute any command
         if (this.isOwner(userJid)) {
-            console.log(`✅ Owner can execute any command: ${command}`);
             return true;
         }
         
         // Check if command is specifically allowed
-        const allowed = this.isCommandAllowed(userJid, command);
-        console.log(`🔍 Command '${command}' allowed for ${userJid}: ${allowed}`);
-        
-        return allowed;
+        return this.isCommandAllowed(userJid, command);
     }
 
     getAccessStats() {

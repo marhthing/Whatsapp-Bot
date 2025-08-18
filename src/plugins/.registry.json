@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T10:42:31.606Z",
+  "lastUpdated": "2025-08-18T10:46:07.592Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T10:42:31.577Z",
+      "loadedAt": "2025-08-18T10:46:07.573Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -21,7 +21,7 @@
       "name": "anti-delete",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T10:42:31.582Z",
+      "loadedAt": "2025-08-18T10:46:07.581Z",
       "commands": [
         "recover",
         "deleted",
@@ -32,7 +32,7 @@
       "name": "core-commands",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T10:42:31.583Z",
+      "loadedAt": "2025-08-18T10:46:07.582Z",
       "commands": [
         "help",
         "info",
@@ -48,7 +48,7 @@
       "name": "games",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T10:42:31.587Z",
+      "loadedAt": "2025-08-18T10:46:07.585Z",
       "commands": [
         "tictactoe",
         "wordguess",
@@ -61,7 +61,7 @@
       "name": "media-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T10:42:31.604Z",
+      "loadedAt": "2025-08-18T10:46:07.590Z",
       "commands": [
         "convert",
         "upscale",
@@ -75,7 +75,7 @@
       "name": "ping",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T10:42:31.606Z",
+      "loadedAt": "2025-08-18T10:46:07.592Z",
       "commands": [
         "ping",
         "pinginfo"

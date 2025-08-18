@@ -326,9 +326,19 @@ class MessageProcessor extends EventEmitter {
         }
 
         try {
-            // Check if this specific command is allowed
-            const userJid = message.author || message.from;
+            // Extract sender JID properly from Baileys message structure
+            let userJid;
+            if (message.key) {
+                userJid = message.key.participant || message.key.remoteJid;
+            }
+            if (!userJid) {
+                userJid = message.author || message.from;
+            }
+            
+            console.log(`🔍 processAllowedCommand: Extracted JID: ${userJid} for command: ${command.name}`);
+            
             if (!this.accessController.isCommandAllowed(userJid, command.name)) {
+                console.log(`❌ Command '${command.name}' not allowed for user: ${userJid}`);
                 return; // Command not allowed
             }
 
