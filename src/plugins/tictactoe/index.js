@@ -96,7 +96,16 @@ class TicTacToePlugin {
         try {
             const { args, reply, message } = context;
             const chatId = message.key.remoteJid;
-            const player = message.key.participant || message.key.remoteJid;
+            
+            // Get the actual sender JID properly
+            let player;
+            if (message.key.participant) {
+                // In group chat, participant is the sender
+                player = message.key.participant;
+            } else {
+                // In private chat, remoteJid is the sender (but this is unlikely for non-fromMe messages)
+                player = message.key.remoteJid;
+            }
             
             // Check if game already active
             const accessController = this.botClient.getAccessController();
@@ -110,16 +119,20 @@ class TicTacToePlugin {
             // Parse opponent (REQUIRED for multiplayer)
             let opponent = null;
             
+            console.log('🎯 TicTacToe Debug - Player:', player, 'Chat:', chatId);
+            
             // First check for mentions in the message
             const mention = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
             if (mention) {
                 opponent = mention;
+                console.log('🎯 Found mentioned opponent:', opponent);
             } 
             // Check if replying to someone's message
             else if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
                 const quotedParticipant = message.message.extendedTextMessage.contextInfo.participant;
                 if (quotedParticipant) {
                     opponent = quotedParticipant;
+                    console.log('🎯 Found quoted opponent:', opponent);
                 }
             }
             // Handle phone numbers or usernames from args
@@ -127,6 +140,7 @@ class TicTacToePlugin {
                 let userInput = args[0].replace('@', '').replace(/\D/g, '');
                 if (userInput) {
                     opponent = userInput + '@s.whatsapp.net';
+                    console.log('🎯 Found opponent from args:', opponent);
                 }
             }
             
@@ -137,6 +151,7 @@ class TicTacToePlugin {
             }
             
             // Don't allow playing against yourself
+            console.log('🎯 Checking self-play - Player:', player, 'Opponent:', opponent);
             if (opponent === player) {
                 await reply('❌ You cannot play against yourself! Tag someone else.');
                 return { success: false, message: 'Cannot play against self' };
@@ -217,6 +232,8 @@ class TicTacToePlugin {
     async handleInput(chatId, input, player) {
         try {
             const gameData = this.games.get(chatId);
+            
+            console.log('🎯 HandleInput Debug - Chat:', chatId, 'Player:', player, 'Input:', input);
             
             if (!gameData || gameData.gameStatus !== 'active') {
                 return {
