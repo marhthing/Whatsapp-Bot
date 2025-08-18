@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T22:09:27.482Z",
+  "lastUpdated": "2025-08-18T22:10:28.013Z",
   "plugins": [
     {
       "name": "admin-tools",
@@ -55,16 +55,6 @@
       ]
     },
     {
-      "name": "enhance",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T22:09:27.377Z",
-      "commands": [
-        "enhance",
-        "enhancestatus"
-      ]
-    },
-    {
       "name": "jid",
       "version": "1.0.0",
       "enabled": true,
@@ -99,6 +89,16 @@
       "loadedAt": "2025-08-18T22:09:27.482Z",
       "commands": [
         "ytv"
+      ]
+    },
+    {
+      "name": "enhance",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T22:10:28.013Z",
+      "commands": [
+        "enhance",
+        "enhancestatus"
       ]
     }
   ]
