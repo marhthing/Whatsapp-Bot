@@ -241,6 +241,26 @@ class GamesPlugin {
         }
     }
 
+    async executeCommand(commandName, context) {
+        try {
+            if (!this.isInitialized) {
+                throw new Error('Games plugin not initialized');
+            }
+
+            const handler = this.commands[commandName];
+            if (!handler) {
+                throw new Error(`Unknown command: ${commandName}`);
+            }
+
+            return await handler(context);
+            
+        } catch (error) {
+            console.error(`❌ Error executing games command '${commandName}':`, error);
+            await context.reply(`❌ Error executing command: ${error.message}`);
+            return { success: false, error: error.message };
+        }
+    }
+
     async handleGameInput(data) {
         try {
             const { chatId, gameType, input, player, gameInfo } = data;

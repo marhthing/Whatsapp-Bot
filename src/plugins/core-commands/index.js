@@ -537,22 +537,29 @@ class CoreCommandsPlugin {
             setTimeout(() => {
                 console.log('🔄 Restarting MATDEV Bot...');
                 
-                // Use spawn to restart the process properly
-                const { spawn } = require('child_process');
-                
-                // Spawn a new instance of the bot
-                const child = spawn('node', ['index.js'], {
-                    detached: true,
-                    stdio: 'ignore'
-                });
-                
-                // Detach the child process
-                child.unref();
-                
-                // Exit current process after spawning new one
-                setTimeout(() => {
-                    process.exit(0);
-                }, 1000);
+                // Try process spawning first, then fallback to exit code
+                try {
+                    const { spawn } = require('child_process');
+                    
+                    // Spawn new process in background
+                    const child = spawn('node', ['index.js'], {
+                        detached: true,
+                        stdio: 'ignore',
+                        cwd: process.cwd()
+                    });
+                    
+                    child.unref();
+                    
+                    // Exit current process after brief delay
+                    setTimeout(() => {
+                        process.exit(0);
+                    }, 1000);
+                    
+                } catch (spawnError) {
+                    console.log('Spawn failed, using exit code method...');
+                    // Fallback: exit with code 1 to trigger workflow restart
+                    process.exit(1);
+                }
                 
             }, 2000);
             
