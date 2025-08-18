@@ -105,14 +105,15 @@ class BotClient extends EventEmitter {
             console.log(`🔐 Auth method: ${authMethod === '1' ? 'QR Code' : '8-digit Pairing Code'}`);
         }
 
-        // Client configuration
+        // Client configuration optimized for Replit environment
         const clientConfig = {
             authStrategy: new LocalAuth({
                 clientId: sessionId,
                 dataPath: path.join(sessionDir, 'auth')
             }),
             puppeteer: {
-                headless: true,
+                headless: 'new',
+                executablePath: '/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium',
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -124,13 +125,14 @@ class BotClient extends EventEmitter {
                     '--disable-gpu',
                     '--disable-web-security',
                     '--disable-features=VizDisplayCompositor',
-                    '--disable-extensions',
-                    '--disable-plugins',
-                    '--disable-images',
-                    '--disable-javascript',
-                    '--virtual-time-budget=10000'
-                ],
-                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+                    '--disable-background-timer-throttling',
+                    '--disable-backgrounding-occluded-windows',
+                    '--disable-renderer-backgrounding',
+                    '--disable-ipc-flooding-protection',
+                    '--use-gl=swiftshader',
+                    '--disable-software-rasterizer',
+                    '--disable-extensions'
+                ]
             }
         };
 

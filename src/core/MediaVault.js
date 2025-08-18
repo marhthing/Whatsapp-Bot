@@ -17,7 +17,7 @@ class MediaVault {
 
             // Create media directories
             const mediaTypes = ['images', 'videos', 'audio', 'documents', 'stickers'];
-
+            
             for (const type of mediaTypes) {
                 await fs.ensureDir(path.join(this.mediaPath, type));
             }
@@ -36,11 +36,11 @@ class MediaVault {
 
     async loadMetadataCache() {
         const metadataPath = path.join(this.mediaPath, 'metadata.json');
-
+        
         try {
             if (await fs.pathExists(metadataPath)) {
                 const metadata = await fs.readJson(metadataPath);
-
+                
                 for (const [key, value] of Object.entries(metadata)) {
                     this.metadataCache.set(key, value);
                 }
@@ -52,7 +52,7 @@ class MediaVault {
 
     async saveMetadataCache() {
         const metadataPath = path.join(this.mediaPath, 'metadata.json');
-
+        
         try {
             const metadata = Object.fromEntries(this.metadataCache);
             await fs.writeJson(metadataPath, metadata, { spaces: 2 });
@@ -74,7 +74,7 @@ class MediaVault {
 
             // Generate file hash for deduplication
             const hash = crypto.createHash('sha256').update(mediaData.data).digest('hex');
-
+            
             // Check if file already exists
             const existingFile = this.findExistingFile(hash);
             if (existingFile) {
@@ -86,7 +86,7 @@ class MediaVault {
             // Determine file category and extension
             const category = this.getMediaCategory(mediaData.mimetype);
             const extension = this.getFileExtension(mediaData.mimetype, mediaData.filename);
-
+            
             // Generate unique filename
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const filename = `${timestamp}_${hash.substring(0, 8)}.${extension}`;
@@ -115,7 +115,7 @@ class MediaVault {
             await this.saveMetadataCache();
 
             console.log(`💾 Stored ${category} file: ${filename} (${this.formatSize(mediaData.data.length)})`);
-
+            
             return fileMetadata;
 
         } catch (error) {
@@ -154,7 +154,7 @@ class MediaVault {
         }
         if (mimetype.startsWith('video/')) return 'videos';
         if (mimetype.startsWith('audio/')) return 'audio';
-
+        
         return 'documents';
     }
 
@@ -198,7 +198,7 @@ class MediaVault {
             await fs.unlink(metadata.path);
             this.metadataCache.delete(fileId);
             await this.saveMetadataCache();
-
+            
             console.log(`🗑️ Deleted media file: ${metadata.filename}`);
             return true;
 
@@ -266,13 +266,13 @@ class MediaVault {
 
         for (const metadata of this.metadataCache.values()) {
             stats.totalSize += metadata.size;
-
+            
             // Count by category
-            stats.byCategory[metadata.category] =
+            stats.byCategory[metadata.category] = 
                 (stats.byCategory[metadata.category] || 0) + 1;
 
             // Count by mimetype
-            stats.byMimetype[metadata.mimetype] =
+            stats.byMimetype[metadata.mimetype] = 
                 (stats.byMimetype[metadata.mimetype] || 0) + 1;
 
             // Track oldest/newest
@@ -290,19 +290,19 @@ class MediaVault {
 
     async cleanupOrphanedFiles() {
         console.log('🧹 Cleaning up orphaned media files...');
-
+        
         const categories = ['images', 'videos', 'audio', 'documents', 'stickers'];
         let cleanedCount = 0;
 
         for (const category of categories) {
             const categoryPath = path.join(this.mediaPath, category);
-
+            
             if (await fs.pathExists(categoryPath)) {
                 const files = await fs.readdir(categoryPath);
-
+                
                 for (const filename of files) {
                     const filePath = path.join(categoryPath, filename);
-
+                    
                     // Check if file is in metadata cache
                     const isTracked = Array.from(this.metadataCache.values())
                         .some(metadata => metadata.filename === filename);
@@ -321,32 +321,16 @@ class MediaVault {
     }
 
     parseSize(sizeStr) {
-        if (typeof sizeStr === 'number') {
-            return sizeStr;
-        }
-
-        if (typeof sizeStr !== 'string') {
-            throw new Error(`Invalid size format: ${sizeStr}`);
-        }
-
-        // If it's just a number string (bytes), return as number
-        if (/^\d+$/.test(sizeStr)) {
-            return parseInt(sizeStr, 10);
-        }
-
-        const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?$/);
+        const units = { B: 1, KB: 1024, MB: 1024**2, GB: 1024**3 };
+        const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)$/i);
+        
         if (!match) {
             throw new Error(`Invalid size format: ${sizeStr}`);
         }
 
         const value = parseFloat(match[1]);
-        const unit = match[2] ? match[2].toUpperCase() : 'B'; // Default to Bytes if no unit
-        const units = { B: 1, KB: 1024, MB: 1024**2, GB: 1024**3 };
-
-        if (!units[unit]) {
-            throw new Error(`Unknown size unit: ${match[2]}`);
-        }
-
+        const unit = match[2].toUpperCase();
+        
         return value * units[unit];
     }
 
