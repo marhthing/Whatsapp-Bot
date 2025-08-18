@@ -69,9 +69,18 @@ class MessageProcessor extends EventEmitter {
             // Extract command if present (for both incoming and outgoing messages)
             const command = this.extractCommand(message);
 
-            // Skip non-command outgoing messages, but process command outgoing messages
+            // Skip non-command outgoing messages, but allow game input processing for bot owner
             if (isOutgoing && !command) {
-                return;
+                // Check if this might be a game input from the bot owner
+                const chatId = message.key.remoteJid;
+                const activeGame = this.accessController.getActiveGame(chatId);
+                
+                if (!activeGame) {
+                    return; // No active game, skip outgoing non-command message
+                }
+                
+                // Continue processing - this might be a game move from the bot owner
+                console.log('🎮 Allowing outgoing message processing for potential game move');
             }
 
             // Check access control
