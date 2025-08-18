@@ -14,6 +14,44 @@ class TicTacToePlugin {
         
         // Game storage path
         this.dataPath = path.join(process.cwd(), 'data', 'games', 'tictactoe');
+        
+        // Listen for game input events
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        if (this.eventBus) {
+            this.eventBus.on('game_input_received', async (data) => {
+                if (data.gameType === 'tictactoe') {
+                    await this.processGameInput(data);
+                }
+            });
+        }
+    }
+
+    async processGameInput(data) {
+        try {
+            const { chatId, input, player } = data;
+            const result = await this.handleInput(chatId, input, player);
+            
+            if (result.message) {
+                // Send the response back through the bot client
+                await this.botClient.sendMessage(chatId, result.message);
+            }
+            
+            if (result.gameEnded) {
+                // Clean up game state
+                const accessController = this.botClient.getAccessController();
+                accessController.endGame(chatId);
+                this.eventBus.emit('game_ended', {
+                    chatId,
+                    gameType: 'tictactoe'
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error processing tic-tac-toe input:', error);
+        }
     }
 
     async initialize() {
@@ -69,24 +107,31 @@ class TicTacToePlugin {
                 return { success: false, message: 'Game already active' };
             }
             
-            // Parse opponent (required for multiplayer)
+            // Parse opponent (REQUIRED for multiplayer)
             let opponent = null;
-            if (args.length > 0) {
-                // Handle @mentions or phone numbers
-                const mention = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-                if (mention) {
-                    opponent = mention;
-                } else {
-                    opponent = args[0].replace('@', '').replace(/\D/g, '');
-                    if (opponent) {
-                        opponent += '@s.whatsapp.net';
-                    }
+            
+            // First check for mentions in the message
+            const mention = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+            if (mention) {
+                opponent = mention;
+            } else if (args.length > 0) {
+                // Handle phone numbers or usernames
+                let userInput = args[0].replace('@', '').replace(/\D/g, '');
+                if (userInput) {
+                    opponent = userInput + '@s.whatsapp.net';
                 }
             }
             
+            // Opponent is REQUIRED - no AI mode
             if (!opponent) {
-                await reply('❌ Please tag someone to play with: .tictactoe @username');
+                await reply('❌ Please tag someone to play with: .tictactoe @username\n\nExample: .tictactoe @friend');
                 return { success: false, message: 'No opponent specified' };
+            }
+            
+            // Don't allow playing against yourself
+            if (opponent === player) {
+                await reply('❌ You cannot play against yourself! Tag someone else.');
+                return { success: false, message: 'Cannot play against self' };
             }
             
             // Create new game state
@@ -146,10 +191,10 @@ class TicTacToePlugin {
         const symbols = board.map((cell, index) => {
             if (cell === 'X') return '❌';
             if (cell === 'O') return '⭕';
-            return (index + 1).toString();
+            return ` ${index + 1} `;
         });
         
-        return `\`\`\`\n ${symbols[0]} | ${symbols[1]} | ${symbols[2]} \n-----------\n ${symbols[3]} | ${symbols[4]} | ${symbols[5]} \n-----------\n ${symbols[6]} | ${symbols[7]} | ${symbols[8]} \n\`\`\``;
+        return `\`\`\`\n${symbols[0]}│${symbols[1]}│${symbols[2]}\n───┼───┼───\n${symbols[3]}│${symbols[4]}│${symbols[5]}\n───┼───┼───\n${symbols[6]}│${symbols[7]}│${symbols[8]}\n\`\`\``;
     }
 
     async saveGameData(chatId, gameData) {
@@ -203,8 +248,9 @@ class TicTacToePlugin {
             const expectedPlayer = gameData.players[currentPlayerSymbol];
             
             if (player !== expectedPlayer) {
+                const waitingPlayerName = expectedPlayer.split('@')[0];
                 return {
-                    message: `❌ It's not your turn. Waiting for ${expectedPlayer.split('@')[0]}.`,
+                    message: `⏳ It's not your turn! Waiting for **${waitingPlayerName}** (${currentPlayerSymbol}) to make a move.`,
                     gameEnded: false
                 };
             }
@@ -219,8 +265,8 @@ class TicTacToePlugin {
             
             if (winner) {
                 gameData.gameStatus = 'finished';
-                const winnerName = winner === 'AI' ? 'AI' : gameData.players[winner].split('@')[0];
-                responseMessage = `🎊 **Game Over!**\n\n${this.renderBoard(gameData.board)}\n\n🏆 **Winner: ${winnerName} (${winner === 'X' ? '❌' : '⭕'})**`;
+                const winnerName = gameData.players[winner].split('@')[0];
+                responseMessage = `🎊 **GAME OVER!**\n\n${this.renderBoard(gameData.board)}\n\n🏆 **Winner: ${winnerName}** (${winner === 'X' ? '❌' : '⭕'})\n\n🎉 Congratulations! 🎉`;
                 
                 await this.saveGameData(chatId, gameData);
                 this.games.delete(chatId);
@@ -231,7 +277,7 @@ class TicTacToePlugin {
                 };
             } else if (gameData.moves >= 9) {
                 gameData.gameStatus = 'finished';
-                responseMessage = `🤝 **Game Over!**\n\n${this.renderBoard(gameData.board)}\n\n**Result: It's a tie!**`;
+                responseMessage = `🤝 **GAME OVER!**\n\n${this.renderBoard(gameData.board)}\n\n🤝 **Result: It's a TIE!**\n\nWell played both! 👏`;
                 
                 await this.saveGameData(chatId, gameData);
                 this.games.delete(chatId);
@@ -244,9 +290,9 @@ class TicTacToePlugin {
                 // Switch turns
                 gameData.currentPlayer = gameData.currentPlayer === 'X' ? 'O' : 'X';
                 const nextPlayer = gameData.players[gameData.currentPlayer];
-                const nextPlayerName = nextPlayer === 'AI' ? 'AI' : nextPlayer.split('@')[0];
+                const nextPlayerName = nextPlayer.split('@')[0];
                 
-                responseMessage = `${this.renderBoard(gameData.board)}\n\n🎮 **Next Turn:** ${gameData.currentPlayer} (${nextPlayerName})`;
+                responseMessage = `${this.renderBoard(gameData.board)}\n\n🎮 **Current Turn:** ${gameData.currentPlayer} (**${nextPlayerName}**)\n\n📝 Type a number (1-9) to place your mark!`;
                 
                 await this.saveGameData(chatId, gameData);
                 

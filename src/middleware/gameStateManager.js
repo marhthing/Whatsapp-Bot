@@ -31,20 +31,29 @@ class GameStateManagerMiddleware {
             if (!this.isInitialized) return;
             
             const { message } = context;
+            const messageText = message.body || '';
             
             // Only process if games are enabled
             if (this.envManager.get('ENABLE_GAMES') !== 'true') {
                 return;
             }
             
-            // Check if this is a game input
-            if (context.metadata.isGameInput && context.metadata.gameInfo) {
-                await this.handleGameInput(context);
-                return;
+            // Check if there's an active game in this chat
+            const chatId = message.key.remoteJid;
+            const accessController = this.botClient.getAccessController();
+            const activeGame = accessController.getActiveGame(chatId);
+            
+            if (activeGame) {
+                // Check if this message is game input
+                if (this.isValidGameInput(messageText, activeGame)) {
+                    context.metadata.isGameInput = true;
+                    context.metadata.gameInfo = activeGame;
+                    await this.handleGameInput(context);
+                    return;
+                }
             }
             
             // Check if this is a game command
-            const messageText = message.body || '';
             const prefix = this.envManager.get('BOT_PREFIX', '.');
             
             if (messageText.startsWith(prefix)) {
@@ -71,22 +80,18 @@ class GameStateManagerMiddleware {
         const gameInfo = context.metadata.gameInfo;
         
         try {
-            // Validate game input
-            if (!this.isValidGameInput(message.body, gameInfo)) {
-                // Invalid input - ignore silently
-                context.stopped = true;
-                return;
-            }
-            
             // Mark as valid game input for further processing
             context.metadata.validGameInput = true;
-            context.processed = true; // Will be handled by game plugin
+            context.stopped = true; // Stop further processing - game plugin will handle this
+            
+            const chatId = message.key.remoteJid;
+            const player = message.key.participant || message.key.remoteJid;
             
             this.eventBus.emit('game_input_received', {
-                chatId: message.from,
+                chatId: chatId,
                 gameType: gameInfo.type,
-                input: message.body,
-                player: message.author || message.from,
+                input: message.body.trim(),
+                player: player,
                 gameInfo
             });
             
