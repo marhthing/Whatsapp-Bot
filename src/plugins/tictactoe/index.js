@@ -366,9 +366,11 @@ class TicTacToePlugin {
             console.log('🎯 Turn Validation - Current Symbol:', currentPlayerSymbol);
             console.log('🎯 Turn Validation - Expected Player:', expectedPlayer, '(normalized:', normalizedExpected + ')');
             console.log('🎯 Turn Validation - Actual Player:', player, '(normalized:', normalizedActual + ')');
-            console.log('🎯 Turn Validation - Match:', normalizedActual === normalizedExpected);
             
-            if (normalizedActual !== normalizedExpected) {
+            const isMatch = jidManager.areEqual(player, expectedPlayer);
+            console.log('🎯 Turn Validation - Match:', isMatch);
+            
+            if (!isMatch) {
                 const waitingPlayerName = this.extractDisplayName(expectedPlayer);
                 const currentPlayerName = this.extractDisplayName(player);
                 return {

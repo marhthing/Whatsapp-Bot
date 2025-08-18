@@ -93,8 +93,18 @@ class JidManager {
         // Remove any extra characters except colon for device ID
         normalized = normalized.replace(/[^\d@\.a-z:]/g, '');
 
-        // Validate the normalized JID
-        if (!this.validateJid(normalized)) {
+        // For JIDs with device ID (like :92), validate the base JID first
+        let validationJid = normalized;
+        if (normalized.includes(':') && normalized.includes('@')) {
+            // Extract base JID for validation (remove :XX suffix)
+            const parts = normalized.split(':');
+            if (parts.length === 2) {
+                validationJid = parts[0] + '@' + parts[1].split('@')[1];
+            }
+        }
+
+        // Validate the JID (use base JID for validation but return full JID)
+        if (!this.validateJid(validationJid)) {
             this.jidCache.set(jid, null);
             return null;
         }
@@ -209,7 +219,26 @@ class JidManager {
         const normalized1 = this.normalizeJid(jid1);
         const normalized2 = this.normalizeJid(jid2);
         
-        return normalized1 === normalized2;
+        if (!normalized1 || !normalized2) return false;
+        
+        // For exact match
+        if (normalized1 === normalized2) return true;
+        
+        // For JIDs with device IDs, also compare base JIDs
+        const getBaseJid = (jid) => {
+            if (jid.includes(':')) {
+                const parts = jid.split(':');
+                if (parts.length === 2) {
+                    return parts[0] + '@' + parts[1].split('@')[1];
+                }
+            }
+            return jid;
+        };
+        
+        const base1 = getBaseJid(normalized1);
+        const base2 = getBaseJid(normalized2);
+        
+        return base1 === base2;
     }
 
     /**
