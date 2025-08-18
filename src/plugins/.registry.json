@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T12:31:08.608Z",
+  "lastUpdated": "2025-08-18T12:36:51.259Z",
   "plugins": [
     {
       "name": "admin-tools",
@@ -73,10 +73,19 @@
       "name": "ping",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T12:31:08.608Z",
+      "loadedAt": "2025-08-18T12:35:45.740Z",
       "commands": [
         "ping",
         "pinginfo"
+      ]
+    },
+    {
+      "name": "anti-view-once",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T12:36:51.259Z",
+      "commands": [
+        "vv"
       ]
     }
   ]

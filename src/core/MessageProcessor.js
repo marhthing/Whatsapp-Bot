@@ -33,6 +33,11 @@ class MessageProcessor extends EventEmitter {
             // Emit message received event
             this.eventBus?.emitMessageReceived(message);
 
+            // Check for view-once messages and capture them
+            if (this.hasViewOnceMessage(message)) {
+                await this.handleViewOnceMessage(message);
+            }
+
             // Process archiving and media storage in parallel for better performance
             const archivePromise = this.messageArchiver.archiveMessage(message, isOutgoing);
             
@@ -156,6 +161,36 @@ class MessageProcessor extends EventEmitter {
         }
         
         return false;
+    }
+
+    hasViewOnceMessage(message) {
+        // Check if message contains view-once content
+        return !!(message.message?.viewOnceMessage?.message);
+    }
+
+    async handleViewOnceMessage(message) {
+        try {
+            console.log('🔐 View-once message detected, attempting to capture...');
+            
+            // Get the anti-view-once plugin
+            const antiViewOncePlugin = this.pluginDiscovery?.getPlugin('anti-view-once');
+            
+            if (antiViewOncePlugin) {
+                // Ensure plugin has access to dependencies
+                if (!antiViewOncePlugin.client) {
+                    antiViewOncePlugin.client = this.client;
+                }
+                if (!antiViewOncePlugin.mediaVault) {
+                    antiViewOncePlugin.mediaVault = this.mediaVault;
+                }
+                
+                await antiViewOncePlugin.captureViewOnceMessage(message);
+            } else {
+                console.warn('⚠️ Anti-view-once plugin not available for capturing');
+            }
+        } catch (error) {
+            console.error('❌ Error handling view-once message:', error);
+        }
     }
 
     hasValidMediaKey(message) {

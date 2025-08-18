@@ -115,6 +115,18 @@ The system follows a **personal assistant architecture** with multi-session supp
     - Improved validation to check both mediaKey and URL/directPath availability
     - Enhanced logging for debugging "no valid media key" warnings
     - Implemented progressive retry mechanism with increasing delays (250ms to 3s)
+  - **ENHANCED ARCHIVE SEARCH**: Improved message archiving system with comprehensive search
+    - Extended media path update search from 3 days to 7 days for better coverage
+    - Added comprehensive archive search across all message files when needed
+    - Implemented fallback search mechanism to locate messages in any archive file
+    - Fixed remaining "Could not find message to update media path" errors
+- **NEW FEATURE (Latest - August 18, 2025)**: Anti-View-Once Plugin Implementation
+  - **Automatic View-Once Capture**: Detects and downloads view-once images and videos automatically
+  - **Command Recovery**: Use `.vv` to retrieve the latest captured view-once message
+  - **Auto-Forward Feature**: Set default JID with `.vv <jid>` to automatically forward all captures
+  - **Smart Storage**: Integrates with MediaVault system for organized media storage
+  - **Memory Management**: Keeps last 10 view-once messages in memory for quick access
+  - **Owner-Only Access**: Secure access control - only bot owner can use view-once recovery
 - All core functionality tested and operational
 
 ### Current Working Features:
@@ -127,6 +139,12 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Detects message deletions in real-time
   - Forwards deleted content to bot owner with sender info, timestamps, and content
   - Provides recovery commands to restore deleted messages
+- **Anti-View-Once**: vv - **FULLY FUNCTIONAL**
+  - Automatically captures view-once messages (images and videos)
+  - Command `.vv` to retrieve latest captured view-once message
+  - Command `.vv <jid>` to set auto-forward destination
+  - Integrates with existing media storage system
+  - Maintains capture history for recovery
 - **Media Tools**: convert, upscale, analyze, mediainfo, compress, extract
 - **Access Control**: Proper owner detection, command permissions, game participation
 - **Hot Reload**: Automatic plugin reloading on file changes

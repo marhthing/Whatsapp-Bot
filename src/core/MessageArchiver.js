@@ -380,11 +380,79 @@ class MessageArchiver {
                 }
             }
             
-            console.warn(`⚠️ Could not find message ${messageId} to update media path in last ${searchDays} days`);
+            // Extended search - look for the message in all archive files if not found in recent days
+            console.log(`🔍 Message ${messageId} not found in recent files, performing comprehensive search...`);
+            const comprehensiveResult = await this.findMessageInAllArchives(messageId);
+            
+            if (comprehensiveResult) {
+                const { filePath, messages } = comprehensiveResult;
+                const messageIndex = messages.findIndex(msg => msg.id === messageId);
+                if (messageIndex !== -1) {
+                    messages[messageIndex].mediaPath = mediaPath;
+                    messages[messageIndex].hasMedia = true;
+                    
+                    if (mediaMetadata) {
+                        messages[messageIndex].mediaMetadata = {
+                            uniqueId: mediaMetadata.id,
+                            filename: mediaMetadata.filename,
+                            category: mediaMetadata.category,
+                            mimetype: mediaMetadata.mimetype,
+                            size: mediaMetadata.size
+                        };
+                    }
+                    
+                    await fs.writeJson(filePath, messages, { spaces: 2 });
+                    console.log(`📁 Updated media path for message ${messageId}: ${mediaPath}`);
+                    return true;
+                }
+            }
+            
+            console.warn(`⚠️ Could not find message ${messageId} in any archive files`);
             return false;
         } catch (error) {
             console.error('❌ Error updating message media path:', error);
             return false;
+        }
+    }
+
+    async findMessageInAllArchives(messageId) {
+        try {
+            const yearDirs = await fs.readdir(this.messagesPath);
+            
+            for (const year of yearDirs) {
+                const yearPath = path.join(this.messagesPath, year);
+                const monthDirs = await fs.readdir(yearPath);
+                
+                for (const month of monthDirs) {
+                    const monthPath = path.join(yearPath, month);
+                    const chatTypeDirs = await fs.readdir(monthPath);
+                    
+                    for (const chatType of chatTypeDirs) {
+                        const chatTypePath = path.join(monthPath, chatType);
+                        const files = await fs.readdir(chatTypePath);
+                        
+                        for (const file of files) {
+                            if (file.endsWith('.json')) {
+                                const filePath = path.join(chatTypePath, file);
+                                try {
+                                    const messages = await fs.readJson(filePath);
+                                    if (messages.some(msg => msg.id === messageId)) {
+                                        return { filePath, messages };
+                                    }
+                                } catch (error) {
+                                    // Skip corrupted files
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('❌ Error in comprehensive archive search:', error);
+            return null;
         }
     }
 
