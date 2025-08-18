@@ -109,6 +109,13 @@ class GameStateManagerMiddleware {
             if (player && !player.includes('@')) {
                 player = player + '@s.whatsapp.net';
             }
+            
+            // Handle WhatsApp JID variations - remove :92 suffix if present for matching
+            // but keep the original format that was used during game creation
+            let normalizedPlayer = player;
+            if (player && player.includes(':')) {
+                normalizedPlayer = player.split(':')[0] + '@s.whatsapp.net';
+            }
 
             console.log('🎮 GameStateManager - Extracted player JID:', player, 'Chat:', chatId);
 
@@ -116,7 +123,8 @@ class GameStateManagerMiddleware {
                 chatId: chatId,
                 gameType: gameInfo.type,
                 input: message.body.trim(),
-                player: player,
+                player: player, // Keep original for logging
+                normalizedPlayer: normalizedPlayer, // Use for matching
                 gameInfo
             });
 

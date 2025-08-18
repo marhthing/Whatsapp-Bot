@@ -32,8 +32,10 @@ class TicTacToePlugin {
     async processGameInput(data) {
         try {
             console.log('🎯 TicTacToe processGameInput called with:', data);
-            const { chatId, input, player } = data;
-            const result = await this.handleInput(chatId, input, player);
+            const { chatId, input, player, normalizedPlayer } = data;
+            // Use normalized player for matching, fallback to original player if not available
+            const playerForMatching = normalizedPlayer || player;
+            const result = await this.handleInput(chatId, input, playerForMatching);
             
             console.log('🎯 TicTacToe handleInput result:', result);
             
@@ -329,12 +331,16 @@ class TicTacToePlugin {
             const currentPlayerSymbol = gameData.currentPlayer;
             const expectedPlayer = gameData.players[currentPlayerSymbol];
             
-            console.log('🎯 Turn Validation - Current Symbol:', currentPlayerSymbol);
-            console.log('🎯 Turn Validation - Expected Player:', expectedPlayer);
-            console.log('🎯 Turn Validation - Actual Player:', player);
-            console.log('🎯 Turn Validation - Match:', player === expectedPlayer);
+            // Normalize both players for comparison
+            const normalizedExpected = this.normalizeJidForComparison(expectedPlayer);
+            const normalizedActual = this.normalizeJidForComparison(player);
             
-            if (player !== expectedPlayer) {
+            console.log('🎯 Turn Validation - Current Symbol:', currentPlayerSymbol);
+            console.log('🎯 Turn Validation - Expected Player:', expectedPlayer, '(normalized:', normalizedExpected + ')');
+            console.log('🎯 Turn Validation - Actual Player:', player, '(normalized:', normalizedActual + ')');
+            console.log('🎯 Turn Validation - Match:', normalizedActual === normalizedExpected);
+            
+            if (normalizedActual !== normalizedExpected) {
                 const waitingPlayerName = this.extractDisplayName(expectedPlayer);
                 const currentPlayerName = this.extractDisplayName(player);
                 return {
@@ -454,6 +460,26 @@ class TicTacToePlugin {
                 message: '❌ Error ending game'
             };
         }
+    }
+
+    /**
+     * Normalize JID for comparison - removes :92 suffix and ensures consistent format
+     */
+    normalizeJidForComparison(jid) {
+        if (!jid) return '';
+        
+        // Remove :92 suffix if present
+        let normalized = jid;
+        if (jid.includes(':')) {
+            normalized = jid.split(':')[0] + '@s.whatsapp.net';
+        }
+        
+        // Ensure @s.whatsapp.net suffix
+        if (!normalized.includes('@')) {
+            normalized = normalized + '@s.whatsapp.net';
+        }
+        
+        return normalized;
     }
 
     /**
