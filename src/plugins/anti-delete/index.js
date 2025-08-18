@@ -1,5 +1,5 @@
+
 const { Detector } = require('./detector');
-const { Recovery } = require('./recovery');
 
 class AntiDeletePlugin {
     constructor(options) {
@@ -11,7 +11,9 @@ class AntiDeletePlugin {
         
         this.commands = {};
         this.detector = null;
-        this.recovery = null;
+        
+        this.isEnabled = true; // Default enabled
+        this.targetJid = null; // If not set, use owner's personal chat
         
         this.isInitialized = false;
     }
@@ -20,12 +22,12 @@ class AntiDeletePlugin {
         try {
             console.log('🔍 Initializing Anti-Delete plugin...');
             
-            // Initialize components
+            // Initialize detector
             this.detector = new Detector(this.botClient, this.eventBus);
-            this.recovery = new Recovery(this.botClient, this.eventBus);
-            
             await this.detector.initialize();
-            await this.recovery.initialize();
+            
+            // Set detector reference for simplified functionality
+            this.detector.setPlugin(this);
             
             // Initialize commands
             this.initializeCommands();
@@ -44,29 +46,93 @@ class AntiDeletePlugin {
 
     initializeCommands() {
         this.commands = {
-            recover: this.recovery.recover.bind(this.recovery),
-            deleted: this.recovery.listDeleted.bind(this.recovery),
-            antilog: this.detector.getLog.bind(this.detector)
+            delete: this.handleDeleteCommand.bind(this)
         };
     }
 
     setupEventHandlers() {
         // Listen for message deletion events
         this.eventBus.on('message_deleted', async (data) => {
-            if (this.detector) {
+            if (this.detector && this.isEnabled) {
                 await this.detector.handleDeletion(data);
             }
         });
         
         // Listen for deletion detection events
         this.eventBus.on('deletion_detected', async (data) => {
-            console.log(`🔍 Message deletion detected: ${data.id}`);
+            if (this.isEnabled) {
+                console.log(`🔍 Message deletion detected: ${data.id}`);
+            }
         });
     }
 
-    // Method called by MessageProcessor when message is deleted
+    async handleDeleteCommand(context) {
+        try {
+            const { args, reply } = context;
+            
+            if (args.length === 0) {
+                // Show current status
+                const status = this.isEnabled ? '🟢 ON' : '🔴 OFF';
+                const targetInfo = this.targetJid ? 
+                    `📤 Target: ${this.targetJid.split('@')[0]}` : 
+                    '📤 Target: Owner personal chat';
+                
+                await reply(`🗑️ **Anti-Delete Status**\n\n${status}\n${targetInfo}\n\n💡 **Commands:**\n• \`.delete on\` - Enable\n• \`.delete off\` - Disable\n• \`.delete <jid>\` - Set target JID`);
+                return;
+            }
+            
+            const command = args[0].toLowerCase();
+            
+            switch (command) {
+                case 'on':
+                    this.isEnabled = true;
+                    await reply('🟢 Anti-Delete enabled');
+                    break;
+                    
+                case 'off':
+                    this.isEnabled = false;
+                    await reply('🔴 Anti-Delete disabled');
+                    break;
+                    
+                default:
+                    // Treat as JID
+                    const jid = args[0];
+                    if (this.isValidJid(jid)) {
+                        this.targetJid = jid;
+                        await reply(`📤 Anti-Delete target set to: ${jid.split('@')[0]}`);
+                    } else {
+                        await reply('❌ Invalid JID format\n\nUsage:\n• `.delete on` - Enable\n• `.delete off` - Disable\n• `.delete <jid>` - Set target JID');
+                    }
+                    break;
+            }
+            
+        } catch (error) {
+            console.error('Error in delete command:', error);
+            await context.reply('❌ Error processing delete command');
+        }
+    }
+
+    isValidJid(jid) {
+        // Basic JID validation
+        return jid && (jid.includes('@s.whatsapp.net') || jid.includes('@g.us'));
+    }
+
+    getTargetJid() {
+        if (this.targetJid) {
+            return this.targetJid;
+        }
+        
+        // Use owner's personal chat
+        const accessController = this.botClient.getAccessController();
+        return accessController.ownerJid;
+    }
+
     async handleDeletedMessage(after, before, archivedMessage) {
         try {
+            if (!this.isEnabled) {
+                return; // Anti-delete is disabled
+            }
+            
             console.log('🗑️ Anti-delete plugin handling deleted message');
             
             if (this.detector) {
@@ -105,10 +171,6 @@ class AntiDeletePlugin {
             
             if (this.detector) {
                 await this.detector.shutdown();
-            }
-            
-            if (this.recovery) {
-                await this.recovery.shutdown();
             }
             
             this.isInitialized = false;

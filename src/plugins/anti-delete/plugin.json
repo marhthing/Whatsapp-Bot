@@ -1,8 +1,9 @@
+
 {
   "name": "anti-delete",
   "displayName": "Anti-Delete Recovery",
-  "description": "Detects and recovers deleted messages from archived data",
-  "version": "1.0.0",
+  "description": "Detects and forwards deleted messages with simple on/off controls",
+  "version": "2.0.0",
   "author": "WhatsApp Bot System",
   "enabled": true,
   "ownerOnly": true,
@@ -10,32 +11,19 @@
   "dependencies": [],
   "commands": [
     {
-      "name": "recover",
-      "description": "Recover deleted messages from archive",
-      "usage": "recover [timeframe]",
-      "ownerOnly": true
-    },
-    {
-      "name": "deleted",
-      "description": "Show recently deleted messages",
-      "usage": "deleted [count]",
-      "ownerOnly": true
-    },
-    {
-      "name": "antilog",
-      "description": "View anti-delete activity log",
-      "usage": "antilog [hours]",
+      "name": "delete",
+      "description": "Control anti-delete functionality",
+      "usage": "delete [on|off|jid]",
       "ownerOnly": true
     }
   ],
   "features": [
-    "message-recovery",
     "deletion-detection",
-    "archive-integration"
+    "message-forwarding",
+    "simple-controls"
   ],
   "permissions": [
-    "messages:recover",
-    "archive:read",
-    "logs:read"
+    "messages:detect",
+    "messages:forward"
   ]
 }

@@ -38,6 +38,10 @@ class Detector {
         }
     }
 
+    setPlugin(plugin) {
+        this.plugin = plugin;
+    }
+
     async loadDeletionLog() {
         try {
             const logPath = path.join(this.dataPath, 'deletion_log.json');
@@ -115,19 +119,20 @@ class Detector {
 
     async forwardDeletedMessage(deletionEntry) {
         try {
-            // Get forward destination
-            const forwardJid = this.envManager.get('ANTI_DELETE_FORWARD_JID', 'owner');
+            // Get target JID from plugin
             let targetJid;
             
-            if (forwardJid === 'owner') {
+            if (this.plugin) {
+                targetJid = this.plugin.getTargetJid();
+            } else {
+                // Fallback to owner JID
                 const accessController = this.botClient.getAccessController();
                 targetJid = accessController.ownerJid;
-                if (!targetJid) {
-                    console.warn('⚠️ Owner JID not available for anti-delete forwarding');
-                    return;
-                }
-            } else {
-                targetJid = forwardJid;
+            }
+            
+            if (!targetJid) {
+                console.warn('⚠️ Target JID not available for anti-delete forwarding');
+                return;
             }
             
             const senderPhone = deletionEntry.sender.split('@')[0];
