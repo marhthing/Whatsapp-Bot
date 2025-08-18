@@ -75,11 +75,17 @@ This is a WhatsApp personal assistant bot designed to operate through the owner'
 
 ## Recent Updates (August 18, 2025)
 
-✅ **4-Step Organized Workflow**: Implemented structured initialization process:
-- Step 1: Package Management (install/update packages if needed)
-- Step 2: WhatsApp Authentication (session selection and QR code pairing)
-- Step 3: Start Bot Core (initialize all bot components)
-- Step 4: Load Plugins and Full Engine (activate plugin system)
+✅ **Unified Entry Point**: Streamlined startup process by combining setup.js and start.js into a single index.js
+- Stage 1: Package Management (install/update packages if needed)
+- Stage 2: Directory Setup (ensure all required directories exist)  
+- Stage 3: Session Management (session selection and WhatsApp authentication)
+- Stage 4: Session Initialization (create and configure new sessions)
+- Stage 5: Bot Launch (start the main WhatsApp bot application)
+
+✅ **Simplified Workflow Configuration**: Replaced multiple workflows with single "WhatsApp Bot" workflow
+- Removed confusing dual entry points (setup.js + start.js)
+- Created unified launcher with clear stage-by-stage progression
+- Improved user experience with streamlined initialization process
 
 ✅ **Enhanced Message Archival**: Improved message saving capabilities:
 - Archives both incoming and outgoing messages with detailed metadata

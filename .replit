@@ -17,30 +17,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Setup & Start Bot"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "WhatsApp Bot Direct"
+args = "WhatsApp Bot"
 
 [[workflows.workflow]]
-name = "Setup & Start Bot"
+name = "WhatsApp Bot"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node setup.js"
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow]]
-name = "WhatsApp Bot Direct"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node src/index.js mk"
+args = "node index.js"
 
 [workflows.workflow.metadata]
 outputType = "console"
