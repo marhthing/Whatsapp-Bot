@@ -182,7 +182,10 @@ class Detector {
                 remoteJid: deletionEntry.chatId
             };
             
-            // Forward based on message type
+            // Forward based on message type with better type preservation
+            console.log(`🔍 Original message type: ${originalMessage.type}, Media type: ${deletionEntry.mediaType}`);
+            
+            // Use the preserved type from archived message for accurate forwarding
             const isMediaMessage = this.hasMedia(originalMessage) || this.isMediaType(deletionEntry.mediaType);
             
             if (isMediaMessage) {
@@ -278,8 +281,11 @@ class Detector {
 
             let messageToSend = {};
             
-            switch (mediaType) {
-                case 'imageMessage':
+            // Use the original message type for accurate forwarding (prevents confusion)
+            const originalType = originalMessage.type || mediaType;
+            console.log(`🎯 Using preserved type for forwarding: ${originalType}`);
+            
+            switch (originalType) {
                 case 'image':
                     messageToSend = { 
                         image: mediaBuffer, 
@@ -288,7 +294,6 @@ class Detector {
                     };
                     break;
                     
-                case 'videoMessage':
                 case 'video':
                     messageToSend = { 
                         video: mediaBuffer, 
@@ -297,7 +302,6 @@ class Detector {
                     };
                     break;
                     
-                case 'audioMessage':
                 case 'audio':
                 case 'voice':
                     messageToSend = { 
@@ -308,7 +312,6 @@ class Detector {
                     };
                     break;
                     
-                case 'documentMessage':
                 case 'document':
                     messageToSend = { 
                         document: mediaBuffer, 
@@ -319,7 +322,6 @@ class Detector {
                     };
                     break;
                     
-                case 'stickerMessage':
                 case 'sticker':
                     messageToSend = { 
                         sticker: mediaBuffer,
@@ -328,13 +330,28 @@ class Detector {
                     break;
                     
                 default:
-                    console.warn(`Unknown media type: ${mediaType}, skipping`);
-                    return; // Don't send anything for unknown types
+                    console.warn(`Unknown original type: ${originalType}, trying fallback based on media type: ${mediaType}`);
+                    // Fallback to mediaType detection for backward compatibility
+                    if (mediaType.includes('sticker')) {
+                        messageToSend = { 
+                            sticker: mediaBuffer,
+                            contextInfo: contextInfo
+                        };
+                    } else if (mediaType.includes('image')) {
+                        messageToSend = { 
+                            image: mediaBuffer, 
+                            caption: this.extractMediaCaption(originalMessage) || undefined,
+                            contextInfo: contextInfo
+                        };
+                    } else {
+                        console.warn(`Cannot determine message type, skipping`);
+                        return;
+                    }
             }
             
             // Send the media message with tag using the client directly for better control
             await this.botClient.client.sendMessage(targetJid, messageToSend);
-            console.log(`✅ Successfully forwarded deleted ${mediaType} as tagged message`);
+            console.log(`✅ Successfully forwarded deleted ${originalType} as tagged message`);
 
         } catch (error) {
             console.error('❌ Error forwarding tagged media message:', error);

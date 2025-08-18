@@ -96,6 +96,11 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Enhanced media archiving to include stickers in hasMedia detection
   - Reduced "no extractable content" warnings with better system message handling
   - Added support for broadcast/newsletter message types to prevent archiving errors
+  - **DELETION QUEUE SYSTEM**: Implemented calm processing for rapid bulk deletions to prevent media type confusion
+  - Added sequential deletion processing with mandatory delays to avoid race conditions
+  - Enhanced media type preservation using original archived message type instead of runtime detection
+  - Reduced bulk deletion processing to 2 items per batch with 300ms intervals and 200ms delays between items
+  - Fixed sticker/image confusion during fast "delete for all" operations by using preserved type information
 - All core functionality tested and operational
 
 ### Current Working Features:

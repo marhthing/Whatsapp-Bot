@@ -17,6 +17,13 @@ class MessageProcessor extends EventEmitter {
         this.isProcessing = false;
         this.maxConcurrentProcessing = parseInt(process.env.MAX_CONCURRENT_COMMANDS || '5');
         this.activeProcessing = new Set();
+        
+        // Add deletion queue to handle rapid bulk deletions properly
+        this.deletionQueue = [];
+        this.processingDeletions = false;
+        
+        // Start deletion queue processor
+        this.startDeletionProcessor();
     }
 
     async processMessage(message) {
@@ -445,65 +452,103 @@ class MessageProcessor extends EventEmitter {
         }
     }
 
-    async processDeletedMessage(deletionData) {
-        try {
-            console.log('🗑️ Message deletion detected in processor:', JSON.stringify(deletionData, null, 2));
-
-            // Handle different deletion data formats from Baileys
-            let messageKeys = [];
-
-            if (Array.isArray(deletionData)) {
-                // Array of message keys
-                messageKeys = deletionData;
-            } else if (deletionData.messages) {
-                // Structured deletion data
-                messageKeys = deletionData.messages;
-            } else if (deletionData.key || deletionData.id) {
-                // Single message deletion
-                messageKeys = [deletionData];
+    startDeletionProcessor() {
+        // Process deletion queue every 300ms to handle rapid deletions calmly
+        setInterval(async () => {
+            if (!this.processingDeletions && this.deletionQueue.length > 0) {
+                await this.processDeletionQueue();
             }
+        }, 300);
+    }
 
-            console.log(`🔍 Processing ${messageKeys.length} deleted message(s)`);
-
-            for (const messageKey of messageKeys) {
-                try {
-                    const messageId = messageKey.id || messageKey;
-                    const chatId = messageKey.remoteJid || messageKey.from;
-
-                    console.log(`🔍 Looking for archived message - ID: ${messageId}, Chat: ${chatId}`);
-
-                    // Try to recover from archive
-                    const archivedMessage = await this.messageArchiver.getMessageById(messageId);
-
-                    if (archivedMessage) {
-                        console.log(`📋 Found archived message for deletion: ${messageId}`);
-
-                        // Get anti-delete plugin
-                        const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
-
-                        if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
-                            console.log(`🔄 Forwarding deletion to anti-delete plugin`);
-                            await antiDeletePlugin.handleDeletedMessage(messageKey, null, archivedMessage);
-                        } else {
-                            console.log(`⚠️ Anti-delete plugin not available or doesn't have handleDeletedMessage method`);
-                        }
-                    } else {
-                        console.log(`⚠️ No archived message found for: ${messageId}`);
-
-                        // Still notify anti-delete plugin about the deletion attempt
-                        const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
-                        if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
-                            console.log(`🔄 Notifying anti-delete plugin of deletion without archived message`);
-                            await antiDeletePlugin.handleDeletedMessage(messageKey, null, null);
-                        }
+    async processDeletionQueue() {
+        if (this.processingDeletions) return;
+        
+        this.processingDeletions = true;
+        
+        try {
+            // Take up to 2 deletions at a time to prevent overwhelming and confusion
+            const batch = this.deletionQueue.splice(0, 2);
+            
+            if (batch.length > 0) {
+                console.log(`🔍 Processing ${batch.length} queued deletion(s) calmly`);
+                
+                // Process each deletion sequentially to avoid race conditions and media confusion
+                for (const deletionData of batch) {
+                    try {
+                        await this.processSingleDeletion(deletionData);
+                        // Mandatory delay between each deletion to prevent type confusion
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (error) {
+                        console.error(`❌ Error processing deletion:`, error);
                     }
-                } catch (msgError) {
-                    console.error(`❌ Error processing individual deletion for ${messageKey}:`, msgError);
                 }
             }
-
         } catch (error) {
-            console.error('❌ Error processing deleted message:', error);
+            console.error('❌ Error processing deletion queue:', error);
+        } finally {
+            this.processingDeletions = false;
+        }
+    }
+
+    async processSingleDeletion(deletionData) {
+        // Handle different deletion data formats from Baileys
+        let messageKeys = [];
+
+        if (Array.isArray(deletionData)) {
+            messageKeys = deletionData;
+        } else if (deletionData.messages) {
+            messageKeys = deletionData.messages;
+        } else if (deletionData.key || deletionData.id) {
+            messageKeys = [deletionData];
+        }
+
+        for (const messageKey of messageKeys) {
+            const messageId = messageKey.id || messageKey;
+            const chatId = messageKey.remoteJid || messageKey.from;
+
+            console.log(`🔍 Looking for archived message - ID: ${messageId}, Chat: ${chatId}`);
+
+            // Try to recover from archive
+            const archivedMessage = await this.messageArchiver.getMessageById(messageId);
+
+            if (archivedMessage) {
+                console.log(`📋 Found archived message for deletion: ${messageId} (Type: ${archivedMessage.type})`);
+
+                // Get anti-delete plugin
+                const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
+
+                if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
+                    console.log(`🔄 Forwarding deletion to anti-delete plugin with preserved type info`);
+                    await antiDeletePlugin.handleDeletedMessage(messageKey, null, archivedMessage);
+                } else {
+                    console.log(`⚠️ Anti-delete plugin not available or doesn't have handleDeletedMessage method`);
+                }
+            } else {
+                console.log(`⚠️ No archived message found for: ${messageId}`);
+
+                // Still notify anti-delete plugin about the deletion attempt
+                const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
+                if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
+                    console.log(`🔄 Notifying anti-delete plugin of deletion without archived message`);
+                    await antiDeletePlugin.handleDeletedMessage(messageKey, null, null);
+                }
+            }
+        }
+    }
+
+    async processDeletedMessage(deletionData) {
+        try {
+            console.log('🗂️ Queuing deletion for calm processing');
+            
+            // Add deletions to queue instead of processing immediately
+            // This prevents confusion during rapid bulk deletions
+            this.deletionQueue.push(deletionData);
+            
+            console.log(`📝 Deletion queue now has ${this.deletionQueue.length} item(s)`);
+            
+        } catch (error) {
+            console.error('❌ Error queuing deleted message:', error);
         }
     }
 
