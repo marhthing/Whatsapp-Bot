@@ -275,6 +275,7 @@ class AccessController {
 
         // Check if command is specifically allowed for this user
         if (command && this.isCommandAllowed(senderJid, command)) {
+            console.log(`✅ Allowed command access granted for '${command}' to user: ${senderJid}`);
             return {
                 allowed: true,
                 reason: 'allowed_command',
@@ -307,6 +308,23 @@ class AccessController {
             default:
                 return false;
         }
+    }
+
+    // Method that middleware calls to check command permissions
+    async canExecuteCommand(userJid, command) {
+        console.log(`🔍 Checking if user ${userJid} can execute command '${command}'`);
+        
+        // Owner can execute any command
+        if (this.isOwner(userJid)) {
+            console.log(`✅ Owner can execute any command: ${command}`);
+            return true;
+        }
+        
+        // Check if command is specifically allowed
+        const allowed = this.isCommandAllowed(userJid, command);
+        console.log(`🔍 Command '${command}' allowed for ${userJid}: ${allowed}`);
+        
+        return allowed;
     }
 
     getAccessStats() {

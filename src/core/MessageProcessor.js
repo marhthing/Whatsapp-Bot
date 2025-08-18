@@ -474,7 +474,18 @@ class MessageProcessor extends EventEmitter {
 
     async sendMessage(chatId, content, options = {}) {
         try {
-            return await this.client.sendMessage(chatId, content, options);
+            // Ensure content is properly formatted for Baileys
+            let messageContent;
+            
+            if (typeof content === 'string') {
+                messageContent = { text: content, ...options };
+            } else if (content && typeof content === 'object') {
+                messageContent = content;
+            } else {
+                throw new Error('Invalid message content format');
+            }
+            
+            return await this.client.sendMessage(chatId, messageContent);
         } catch (error) {
             console.error('❌ Failed to send message:', error);
             throw error;
@@ -483,8 +494,8 @@ class MessageProcessor extends EventEmitter {
 
     async sendErrorMessage(message, error) {
         try {
-            const errorMessage = `❌ Error: ${error.message || 'Unknown error occurred'}`;
-            await this.sendMessage(message.from, errorMessage);
+            const errorText = `❌ Error: ${error.message || 'Unknown error occurred'}`;
+            await this.sendMessage(message.key.remoteJid, { text: errorText });
         } catch (sendError) {
             console.error('❌ Failed to send error message:', sendError);
         }

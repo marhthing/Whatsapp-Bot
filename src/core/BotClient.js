@@ -308,6 +308,41 @@ class BotClient extends EventEmitter {
         }
     }
 
+    getClientInfo() {
+        if (!this.client || !this.isReady()) {
+            return {
+                pushname: 'Unknown',
+                phone: 'Unknown',
+                platform: 'Unknown',
+                battery: 'Unknown',
+                connected: false
+            };
+        }
+
+        try {
+            // Get basic client info from WhatsApp connection
+            const authInfo = this.client.authState?.creds;
+            const connectionState = this.client.ws?.readyState;
+            
+            return {
+                pushname: authInfo?.me?.name || 'MATDEV Bot',
+                phone: this.ownerJid ? this.ownerJid.split('@')[0] : 'Unknown',
+                platform: 'WhatsApp Web',
+                battery: 'N/A',
+                connected: connectionState === 1 // WebSocket.OPEN
+            };
+        } catch (error) {
+            console.error('Error getting client info:', error);
+            return {
+                pushname: 'MATDEV Bot',
+                phone: 'Unknown',
+                platform: 'WhatsApp Web',
+                battery: 'N/A',
+                connected: false
+            };
+        }
+    }
+
     async sendReaction(message, emoji) {
         if (!this.isReady()) {
             return false;

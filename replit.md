@@ -48,8 +48,21 @@ The system follows a **personal assistant architecture** with multi-session supp
 - **Configuration System (`config/`)**: Contains `default.json` for general bot configuration and `plugins.json` for plugin-specific settings.
 
 ## External Dependencies
-- **whatsapp-web.js**: For WhatsApp Web client integration.
+- **@whiskeysockets/baileys**: For WhatsApp Web client integration (migrated from whatsapp-web.js).
 - **fs-extra**: For enhanced file system operations.
 - **qrcode-terminal**: For displaying QR codes during authentication.
 - **express & socket.io**: For optional web interface support.
 - **readline**: For interactive CLI session management.
+- **pino**: For structured logging.
+- **chokidar**: For file watching in hot-reload system.
+
+## Migration Status
+**✅ COMPLETED** - Successfully migrated from Replit Agent to standard Replit environment (August 18, 2025)
+
+### Migration Changes Made:
+- Fixed missing `getClientInfo()` method in BotClient for .info command
+- Fixed message formatting issues with proper Baileys integration
+- Enhanced access control system with better debugging
+- Verified all 6 plugins are loading and working correctly
+- Bot successfully connects via QR code or pairing code authentication
+- All core functionality tested and operational
