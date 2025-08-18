@@ -128,19 +128,52 @@ class TicTacToePlugin {
             let opponent = null;
             
             console.log('🎯 TicTacToe Debug - Player:', player, 'Chat:', chatId);
-            console.log('🎯 Message structure:', JSON.stringify({
-                key: message.key,
-                hasExtendedText: !!message.message?.extendedTextMessage,
-                mentions: message.message?.extendedTextMessage?.contextInfo?.mentionedJid,
-                quotedParticipant: message.message?.extendedTextMessage?.contextInfo?.participant,
-                hasQuoted: !!message.message?.extendedTextMessage?.contextInfo?.quotedMessage
-            }, null, 2));
+            // Only log the important parts to avoid too much output
+            console.log('🎯 Message structure analysis:');
+            console.log('  - Args:', args);
+            console.log('  - ExtendedText mentions:', message.message?.extendedTextMessage?.contextInfo?.mentionedJid);
+            console.log('  - Direct contextInfo mentions:', message.message?.contextInfo?.mentionedJid);
+            console.log('  - Message level mentions:', message.mentionedJid);
+            console.log('  - Conversation text:', message.message?.conversation);
+            console.log('  - Extended text:', message.message?.extendedTextMessage?.text);
             
-            // First check for mentions in the message
-            const mention = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+            // Check for mentions in multiple possible locations
+            let mention = null;
+            
+            // Method 1: Check extendedTextMessage contextInfo
+            if (message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
+                mention = message.message.extendedTextMessage.contextInfo.mentionedJid[0];
+                console.log('🎯 Found mention in extendedTextMessage:', mention);
+            }
+            
+            // Method 2: Check direct contextInfo
+            else if (message.message?.contextInfo?.mentionedJid?.length > 0) {
+                mention = message.message.contextInfo.mentionedJid[0];
+                console.log('🎯 Found mention in contextInfo:', mention);
+            }
+            
+            // Method 3: Check if there's a mentionedJid array at message level
+            else if (message.mentionedJid?.length > 0) {
+                mention = message.mentionedJid[0];
+                console.log('🎯 Found mention at message level:', mention);
+            }
+            
+            // Method 4: Parse mentions from text using @<number> pattern
+            else {
+                const messageText = message.message?.conversation || 
+                                 message.message?.extendedTextMessage?.text || 
+                                 args.join(' ');
+                const mentionRegex = /@(\d+)/g;
+                const mentionMatch = mentionRegex.exec(messageText);
+                if (mentionMatch) {
+                    mention = mentionMatch[1] + '@s.whatsapp.net';
+                    console.log('🎯 Found mention from text parsing:', mention);
+                }
+            }
+            
             if (mention) {
                 opponent = mention;
-                console.log('🎯 Found mentioned opponent:', opponent);
+                console.log('🎯 Final mentioned opponent:', opponent);
             } 
             // Check if replying to someone's message
             else if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
