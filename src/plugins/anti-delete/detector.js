@@ -90,13 +90,33 @@ class Detector {
             
             console.log(`🔍 Processing deletion - Chat: ${chatId}, Sender: ${senderJid}, MessageID: ${messageId}`);
             
+            // Handle different timestamp formats
+            let originalTimestamp;
+            if (before.messageTimestamp) {
+                // Baileys format (Unix timestamp)
+                originalTimestamp = new Date(before.messageTimestamp * 1000).toISOString();
+            } else if (before.timestamp) {
+                // Archived message format - check if it's already ISO string or Date object
+                if (typeof before.timestamp === 'string') {
+                    originalTimestamp = before.timestamp;
+                } else if (before.timestamp instanceof Date) {
+                    originalTimestamp = before.timestamp.toISOString();
+                } else {
+                    // Assume it's a Unix timestamp
+                    originalTimestamp = new Date(before.timestamp).toISOString();
+                }
+            } else {
+                // Fallback to current time
+                originalTimestamp = new Date().toISOString();
+            }
+
             const deletionEntry = {
                 id: this.generateId(),
                 originalMessageId: messageId,
                 deletedMessageId: after ? this.extractMessageId(after) : null,
                 chatId: chatId,
                 sender: senderJid,
-                originalTimestamp: new Date(before.messageTimestamp * 1000).toISOString(),
+                originalTimestamp: originalTimestamp,
                 deletedTimestamp: new Date().toISOString(),
                 messageType: this.getMessageType(before),
                 messageBody: messageText,
