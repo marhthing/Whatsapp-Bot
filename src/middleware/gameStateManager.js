@@ -87,12 +87,22 @@ class GameStateManagerMiddleware {
             const chatId = message.key.remoteJid;
             // Extract player JID properly - same logic as in TicTacToe plugin
             let player;
-            if (message.key?.participant) {
-                // In group chat, participant is the sender
-                player = message.key.participant;
+            const accessController = this.botClient.getAccessController();
+            const ownerJid = accessController.ownerJid;
+            
+            if (message.key) {
+                if (message.key.fromMe) {
+                    // For outgoing messages from bot owner
+                    player = ownerJid;
+                } else {
+                    // For incoming messages:
+                    // - In groups: participant is the sender
+                    // - In individual chats: remoteJid is the sender
+                    player = message.key.participant || message.key.remoteJid;
+                }
             } else {
-                // In private chat, remoteJid is the sender
-                player = message.key?.remoteJid || message.from;
+                // Fallback for other message structures
+                player = message.author || message.from || ownerJid;
             }
 
             console.log('🎮 GameStateManager - Extracted player JID:', player, 'Chat:', chatId);
@@ -118,16 +128,17 @@ class GameStateManagerMiddleware {
     isValidGameInput(input, gameInfo) {
         if (!input || !gameInfo) return false;
 
-        const text = input.trim().toLowerCase();
+        const text = input.trim();
 
         switch (gameInfo.type) {
             case 'tictactoe':
-                // Valid moves are positions 1-9 or 'quit'
-                return /^[1-9]$/.test(text) || text === 'quit';
+                // Valid moves are positions 1-9 or 'quit' (case insensitive)
+                return /^[1-9]$/.test(text) || text.toLowerCase() === 'quit';
 
             case 'wordguess':
                 // Valid inputs are single letters, 'start', or 'quit'
-                return /^[a-z]$/.test(text) || text === 'quit' || text === 'start';
+                const lowerText = text.toLowerCase();
+                return /^[a-z]$/.test(lowerText) || lowerText === 'quit' || lowerText === 'start';
 
             default:
                 return false;

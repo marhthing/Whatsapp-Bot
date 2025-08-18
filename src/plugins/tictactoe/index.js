@@ -31,12 +31,16 @@ class TicTacToePlugin {
 
     async processGameInput(data) {
         try {
+            console.log('🎯 TicTacToe processGameInput called with:', data);
             const { chatId, input, player } = data;
             const result = await this.handleInput(chatId, input, player);
+            
+            console.log('🎯 TicTacToe handleInput result:', result);
             
             if (result.message) {
                 // Send the response back through the bot client
                 await this.botClient.sendMessage(chatId, result.message);
+                console.log('🎯 TicTacToe sent response message');
             }
             
             if (result.gameEnded) {
@@ -47,6 +51,7 @@ class TicTacToePlugin {
                     chatId,
                     gameType: 'tictactoe'
                 });
+                console.log('🎯 TicTacToe game ended, cleaned up state');
             }
             
         } catch (error) {
@@ -230,12 +235,12 @@ class TicTacToePlugin {
             await this.saveGameData(chatId, gameData);
             
             const board = this.renderBoard(gameData.board);
-            const playerName = player.split('@')[0] || 'Player1';
-            const opponentName = opponent.split('@')[0] || 'Player2';
+            const playerName = this.extractDisplayName(player);
+            const opponentName = this.extractDisplayName(opponent);
             
             let responseMessage = `🎮 Game started! ${playerName} (X) vs ${opponentName} (O).\n\n`;
             responseMessage += board;
-            responseMessage += `\n\n@${playerName}, you go first. Send a number 1-9.\n\n`;
+            responseMessage += `\n\n${playerName}, you go first. Send a number 1-9.\n\n`;
             responseMessage += `Use numbers 1-9 to play.\nExample: "5" puts your mark in the center.`;
             
             await reply(responseMessage);
@@ -324,9 +329,10 @@ class TicTacToePlugin {
             const expectedPlayer = gameData.players[currentPlayerSymbol];
             
             if (player !== expectedPlayer) {
-                const waitingPlayerName = expectedPlayer.split('@')[0];
+                const waitingPlayerName = this.extractDisplayName(expectedPlayer);
+                const currentPlayerName = this.extractDisplayName(player);
                 return {
-                    message: `Hey @${player.split('@')[0]}, it's not your turn.`,
+                    message: `Hey ${currentPlayerName}, it's not your turn. Waiting for ${waitingPlayerName}.`,
                     gameEnded: false
                 };
             }
@@ -341,8 +347,9 @@ class TicTacToePlugin {
             
             if (winner) {
                 gameData.gameStatus = 'finished';
-                const winnerName = gameData.players[winner].split('@')[0];
-                responseMessage = `${winnerName} placed ${winner} at ${move}\n\n${this.renderBoard(gameData.board)}\n\n🏆 ${winnerName} wins!`;
+                const winnerName = this.extractDisplayName(gameData.players[winner]);
+                const currentPlayerName = this.extractDisplayName(player);
+                responseMessage = `${currentPlayerName} placed ${winner} at ${move}\n\n${this.renderBoard(gameData.board)}\n\n🏆 ${winnerName} wins!`;
                 
                 await this.saveGameData(chatId, gameData);
                 this.games.delete(chatId);
@@ -353,7 +360,8 @@ class TicTacToePlugin {
                 };
             } else if (gameData.moves >= 9) {
                 gameData.gameStatus = 'finished';
-                responseMessage = `${player.split('@')[0]} placed ${currentPlayerSymbol} at ${move}\n\n${this.renderBoard(gameData.board)}\n\nIt's a tie!`;
+                const currentPlayerName = this.extractDisplayName(player);
+                responseMessage = `${currentPlayerName} placed ${currentPlayerSymbol} at ${move}\n\n${this.renderBoard(gameData.board)}\n\n🤝 It's a tie!`;
                 
                 await this.saveGameData(chatId, gameData);
                 this.games.delete(chatId);
@@ -366,9 +374,10 @@ class TicTacToePlugin {
                 // Switch turns
                 gameData.currentPlayer = gameData.currentPlayer === 'X' ? 'O' : 'X';
                 const nextPlayer = gameData.players[gameData.currentPlayer];
-                const nextPlayerName = nextPlayer.split('@')[0];
+                const nextPlayerName = this.extractDisplayName(nextPlayer);
+                const currentPlayerName = this.extractDisplayName(player);
                 
-                responseMessage = `${player.split('@')[0]} placed ${currentPlayerSymbol} at ${move}\n\n${this.renderBoard(gameData.board)}\n\n@${nextPlayerName}, your turn.`;
+                responseMessage = `${currentPlayerName} placed ${currentPlayerSymbol} at ${move}\n\n${this.renderBoard(gameData.board)}\n\n${nextPlayerName}, your turn.`;
                 
                 await this.saveGameData(chatId, gameData);
                 
@@ -439,6 +448,23 @@ class TicTacToePlugin {
                 message: '❌ Error ending game'
             };
         }
+    }
+
+    /**
+     * Extract display name from JID
+     */
+    extractDisplayName(jid) {
+        if (!jid) return 'Unknown';
+        
+        // Remove :92 suffix and @s.whatsapp.net suffix
+        let displayName = jid.replace(/:92/g, '').split('@')[0];
+        
+        // If it's a phone number, format it nicely
+        if (/^\d+$/.test(displayName)) {
+            return `+${displayName}`;
+        }
+        
+        return displayName || 'Player';
     }
 
     /**
