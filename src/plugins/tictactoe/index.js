@@ -97,14 +97,22 @@ class TicTacToePlugin {
             const { args, reply, message } = context;
             const chatId = message.key.remoteJid;
             
-            // Get the actual sender JID properly
+            // Get the actual sender JID properly (following AccessController pattern)
             let player;
-            if (message.key.participant) {
-                // In group chat, participant is the sender
-                player = message.key.participant;
+            if (message.key) {
+                if (message.key.fromMe) {
+                    // For outgoing messages, this would be the owner, but we shouldn't get here
+                    // since the bot owner would use the access controller logic
+                    player = message.key.remoteJid;
+                } else {
+                    // For incoming messages:
+                    // - In groups: participant is the sender
+                    // - In individual chats: remoteJid is the sender
+                    player = message.key.participant || message.key.remoteJid;
+                }
             } else {
-                // In private chat, remoteJid is the sender (but this is unlikely for non-fromMe messages)
-                player = message.key.remoteJid;
+                // Fallback for other message structures
+                player = message.author || message.from;
             }
             
             // Check if game already active
@@ -120,6 +128,13 @@ class TicTacToePlugin {
             let opponent = null;
             
             console.log('🎯 TicTacToe Debug - Player:', player, 'Chat:', chatId);
+            console.log('🎯 Message structure:', JSON.stringify({
+                key: message.key,
+                hasExtendedText: !!message.message?.extendedTextMessage,
+                mentions: message.message?.extendedTextMessage?.contextInfo?.mentionedJid,
+                quotedParticipant: message.message?.extendedTextMessage?.contextInfo?.participant,
+                hasQuoted: !!message.message?.extendedTextMessage?.contextInfo?.quotedMessage
+            }, null, 2));
             
             // First check for mentions in the message
             const mention = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
@@ -130,9 +145,11 @@ class TicTacToePlugin {
             // Check if replying to someone's message
             else if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
                 const quotedParticipant = message.message.extendedTextMessage.contextInfo.participant;
-                if (quotedParticipant) {
+                if (quotedParticipant && quotedParticipant !== player) {
                     opponent = quotedParticipant;
                     console.log('🎯 Found quoted opponent:', opponent);
+                } else {
+                    console.log('🎯 Quoted participant is same as player, skipping');
                 }
             }
             // Handle phone numbers or usernames from args
@@ -143,11 +160,13 @@ class TicTacToePlugin {
                     console.log('🎯 Found opponent from args:', opponent);
                 }
             }
-            // In private chat, if no opponent specified, use the chat partner as opponent
+            // In private chat, if no opponent specified, use the bot owner as opponent
             else if (chatId.endsWith('@s.whatsapp.net') && chatId !== player) {
-                // Private chat - the chat ID itself is the opponent
-                opponent = chatId;
-                console.log('🎯 Found private chat opponent:', opponent);
+                // Private chat - the bot owner (who would be sending the command) should be the opponent
+                const accessController = this.botClient.getAccessController();
+                const ownerJid = accessController.getOwnerJid();
+                opponent = ownerJid;
+                console.log('🎯 Found private chat opponent (bot owner):', opponent);
             }
             
             // Opponent is REQUIRED - no AI mode

@@ -3,6 +3,13 @@
 ## Overview
 MATDEV is a WhatsApp bot designed to operate through the owner's WhatsApp number with strict access control. It features a modular architecture with a hot-reload plugin system, comprehensive message archival, and intelligent command processing. Built as a personal assistant, MATDEV primarily responds only to the bot owner while maintaining selective interaction capabilities for specific scenarios like games or explicitly allowed commands. The project's ambition is to provide a secure, efficient, and highly customizable personal bot experience. Key capabilities include anti-delete functionality for messages and media, automatic capture and forwarding of view-once content, and robust access control.
 
+## Recent Changes (August 2025)
+- **Migration Complete**: Successfully migrated from Replit Agent to standard Replit environment
+- **Enhanced Game Input Processing**: Updated message processor to handle number-only inputs during active games without requiring command prefix
+- **Improved TicTacToe Plugin**: Redesigned for more natural chat-like gameplay with cleaner messaging
+- **Fixed JID Extraction**: Corrected sender JID detection in TicTacToe plugin following AccessController patterns
+- **Hot-Reload System**: Confirmed working perfectly for real-time plugin development
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
