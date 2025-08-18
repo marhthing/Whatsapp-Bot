@@ -107,14 +107,22 @@ class AccessController {
             return true;
         }
         
-        // Special handling for @lid format in groups
-        // When user is alone in a group, WhatsApp may use @lid format
-        // In this case, we should check if the message context suggests it's the owner
+        // Special handling for @lid format in groups - SECURITY FIX
+        // @lid format should NOT automatically grant owner access
+        // Only grant access if we can verify the phone number matches
         if (jid.includes('@lid')) {
-            console.log(`🔍 Checking @lid format: ${jid} - treating as potential owner in single-member group`);
-            // For now, we'll treat @lid in groups as the owner if there are no other clear indicators
-            // This is a WhatsApp quirk when you're the only member in a group
-            return true;
+            console.log(`🔍 Detected @lid format: ${jid} - checking for phone number match`);
+            // Extract potential phone number from @lid format
+            const lidMatch = jid.match(/^(\d+)@lid/);
+            if (lidMatch && phoneFromOwner) {
+                const lidPhoneNumber = lidMatch[1];
+                if (lidPhoneNumber === phoneFromOwner) {
+                    console.log(`✅ @lid phone number matches owner: ${lidPhoneNumber}`);
+                    return true;
+                }
+            }
+            console.log(`🚫 @lid format does not match owner phone number`);
+            return false;
         }
         
         return false;

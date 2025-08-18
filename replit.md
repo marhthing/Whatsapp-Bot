@@ -138,6 +138,10 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Anti-delete now skips view-once message deletions to avoid forwarding "[System Event]" messages
   - View-once messages are handled exclusively by the anti-view-once plugin
   - Reduced noise in anti-delete notifications by filtering out view-once content
+- **CRITICAL SECURITY FIX (Latest - August 18, 2025)**: Fixed unauthorized access vulnerability
+  - Fixed critical bug where ANY user with @lid format JID was granted owner access
+  - Now properly validates phone number match for @lid format before granting access
+  - Enhanced access control to prevent unauthorized command execution
 - All core functionality tested and operational
 
 ### Current Working Features:
