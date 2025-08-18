@@ -134,7 +134,13 @@ class MatdevBotLauncher {
         if (sessions.length === 0) {
             console.log(`${colors.yellow}No existing sessions found. Creating new session...${colors.reset}`);
             await this.createNewSession();
+        } else if (sessions.length === 1) {
+            // Auto-select the only available session for seamless restarts
+            console.log(`${colors.green}Found existing session: ${sessions[0].id}${colors.reset}`);
+            console.log(`${colors.cyan}🚀 Auto-selecting session for seamless restart...${colors.reset}`);
+            await this.startSession(sessions[0]);
         } else {
+            // Multiple sessions - let user choose
             console.log(`${colors.green}Found ${sessions.length} existing session(s)${colors.reset}`);
             await this.selectSession(sessions);
         }

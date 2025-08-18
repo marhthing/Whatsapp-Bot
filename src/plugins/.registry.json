@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T15:27:39.343Z",
+  "lastUpdated": "2025-08-18T15:31:26.378Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.023Z",
+      "loadedAt": "2025-08-18T15:31:26.345Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -21,7 +21,7 @@
       "name": "anti-delete",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.027Z",
+      "loadedAt": "2025-08-18T15:31:26.355Z",
       "commands": [
         "delete"
       ]
@@ -30,16 +30,34 @@
       "name": "anti-view-once",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.029Z",
+      "loadedAt": "2025-08-18T15:31:26.357Z",
       "commands": [
         "vv"
+      ]
+    },
+    {
+      "name": "core-commands",
+      "version": "2.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:31:26.359Z",
+      "commands": [
+        "help",
+        "info",
+        "status",
+        "settings",
+        "allow",
+        "disallow",
+        "reload",
+        "env",
+        "shutdown",
+        "restart"
       ]
     },
     {
       "name": "games",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.033Z",
+      "loadedAt": "2025-08-18T15:31:26.362Z",
       "commands": [
         "tictactoe",
         "wordguess",
@@ -52,7 +70,7 @@
       "name": "jid",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.034Z",
+      "loadedAt": "2025-08-18T15:31:26.363Z",
       "commands": [
         "jid"
       ]
@@ -61,7 +79,7 @@
       "name": "media-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.041Z",
+      "loadedAt": "2025-08-18T15:31:26.367Z",
       "commands": [
         "convert",
         "upscale",
@@ -75,7 +93,7 @@
       "name": "ping",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.045Z",
+      "loadedAt": "2025-08-18T15:31:26.370Z",
       "commands": [
         "ping",
         "pinginfo"
@@ -85,27 +103,9 @@
       "name": "tiktok-downloader",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:23:53.047Z",
+      "loadedAt": "2025-08-18T15:31:26.373Z",
       "commands": [
         "tiktok"
-      ]
-    },
-    {
-      "name": "core-commands",
-      "version": "2.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:27:39.342Z",
-      "commands": [
-        "help",
-        "info",
-        "status",
-        "settings",
-        "allow",
-        "disallow",
-        "reload",
-        "env",
-        "shutdown",
-        "restart"
       ]
     }
   ]
