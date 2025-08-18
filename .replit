@@ -19,10 +19,6 @@ author = "agent"
 task = "workflow.run"
 args = "WhatsApp Bot"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "whatsapp_bot_startup"
-
 [[workflows.workflow]]
 name = "WhatsApp Bot"
 author = "agent"
@@ -33,14 +29,6 @@ args = "node start.js"
 
 [workflows.workflow.metadata]
 outputType = "console"
-
-[[workflows.workflow]]
-name = "whatsapp_bot_startup"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node start.js"
 
 [deployment]
 run = ["sh", "-c", "node index.js"]
