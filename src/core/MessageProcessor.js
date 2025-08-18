@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 class MessageProcessor extends EventEmitter {
     constructor(dependencies) {
         super();
-        
+
         this.client = dependencies.client;
         this.accessController = dependencies.accessController;
         this.loadingReaction = dependencies.loadingReaction;
@@ -12,7 +12,7 @@ class MessageProcessor extends EventEmitter {
         this.stateEngine = dependencies.stateEngine;
         this.pluginDiscovery = dependencies.pluginDiscovery;
         this.eventBus = dependencies.eventBus;
-        
+
         this.processingQueue = [];
         this.isProcessing = false;
         this.maxConcurrentProcessing = parseInt(process.env.MAX_CONCURRENT_COMMANDS || '5');
@@ -22,7 +22,7 @@ class MessageProcessor extends EventEmitter {
     async processMessage(message) {
         try {
             const isOutgoing = message.key.fromMe;
-            
+
             // Emit message received event
             this.eventBus?.emitMessageReceived(message);
 
@@ -37,24 +37,24 @@ class MessageProcessor extends EventEmitter {
             // Only process messages that start with command prefix - optimize performance
             const messageText = this.getMessageText(message);
             const prefix = process.env.COMMAND_PREFIX || process.env.PREFIX || '.';
-            
+
             // Skip processing if message doesn't start with prefix (for non-outgoing messages)
             if (!isOutgoing && (!messageText || !messageText.trim().startsWith(prefix))) {
                 return; // Don't waste resources on non-command messages
             }
-            
+
             // Extract command if present (for both incoming and outgoing messages)
             const command = this.extractCommand(message);
-            
+
             // Skip non-command outgoing messages, but process command outgoing messages
             if (isOutgoing && !command) {
                 return;
             }
-            
+
             // Check access control
             const commandName = command ? command.name : null;
             const accessResult = this.accessController.canProcessMessage(message, commandName);
-            
+
             if (!accessResult.allowed) {
                 // Log access denied with proper JID extraction
                 const senderJid = message.key?.participant || message.key?.remoteJid || message.author || message.from;
@@ -68,11 +68,11 @@ class MessageProcessor extends EventEmitter {
                 case 'owner':
                     await this.processOwnerMessage(message, command);
                     break;
-                    
+
                 case 'game_player':
                     await this.processGameMessage(message, accessResult.gameType);
                     break;
-                    
+
                 case 'allowed_command':
                     await this.processAllowedCommand(message, command);
                     break;
@@ -116,13 +116,13 @@ class MessageProcessor extends EventEmitter {
             }
 
             console.log('📥 Downloading media...');
-            
+
             // Use Baileys downloadMediaMessage function
             const { downloadMediaMessage } = require('@whiskeysockets/baileys');
             const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
                 logger: require('pino')({ level: 'silent' })
             });
-            
+
             if (!buffer) {
                 console.warn('⚠️ Failed to download media - no buffer received');
                 return null;
@@ -164,7 +164,7 @@ class MessageProcessor extends EventEmitter {
 
             const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
             console.log(`✅ Media stored: ${storedMedia.filename} (${this.formatSize(buffer.length)})`);
-            
+
             return storedMedia;
 
         } catch (error) {
@@ -192,9 +192,9 @@ class MessageProcessor extends EventEmitter {
                     await this.sendMessage(message.key.remoteJid || message.from, text, options);
                 }
             });
-            
+
             return result;
-            
+
         } catch (error) {
             console.error(`❌ Error executing command '${command.name}':`, error);
             await this.sendMessage(
@@ -218,14 +218,14 @@ class MessageProcessor extends EventEmitter {
             }
 
             const sentMessage = await this.client.sendMessage(chatId, messageContent, options);
-            
+
             // Archive the outgoing message
             if (sentMessage) {
                 await this.messageArchiver.archiveMessage(sentMessage, true);
             }
 
             return sentMessage;
-            
+
         } catch (error) {
             console.error('❌ Error sending message:', error);
             throw error;
@@ -244,7 +244,7 @@ class MessageProcessor extends EventEmitter {
     extractCommand(message) {
         // Extract message text from different message types
         let text = '';
-        
+
         if (message.message) {
             if (message.message.conversation) {
                 text = message.message.conversation;
@@ -256,19 +256,19 @@ class MessageProcessor extends EventEmitter {
                 text = message.message.videoMessage.caption;
             }
         }
-        
+
         // Fallback to direct body property
         if (!text && message.body) {
             text = message.body;
         }
-        
+
         if (!text || typeof text !== 'string') {
             return null;
         }
-        
+
         const trimmed = text.trim();
         const prefix = process.env.COMMAND_PREFIX || process.env.PREFIX || '.';
-        
+
         if (!trimmed.startsWith(prefix)) {
             return null;
         }
@@ -304,7 +304,7 @@ class MessageProcessor extends EventEmitter {
         try {
             const chatId = message.from;
             const activeGame = this.accessController.getActiveGame(chatId);
-            
+
             if (!activeGame) {
                 return; // Game no longer active
             }
@@ -334,9 +334,9 @@ class MessageProcessor extends EventEmitter {
             if (!userJid) {
                 userJid = message.author || message.from;
             }
-            
+
             console.log(`🔍 processAllowedCommand: Extracted JID: ${userJid} for command: ${command.name}`);
-            
+
             if (!this.accessController.isCommandAllowed(userJid, command.name)) {
                 console.log(`❌ Command '${command.name}' not allowed for user: ${userJid}`);
                 return; // Command not allowed
@@ -352,29 +352,29 @@ class MessageProcessor extends EventEmitter {
 
     async executeCommand(message, command) {
         const startTime = Date.now();
-        
+
         try {
             // Find and execute command through plugin system
             const result = await this.pluginDiscovery.executeCommand(command.name, message, command);
-            
+
             const duration = Date.now() - startTime;
-            
+
             // Log command execution
             console.log(`⚡ Command '${command.name}' executed in ${duration}ms`);
-            
+
             // Emit command executed event
             this.eventBus?.emitCommandExecuted(command.name, message, result);
-            
+
             return result;
 
         } catch (error) {
             const duration = Date.now() - startTime;
-            
+
             console.error(`❌ Command '${command.name}' failed after ${duration}ms:`, error);
-            
+
             // Emit command error event
             this.eventBus?.emitCommandError(command.name, message, error);
-            
+
             throw error;
         }
     }
@@ -383,7 +383,7 @@ class MessageProcessor extends EventEmitter {
         try {
             // Get game plugin
             const gamePlugin = await this.pluginDiscovery.getPlugin('games');
-            
+
             if (gamePlugin && gamePlugin.processGameMove) {
                 await gamePlugin.processGameMove(message, gameInfo);
             }
@@ -400,13 +400,13 @@ class MessageProcessor extends EventEmitter {
             }
 
             console.log('📥 Downloading media...');
-            
+
             // Use Baileys downloadMediaMessage function
             const { downloadMediaMessage } = require('@whiskeysockets/baileys');
             const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
                 logger: require('pino')({ level: 'silent' })
             });
-            
+
             if (!buffer) {
                 console.warn('⚠️ Failed to download media - no buffer received');
                 return null;
@@ -448,7 +448,7 @@ class MessageProcessor extends EventEmitter {
 
             const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
             console.log(`✅ Media stored: ${storedMedia.filename} (${this.formatSize(buffer.length)})`);
-            
+
             return storedMedia;
 
         } catch (error) {
@@ -459,43 +459,58 @@ class MessageProcessor extends EventEmitter {
 
     async processDeletedMessage(deletionData) {
         try {
-            console.log('🗑️ Message deletion detected in processor');
-            
+            console.log('🗑️ Message deletion detected in processor:', JSON.stringify(deletionData, null, 2));
+
             // Handle different deletion data formats from Baileys
-            let messageIds = [];
-            
+            let messageKeys = [];
+
             if (Array.isArray(deletionData)) {
                 // Array of message keys
-                messageIds = deletionData.map(msg => msg.id || msg);
+                messageKeys = deletionData;
             } else if (deletionData.messages) {
                 // Structured deletion data
-                messageIds = deletionData.messages.map(msg => msg.id || msg);
-            } else if (deletionData.id) {
+                messageKeys = deletionData.messages;
+            } else if (deletionData.key || deletionData.id) {
                 // Single message deletion
-                messageIds = [deletionData.id];
+                messageKeys = [deletionData];
             }
-            
-            console.log(`🔍 Processing ${messageIds.length} deleted message(s)`);
-            
-            for (const messageId of messageIds) {
+
+            console.log(`🔍 Processing ${messageKeys.length} deleted message(s)`);
+
+            for (const messageKey of messageKeys) {
                 try {
+                    const messageId = messageKey.id || messageKey;
+                    const chatId = messageKey.remoteJid || messageKey.from;
+
+                    console.log(`🔍 Looking for archived message - ID: ${messageId}, Chat: ${chatId}`);
+
                     // Try to recover from archive
                     const archivedMessage = await this.messageArchiver.getMessageById(messageId);
-                    
+
                     if (archivedMessage) {
                         console.log(`📋 Found archived message for deletion: ${messageId}`);
-                        
+
                         // Get anti-delete plugin
                         const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
-                        
-                        if (antiDeletePlugin && antiDeletePlugin.handleDeletedMessage) {
-                            await antiDeletePlugin.handleDeletedMessage(null, null, archivedMessage);
+
+                        if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
+                            console.log(`🔄 Forwarding deletion to anti-delete plugin`);
+                            await antiDeletePlugin.handleDeletedMessage(messageKey, null, archivedMessage);
+                        } else {
+                            console.log(`⚠️ Anti-delete plugin not available or doesn't have handleDeletedMessage method`);
                         }
                     } else {
                         console.log(`⚠️ No archived message found for: ${messageId}`);
+
+                        // Still notify anti-delete plugin about the deletion attempt
+                        const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
+                        if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
+                            console.log(`🔄 Notifying anti-delete plugin of deletion without archived message`);
+                            await antiDeletePlugin.handleDeletedMessage(messageKey, null, null);
+                        }
                     }
                 } catch (msgError) {
-                    console.error(`❌ Error processing individual deleted message ${messageId}:`, msgError);
+                    console.error(`❌ Error processing individual deletion for ${messageKey}:`, msgError);
                 }
             }
 
@@ -508,7 +523,7 @@ class MessageProcessor extends EventEmitter {
         try {
             // Ensure content is properly formatted for Baileys
             let messageContent;
-            
+
             if (typeof content === 'string') {
                 messageContent = { text: content, ...options };
             } else if (content && typeof content === 'object') {
@@ -516,7 +531,7 @@ class MessageProcessor extends EventEmitter {
             } else {
                 throw new Error('Invalid message content format');
             }
-            
+
             return await this.client.sendMessage(chatId, messageContent);
         } catch (error) {
             console.error('❌ Failed to send message:', error);
@@ -565,7 +580,7 @@ class MessageProcessor extends EventEmitter {
                 return message.message.videoMessage.caption;
             }
         }
-        
+
         // Fallback to direct body property
         return message.body || '';
     }
@@ -573,12 +588,12 @@ class MessageProcessor extends EventEmitter {
     async shutdown() {
         try {
             console.log('🛑 Shutting down message processor...');
-            
+
             // Wait for active processing to complete
             while (this.activeProcessing.size > 0) {
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
-            
+
             console.log('✅ Message processor shutdown complete');
 
         } catch (error) {

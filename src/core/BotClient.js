@@ -1,9 +1,9 @@
-const { 
-    default: makeWASocket, 
-    DisconnectReason, 
+const {
+    default: makeWASocket,
+    DisconnectReason,
     useMultiFileAuthState,
     generateWAMessageFromContent,
-    downloadMediaMessage 
+    downloadMediaMessage
 } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const EventEmitter = require('events');
@@ -23,7 +23,7 @@ const middlewareLoader = require('../middleware');
 class BotClient extends EventEmitter {
     constructor() {
         super();
-        
+
         this.client = null;
         this.messageProcessor = null;
         this.accessController = null;
@@ -33,7 +33,7 @@ class BotClient extends EventEmitter {
         this.pluginDiscovery = null;
         this.stateEngine = null;
         this.eventBus = null;
-        
+
         this.isInitialized = false;
         this.qrCode = null;
         this.ownerJid = null;
@@ -140,7 +140,7 @@ class BotClient extends EventEmitter {
         // Setup Baileys event handlers
         this.client.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect, qr } = update;
-            
+
             if (qr) {
                 console.log('📱 QR Code generated for authentication');
                 console.log('🔗 Scan this QR code with your WhatsApp to link the bot to your account');
@@ -151,28 +151,28 @@ class BotClient extends EventEmitter {
             if (connection === 'close') {
                 const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
                 console.log('🔌 Connection closed due to:', lastDisconnect?.error, ', reconnecting:', shouldReconnect);
-                
+
                 if (shouldReconnect) {
                     // Reconnect automatically
                     setTimeout(() => this.initializeWhatsAppClient(), 3000);
                 } else {
                     this.emit('auth_failure', 'Logged out');
                 }
-                
+
                 this.emit('disconnected', lastDisconnect?.error);
             } else if (connection === 'open') {
                 console.log('🔐 WhatsApp connection opened successfully!');
-                
+
                 // Get owner JID - this is the actual user's JID that the bot will use as its identity
                 this.ownerJid = this.client.user.id;
                 await this.accessController.setOwnerJid(this.ownerJid);
 
                 console.log(`🔐 Bot ready! Operating as: ${this.ownerJid}`);
                 console.log(`✅ Bot will send messages using your WhatsApp account`);
-                
+
                 // Save the detected JID to session config
                 await this.updateSessionJid(this.ownerJid);
-                
+
                 // Send confirmation message to owner
                 try {
                     const confirmationMessage = `🤖 *MATDEV Connected*\n\n✅ Bot is now active and ready to serve!\n🔗 Connected at: ${new Date().toLocaleString()}\n📱 Operating as: ${this.ownerJid}\n\nType *.help* to see available commands.`;
@@ -181,7 +181,7 @@ class BotClient extends EventEmitter {
                 } catch (error) {
                     console.error('❌ Failed to send confirmation message:', error);
                 }
-                
+
                 this.qrCode = null;
                 this.emit('ready');
             }
@@ -217,13 +217,28 @@ class BotClient extends EventEmitter {
         });
 
         // Handle message deletions
-        this.client.ev.on('messages.delete', async (messageDelete) => {
+        this.client.ev.on('messages.delete', async (deletionData) => {
             try {
-                if (this.messageProcessor) {
-                    await this.messageProcessor.processDeletedMessage(messageDelete);
+                console.log('🗑️ Message deletion detected');
+                console.log('🔍 Deletion data received:', JSON.stringify(deletionData, null, 2));
+                await this.messageProcessor.processDeletedMessage(deletionData);
+            } catch (error) {
+                console.error('❌ Error handling message deletion:', error);
+            }
+        });
+
+        // Handle message updates (including deletions)
+        this.client.ev.on('messages.update', async (updates) => {
+            try {
+                for (const update of updates) {
+                    if (update.update && update.update.message === null) {
+                        console.log('🗑️ Message deleted via update event');
+                        console.log('🔍 Update data:', JSON.stringify(update, null, 2));
+                        await this.messageProcessor.processDeletedMessage([update.key]);
+                    }
                 }
             } catch (error) {
-                console.error('❌ Error processing deleted message:', error);
+                console.error('❌ Error handling message update:', error);
             }
         });
 
@@ -239,17 +254,17 @@ class BotClient extends EventEmitter {
             if (!sessionDir) return;
 
             const fs = require('fs').promises;
-            
+
             // Update session config
             const configPath = path.join(sessionDir, 'config.json');
             try {
                 const configData = await fs.readFile(configPath, 'utf8');
                 const config = JSON.parse(configData);
-                
+
                 config.ownerJid = detectedJid;
                 config.authStatus = 'authenticated';
                 config.lastActive = new Date().toISOString();
-                
+
                 await fs.writeFile(configPath, JSON.stringify(config, null, 2));
                 console.log(`💾 Updated session config with JID: ${detectedJid}`);
             } catch (error) {
@@ -261,9 +276,9 @@ class BotClient extends EventEmitter {
             try {
                 const metadataData = await fs.readFile(metadataPath, 'utf8');
                 const metadata = JSON.parse(metadataData);
-                
+
                 metadata.OWNER_JID = detectedJid;
-                
+
                 await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
                 console.log(`💾 Updated session metadata with JID`);
             } catch (error) {
@@ -272,7 +287,7 @@ class BotClient extends EventEmitter {
 
             // Update environment variable
             process.env.OWNER_JID = detectedJid;
-            
+
         } catch (error) {
             console.error('❌ Failed to update session JID:', error);
         }
@@ -285,7 +300,7 @@ class BotClient extends EventEmitter {
 
         try {
             let message;
-            
+
             if (typeof content === 'string') {
                 message = await this.client.sendMessage(chatId, { text: content, ...options });
             } else if (content.mimetype) {
@@ -299,7 +314,7 @@ class BotClient extends EventEmitter {
             if (this.messageArchiver) {
                 await this.messageArchiver.archiveMessage(message);
             }
-            
+
             return message;
 
         } catch (error) {
@@ -323,7 +338,7 @@ class BotClient extends EventEmitter {
             // Get basic client info from WhatsApp connection
             const authInfo = this.client.authState?.creds;
             const connectionState = this.client.ws?.readyState;
-            
+
             return {
                 pushname: authInfo?.me?.name || 'MATDEV Bot',
                 phone: this.ownerJid ? this.ownerJid.split('@')[0] : 'Unknown',
@@ -364,7 +379,7 @@ class BotClient extends EventEmitter {
     }
 
     async downloadMedia(message) {
-        if (!message.message?.imageMessage && !message.message?.videoMessage && 
+        if (!message.message?.imageMessage && !message.message?.videoMessage &&
             !message.message?.audioMessage && !message.message?.documentMessage &&
             !message.message?.stickerMessage) {
             return null;
@@ -402,7 +417,7 @@ class BotClient extends EventEmitter {
             if (this.client) {
                 await this.client.logout();
             }
-            
+
             if (this.messageProcessor) {
                 await this.messageProcessor.shutdown();
             }

@@ -73,6 +73,8 @@ class Detector {
 
     async handleDeletion(data) {
         try {
+            console.log('🔍 Anti-delete handling deletion data:', JSON.stringify(data, null, 2));
+            
             const { after, before } = data;
             
             if (!before) {
@@ -85,6 +87,8 @@ class Detector {
             const senderJid = this.extractSenderJid(before);
             const chatId = this.extractChatId(before);
             const messageId = this.extractMessageId(before);
+            
+            console.log(`🔍 Processing deletion - Chat: ${chatId}, Sender: ${senderJid}, MessageID: ${messageId}`);
             
             const deletionEntry = {
                 id: this.generateId(),
