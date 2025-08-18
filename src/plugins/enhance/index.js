@@ -194,27 +194,20 @@ class EnhancePlugin {
             const enhancedBase64 = enhancedBuffer.toString('base64');
             const extension = this.getExtensionFromMimeType(sourceMedia.mimetype);
 
-            // Send enhanced image
-            const { MessageMedia } = require('whatsapp-web.js');
-            const enhancedMedia = new MessageMedia(sourceMedia.mimetype, enhancedBase64, `enhanced_${timestamp}.${extension}`);
-            
-            const sentMessage = await reply(enhancedMedia, undefined, {
+            // Send enhanced image using Baileys format
+            const sentMessage = await reply({
+                image: enhancedBuffer,
                 caption: '✨ Enhanced image ready!\n\n🎯 Original size preserved with improved quality\n💡 Tip: Use `.enhance` on any image to improve its quality'
             });
 
-            // Schedule automatic deletion of the enhanced image after 5 minutes
+            // Schedule automatic deletion of the enhanced file after 5 minutes
             setTimeout(async () => {
                 try {
-                    // Delete the sent message
-                    if (sentMessage && sentMessage.delete) {
-                        await sentMessage.delete(true); // Delete for everyone
-                        console.log(`🗑️ Auto-deleted enhanced image message after 5 minutes`);
-                    }
-                    
                     // Clean up enhanced file from storage
                     await this.cleanupFile(enhancedPath);
+                    console.log(`🗑️ Auto-deleted enhanced image file after 5 minutes`);
                 } catch (deleteError) {
-                    console.error('❌ Error auto-deleting enhanced image:', deleteError);
+                    console.error('❌ Error auto-deleting enhanced image file:', deleteError);
                 }
             }, 5 * 60 * 1000); // 5 minutes in milliseconds
 
