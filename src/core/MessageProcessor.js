@@ -257,7 +257,7 @@ class MessageProcessor extends EventEmitter {
         }
         
         const trimmed = text.trim();
-        const prefix = process.env.COMMAND_PREFIX || '.';
+        const prefix = process.env.COMMAND_PREFIX || process.env.PREFIX || '.';
         
         if (!trimmed.startsWith(prefix)) {
             return null;

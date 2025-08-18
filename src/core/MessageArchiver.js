@@ -23,6 +23,9 @@ class MessageArchiver {
             // Start processing queue
             this.startQueueProcessor();
 
+            // Start cleanup scheduler (daily cleanup)
+            this.startCleanupScheduler();
+
             this.isInitialized = true;
             console.log('✅ Message archiver initialized');
 
@@ -66,6 +69,76 @@ class MessageArchiver {
                 await this.processArchiveQueue();
             }
         }, 1000); // Process every second
+    }
+
+    startCleanupScheduler() {
+        // Run cleanup every 24 hours
+        setInterval(async () => {
+            await this.cleanupOldMessages();
+        }, 24 * 60 * 60 * 1000);
+
+        // Run initial cleanup after 5 minutes
+        setTimeout(async () => {
+            await this.cleanupOldMessages();
+        }, 5 * 60 * 1000);
+    }
+
+    async cleanupOldMessages() {
+        try {
+            console.log('🧹 Starting message cleanup (3-day retention)...');
+            
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            
+            const years = await fs.readdir(this.messagesPath);
+            let deletedCount = 0;
+            
+            for (const year of years) {
+                if (!year.match(/^\d{4}$/)) continue;
+                
+                const yearPath = path.join(this.messagesPath, year);
+                const months = await fs.readdir(yearPath);
+                
+                for (const month of months) {
+                    if (!month.match(/^\d{2}$/)) continue;
+                    
+                    const monthPath = path.join(yearPath, month);
+                    const monthDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+                    
+                    if (monthDate < threeDaysAgo) {
+                        await fs.remove(monthPath);
+                        deletedCount++;
+                        console.log(`🗑️ Deleted old messages: ${year}/${month}`);
+                    } else {
+                        // Clean individual day files within the month
+                        const types = await fs.readdir(monthPath);
+                        for (const type of types) {
+                            const typePath = path.join(monthPath, type);
+                            if ((await fs.stat(typePath)).isDirectory()) {
+                                const dayFiles = await fs.readdir(typePath);
+                                for (const dayFile of dayFiles) {
+                                    const filePath = path.join(typePath, dayFile);
+                                    const stats = await fs.stat(filePath);
+                                    if (stats.mtime < threeDaysAgo) {
+                                        await fs.remove(filePath);
+                                        deletedCount++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (deletedCount > 0) {
+                console.log(`✅ Message cleanup complete: removed ${deletedCount} old files/folders`);
+            } else {
+                console.log('✅ Message cleanup complete: no old files to remove');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error during message cleanup:', error);
+        }
     }
 
     async processArchiveQueue() {

@@ -36,6 +36,9 @@ class MediaVault {
             // Load metadata cache
             await this.loadMetadataCache();
 
+            // Start cleanup scheduler (daily cleanup)
+            this.startCleanupScheduler();
+
             this.isInitialized = true;
             console.log('✅ Media vault initialized');
 
@@ -69,6 +72,64 @@ class MediaVault {
             await fs.writeJson(metadataPath, metadata, { spaces: 2 });
         } catch (error) {
             console.error('❌ Failed to save media metadata:', error);
+        }
+    }
+
+    startCleanupScheduler() {
+        // Run cleanup every 24 hours
+        setInterval(async () => {
+            await this.cleanupOldMedia();
+        }, 24 * 60 * 60 * 1000);
+
+        // Run initial cleanup after 5 minutes
+        setTimeout(async () => {
+            await this.cleanupOldMedia();
+        }, 5 * 60 * 1000);
+    }
+
+    async cleanupOldMedia() {
+        try {
+            console.log('🧹 Starting media cleanup (3-day retention)...');
+            
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            
+            const mediaTypes = ['images', 'videos', 'audio', 'documents', 'stickers'];
+            let deletedCount = 0;
+            
+            for (const type of mediaTypes) {
+                const typePath = path.join(this.mediaPath, type);
+                
+                if (await fs.pathExists(typePath)) {
+                    const files = await fs.readdir(typePath);
+                    
+                    for (const file of files) {
+                        const filePath = path.join(typePath, file);
+                        const stats = await fs.stat(filePath);
+                        
+                        if (stats.mtime < threeDaysAgo) {
+                            await fs.remove(filePath);
+                            
+                            // Remove from metadata cache
+                            this.metadataCache.delete(file);
+                            
+                            deletedCount++;
+                            console.log(`🗑️ Deleted old media: ${type}/${file}`);
+                        }
+                    }
+                }
+            }
+            
+            // Save updated metadata cache
+            if (deletedCount > 0) {
+                await this.saveMetadataCache();
+                console.log(`✅ Media cleanup complete: removed ${deletedCount} old files`);
+            } else {
+                console.log('✅ Media cleanup complete: no old files to remove');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error during media cleanup:', error);
         }
     }
 
