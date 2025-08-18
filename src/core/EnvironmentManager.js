@@ -134,6 +134,14 @@ SESSION_DIR=
         return this.systemConfig.get(key) || defaultValue;
     }
 
+    get(key, defaultValue = null) {
+        // Try user config first, then system config, then process.env
+        return this.userConfig.get(key) || 
+               this.systemConfig.get(key) || 
+               process.env[key] || 
+               defaultValue;
+    }
+
     getAllUserConfig() {
         return Object.fromEntries(this.userConfig);
     }

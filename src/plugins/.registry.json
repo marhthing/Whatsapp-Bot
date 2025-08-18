@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T09:00:26.339Z",
+  "lastUpdated": "2025-08-18T09:04:18.479Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:00:26.319Z",
+      "loadedAt": "2025-08-18T09:04:18.458Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -18,10 +18,21 @@
       ]
     },
     {
+      "name": "anti-delete",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T09:04:18.465Z",
+      "commands": [
+        "recover",
+        "deleted",
+        "antilog"
+      ]
+    },
+    {
       "name": "core-commands",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:00:26.329Z",
+      "loadedAt": "2025-08-18T09:04:18.468Z",
       "commands": [
         "help",
         "info",
@@ -37,13 +48,27 @@
       "name": "games",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:00:26.335Z",
+      "loadedAt": "2025-08-18T09:04:18.473Z",
       "commands": [
         "tictactoe",
         "wordguess",
         "endgame",
         "gameinfo",
         "gamestats"
+      ]
+    },
+    {
+      "name": "media-tools",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T09:04:18.478Z",
+      "commands": [
+        "convert",
+        "upscale",
+        "analyze",
+        "mediainfo",
+        "compress",
+        "extract"
       ]
     }
   ]
