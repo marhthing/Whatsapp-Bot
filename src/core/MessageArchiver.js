@@ -51,7 +51,7 @@ class MessageArchiver {
         await fs.ensureDir(path.join(monthPath, 'newsletter'));
     }
 
-    async archiveMessage(message, isOutgoing = false) {
+    async archiveMessage(message, isOutgoing = false, storedMedia = null) {
         if (!this.isInitialized) {
             console.warn('⚠️ Message archiver not initialized, skipping archive');
             return;
@@ -263,7 +263,14 @@ class MessageArchiver {
                 mentions: message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [],
                 isGroup: message.key?.remoteJid?.includes('@g.us') || false,
                 author: message.key?.participant || message.author, // For group messages
-                mediaPath: null, // Will be updated by MediaVault
+                mediaPath: storedMedia ? storedMedia.relativePath : null, // Set directly from stored media
+                mediaMetadata: storedMedia ? {
+                    uniqueId: storedMedia.id,
+                    filename: storedMedia.filename,
+                    category: storedMedia.category,
+                    mimetype: storedMedia.mimetype,
+                    size: storedMedia.size
+                } : null,
                 archived: new Date().toISOString()
             };
 
@@ -326,6 +333,11 @@ class MessageArchiver {
             // Save back to file
             await fs.writeJson(filePath, dailyMessages, { spaces: 2 });
 
+            // Log media storage completion (direct linking - no more two-step process!)
+            if (storedMedia) {
+                console.log(`✅ Media stored and linked: ${storedMedia.filename} (${this.formatSize(storedMedia.size)})`);
+            }
+
             return messageData;
 
         } catch (error) {
@@ -350,7 +362,15 @@ class MessageArchiver {
         return '';
     }
 
+    // DEPRECATED: No longer needed - media paths are set directly during archiving
+    // This method is kept for compatibility but should not be used in new code
     async updateMessageMediaPath(messageId, mediaPath, mediaMetadata = null) {
+        console.warn(`⚠️ DEPRECATED: updateMessageMediaPath called for ${messageId}. Media paths should be set during archiving.`);
+        return true; // Return success to avoid breaking existing calls
+    }
+
+    // LEGACY METHOD - kept for backward compatibility
+    async _legacyUpdateMessageMediaPath(messageId, mediaPath, mediaMetadata = null) {
         try {
             // Find the message by ID and update its mediaPath and related metadata
             const searchDays = 3; // Search last 3 days

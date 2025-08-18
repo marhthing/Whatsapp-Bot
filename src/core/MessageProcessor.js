@@ -39,49 +39,14 @@ class MessageProcessor extends EventEmitter {
                 await this.handleViewOnceMessage(message);
             }
 
-            // Process archiving and media storage in parallel for better performance
-            const archivePromise = this.messageArchiver.archiveMessage(message, isOutgoing);
-            
-            let mediaPromise = null;
+            // Download media first if present to get the path before archiving
+            let storedMedia = null;
             if (this.hasMedia(message)) {
-                mediaPromise = this.downloadAndStoreMedia(message);
+                storedMedia = await this.downloadAndStoreMedia(message);
             }
-
-            // Wait for both to complete
-            const [archiveResult, storedMedia] = await Promise.all([
-                archivePromise,
-                mediaPromise
-            ]);
             
-            // Update the archived message with the media path if media was stored
-            if (storedMedia && storedMedia.relativePath) {
-                // Add a small delay and retry mechanism for media path updates
-                setTimeout(async () => {
-                    let retries = 5; // Increased retries for better success rate
-                    const delays = [250, 500, 1000, 2000, 3000]; // Increasing delays
-                    
-                    for (let i = 0; i < retries; i++) {
-                        try {
-                            const success = await this.messageArchiver.updateMessageMediaPath(
-                                message.key.id, 
-                                storedMedia.relativePath, 
-                                storedMedia
-                            );
-                            if (success) {
-                                console.log(`📁 Successfully updated media path for ${message.key.id} on attempt ${i + 1}`);
-                                break;
-                            }
-                        } catch (error) {
-                            console.warn(`⚠️ Failed to update media path (attempt ${i + 1}/${retries}):`, error.message);
-                        }
-                        
-                        // Wait before next retry (except on last attempt)
-                        if (i < retries - 1) {
-                            await new Promise(resolve => setTimeout(resolve, delays[i]));
-                        }
-                    }
-                }, 150); // Reduced initial delay
-            }
+            // Archive message with media information included directly - no more two-step process!
+            const archiveResult = await this.messageArchiver.archiveMessage(message, isOutgoing, storedMedia);
 
             // Only process messages that start with command prefix - optimize performance
             const messageText = this.getMessageText(message);

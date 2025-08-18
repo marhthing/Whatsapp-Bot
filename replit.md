@@ -150,6 +150,11 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Exact structure requirements and validation rules  
   - Examples and templates for rapid plugin development
   - Hot-reload compatible architecture documentation
+- **MEDIA STORAGE OPTIMIZATION (Latest - August 18, 2025)**: Eliminated inefficient two-step media processing
+  - **BEFORE**: Media stored → then message updated with media path (two operations, race conditions)
+  - **AFTER**: Media stored and linked directly during message archiving (single operation)
+  - Removed complex retry mechanisms and reduced system stress during bulk media operations
+  - Improved performance and eliminated "Could not find message to update media path" errors
 - All core functionality tested and operational
 
 ### Current Working Features:
