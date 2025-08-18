@@ -287,9 +287,36 @@ class TicTacToePlugin {
         }
     }
 
+    async loadGameData(chatId) {
+        try {
+            const filePath = path.join(this.dataPath, `${chatId.replace(/[@:]/g, '_')}.json`);
+            
+            if (await fs.pathExists(filePath)) {
+                const gameData = await fs.readJson(filePath);
+                console.log('🎯 Loaded game data from file:', gameData);
+                return gameData;
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('Error loading TicTacToe game data:', error);
+            return null;
+        }
+    }
+
     async handleInput(chatId, input, player) {
         try {
-            const gameData = this.games.get(chatId);
+            let gameData = this.games.get(chatId);
+            
+            // If not in memory, try to load from file
+            if (!gameData) {
+                console.log('🎯 Game not in memory, attempting to load from file...');
+                gameData = await this.loadGameData(chatId);
+                if (gameData) {
+                    this.games.set(chatId, gameData);
+                    console.log('🎯 Successfully loaded game from file');
+                }
+            }
             
             console.log('🎯 HandleInput Debug - Chat:', chatId, 'Player:', player, 'Input:', input);
             console.log('🎯 Game Data Players:', gameData ? gameData.players : 'No game data');
