@@ -1,0 +1,36 @@
+Message deleted via update event
+🔍 Update data: {
+  "key": {
+    "remoteJid": "2347018091555@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3A442A252FC6FB2077BF"
+  },
+  "update": {
+    "message": null,
+    "messageStubType": 1,
+    "key": {
+      "remoteJid": "2347018091555@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3A19FFED7534601A8504"
+    }
+  }
+}
+🔍 Searching for message ID: 3A442A252FC6FB2077BF
+🔍 Searching in /home/runner/workspace/data/messages/2025/08/individual/18.json - Found 44 messages
+✅ Found message with ID: 3A442A252FC6FB2077BF
+🗑️ Deletion detected
+🔍 Message deletion detected: del_1755515809089_5kjdly
+❌ Failed to send message: Error: Invalid message content type
+    at BotClient.sendMessage (/home/runner/workspace/src/core/BotClient.js:310:23)
+    at Detector.forwardDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/detector.js:167:38)
+    at Detector.handleDeletion (/home/runner/workspace/src/plugins/anti-delete/detector.js:132:24)
+    at async AntiDeletePlugin.handleDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/index.js:141:17)
+    at async MessageProcessor.processDeletedMessage (/home/runner/workspace/src/core/MessageProcessor.js:489:29)
+    at async EventEmitter.<anonymous> (/home/runner/workspace/src/core/BotClient.js:237:25)
+Error forwarding deleted message: Error: Invalid message content type
+    at BotClient.sendMessage (/home/runner/workspace/src/core/BotClient.js:310:23)
+    at Detector.forwardDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/detector.js:167:38)
+    at Detector.handleDeletion (/home/runner/workspace/src/plugins/anti-delete/detector.js:132:24)
+    at async AntiDeletePlugin.handleDeletedMessage (/home/runner/workspace/src/plugins/anti-delete/index.js:141:17)
+    at async MessageProcessor.processDeletedMessage (/home/runner/workspace/src/core/MessageProcessor.js:489:29)
+    at async EventEmitter.<anonymous> (/home/runner/workspace/src/core/BotClient.js:237:25)
