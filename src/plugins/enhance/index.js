@@ -112,34 +112,44 @@ class EnhancePlugin {
             let targetMessageId = null;
             let sourceMedia = null;
             
-            console.log(`🔍 Enhance command - Message has media: ${message.hasMedia}, Has quoted: ${message.hasQuotedMsg}`);
-            console.log(`🔍 Message type: ${message.type}, Message ID: ${message.id._serialized || message.id}`);
-            console.log(`🔍 Message caption: ${message.caption || 'No caption'}`);
-            console.log(`🔍 Message body: ${message.body || 'No body'}`);
+            // Debug: Log full message structure to understand Baileys format
+            console.log(`🔍 Enhance command debug - Message keys:`, Object.keys(message));
+            console.log(`🔍 Message key exists:`, !!message.key);
+            console.log(`🔍 Message id:`, message.key?.id || 'No key.id');
+            console.log(`🔍 Message type:`, message.message ? Object.keys(message.message)[0] : 'No message type');
             
-            // Special handling for messages with captions that contain .enhance
-            if (message.body && message.body.includes('.enhance') && message.hasMedia) {
-                targetMessageId = message.id._serialized || message.id;
-                console.log(`🎯 Found media with .enhance in caption/body: ${targetMessageId}`);
-            }
+            // Check for media in Baileys format
+            const hasImageMessage = message.message?.imageMessage;
+            const hasVideoMessage = message.message?.videoMessage;
+            const hasDocumentMessage = message.message?.documentMessage;
+            const hasAudioMessage = message.message?.audioMessage;
+            const hasExtendedTextMessage = message.message?.extendedTextMessage;
             
-            // Check if message has media directly (tagged with .enhance)
-            if (message.hasMedia) {
-                targetMessageId = message.id._serialized || message.id;
-                console.log(`🔍 Direct media message ID: ${targetMessageId}`);
+            const hasMedia = hasImageMessage || hasVideoMessage || hasDocumentMessage || hasAudioMessage;
+            
+            console.log(`🔍 Baileys media check - Image: ${!!hasImageMessage}, Video: ${!!hasVideoMessage}, Document: ${!!hasDocumentMessage}, Audio: ${!!hasAudioMessage}`);
+            console.log(`🔍 Extended text message:`, !!hasExtendedTextMessage);
+            
+            // Check if message has media directly (image with caption .enhance)
+            if (hasMedia) {
+                targetMessageId = message.key?.id;
+                console.log(`🎯 Found direct media message ID: ${targetMessageId}`);
             }
             // Check if it's a quoted message with media (reply to image)
-            else if (message.hasQuotedMsg) {
-                const quotedMsg = await message.getQuotedMessage();
-                if (quotedMsg && quotedMsg.hasMedia) {
-                    targetMessageId = quotedMsg.id._serialized || quotedMsg.id;
-                    console.log(`🔍 Quoted media message ID: ${targetMessageId}`);
+            else if (hasExtendedTextMessage?.contextInfo?.quotedMessage) {
+                const quotedMessage = hasExtendedTextMessage.contextInfo.quotedMessage;
+                const quotedHasMedia = quotedMessage.imageMessage || quotedMessage.videoMessage || quotedMessage.documentMessage || quotedMessage.audioMessage;
+                
+                if (quotedHasMedia) {
+                    // Use the quoted message's ID if available, otherwise construct it
+                    targetMessageId = hasExtendedTextMessage.contextInfo.stanzaId || message.key?.id;
+                    console.log(`🎯 Found quoted media message ID: ${targetMessageId}`);
                 }
             }
             
             // If no media found, show usage
             if (!targetMessageId) {
-                console.log(`❌ No target message ID found - message.hasMedia: ${message.hasMedia}, message.hasQuotedMsg: ${message.hasQuotedMsg}`);
+                console.log(`❌ No target message ID found - hasMedia: ${hasMedia}, hasQuoted: ${!!hasExtendedTextMessage?.contextInfo?.quotedMessage}`);
                 await reply('❌ Please tag/reply to an image to enhance it!\n\n📝 Usage: Reply to an image with `.enhance` or tag an image with `.enhance`');
                 return;
             }
@@ -221,14 +231,23 @@ class EnhancePlugin {
      */
     async findStoredMedia(messageId) {
         try {
+            console.log(`🔍 Searching for stored media with ID: ${messageId}`);
+            
             // First try to get from media manager cache
             if (this.botClient?.mediaManager) {
                 const mediaCache = this.botClient.mediaManager.mediaCache;
+                console.log(`🔍 Searching through ${mediaCache.size} cached media items`);
                 
                 // Search through cache for matching message ID
                 for (const [mediaId, metadata] of mediaCache.entries()) {
+                    console.log(`🔍 Checking cached media: ${mediaId}, messageId: ${metadata.messageId}`);
                     if (metadata.messageId === messageId) {
                         console.log(`🎯 Found media in cache: ${mediaId}`);
+                        return metadata;
+                    }
+                    // Also try partial match for Baileys format
+                    if (metadata.messageId && metadata.messageId.includes(messageId)) {
+                        console.log(`🎯 Found media in cache with partial match: ${mediaId}`);
                         return metadata;
                     }
                 }
@@ -237,9 +256,16 @@ class EnhancePlugin {
             // Fallback: search through media index in storage
             const mediaIndex = await storageService.load('media', 'index');
             if (mediaIndex && mediaIndex.files) {
+                console.log(`🔍 Searching through storage index with ${Object.keys(mediaIndex.files).length} files`);
                 for (const [mediaId, metadata] of Object.entries(mediaIndex.files)) {
+                    console.log(`🔍 Checking storage media: ${mediaId}, messageId: ${metadata.messageId}`);
                     if (metadata.messageId === messageId) {
                         console.log(`🎯 Found media in storage index: ${mediaId}`);
+                        return metadata;
+                    }
+                    // Also try partial match for Baileys format
+                    if (metadata.messageId && metadata.messageId.includes(messageId)) {
+                        console.log(`🎯 Found media in storage index with partial match: ${mediaId}`);
                         return metadata;
                     }
                 }
