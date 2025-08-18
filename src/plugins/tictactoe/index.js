@@ -241,9 +241,8 @@ class TicTacToePlugin {
             await reply(responseMessage);
             
             // Register game with access controller
-            accessController.startGame(chatId, 'tictactoe', {
+            await accessController.startGame(chatId, 'tictactoe', [player, opponent], {
                 startedBy: player,
-                players: [player, opponent],
                 state: 'active'
             });
             
