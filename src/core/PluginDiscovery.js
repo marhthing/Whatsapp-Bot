@@ -2,13 +2,14 @@ const fs = require('fs-extra');
 const path = require('path');
 
 class PluginDiscovery {
-    constructor() {
+    constructor(dependencies = {}) {
         this.pluginsPath = path.join(process.cwd(), 'src', 'plugins');
         this.registryPath = path.join(this.pluginsPath, '.registry.json');
         this.plugins = new Map(); // pluginName -> plugin instance
         this.commands = new Map(); // commandName -> plugin instance
         this.isInitialized = false;
         this.loadedPlugins = new Set();
+        this.dependencies = dependencies;
     }
 
     async initialize() {
@@ -133,7 +134,7 @@ class PluginDiscovery {
 
             // Load plugin class
             const PluginClass = require(mainPath);
-            const pluginInstance = new PluginClass();
+            const pluginInstance = new PluginClass(this.dependencies);
 
             // Initialize plugin
             if (pluginInstance.initialize) {

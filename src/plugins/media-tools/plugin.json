@@ -9,12 +9,42 @@
   "priority": 40,
   "dependencies": [],
   "commands": [
-    "convert",
-    "upscale",
-    "analyze",
-    "mediainfo",
-    "compress",
-    "extract"
+    {
+      "name": "convert",
+      "description": "Convert media between formats",
+      "usage": "convert [format] (reply to media)",
+      "ownerOnly": true
+    },
+    {
+      "name": "upscale",
+      "description": "Upscale image resolution",
+      "usage": "upscale [factor] (reply to image)",
+      "ownerOnly": true
+    },
+    {
+      "name": "analyze",
+      "description": "Analyze media properties",
+      "usage": "analyze (reply to media)",
+      "ownerOnly": true
+    },
+    {
+      "name": "mediainfo",
+      "description": "Get detailed media information",
+      "usage": "mediainfo (reply to media)",
+      "ownerOnly": true
+    },
+    {
+      "name": "compress",
+      "description": "Compress media file size",
+      "usage": "compress [quality] (reply to media)",
+      "ownerOnly": true
+    },
+    {
+      "name": "extract",
+      "description": "Extract frames or audio from video",
+      "usage": "extract [audio|frames] (reply to video)",
+      "ownerOnly": true
+    }
   ],
   "features": [
     "media-conversion",

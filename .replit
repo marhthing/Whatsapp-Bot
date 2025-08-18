@@ -17,15 +17,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "WhatsApp Bot"
+args = "Setup & Start Bot"
 
 [[workflows.workflow]]
-name = "WhatsApp Bot"
+name = "Setup & Start Bot"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node start.js"
+args = "node setup.js"
 
 [workflows.workflow.metadata]
 outputType = "console"

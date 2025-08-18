@@ -9,11 +9,36 @@
   "priority": 50,
   "dependencies": [],
   "commands": [
-    "tictactoe",
-    "wordguess",
-    "endgame",
-    "gameinfo",
-    "gamestats"
+    {
+      "name": "tictactoe",
+      "description": "Start a Tic-Tac-Toe game",
+      "usage": "tictactoe [@user]",
+      "ownerOnly": false
+    },
+    {
+      "name": "wordguess",
+      "description": "Start a word guessing game",
+      "usage": "wordguess [difficulty]",
+      "ownerOnly": false
+    },
+    {
+      "name": "endgame",
+      "description": "End the current game",
+      "usage": "endgame",
+      "ownerOnly": false
+    },
+    {
+      "name": "gameinfo",
+      "description": "Show current game information",
+      "usage": "gameinfo",
+      "ownerOnly": false
+    },
+    {
+      "name": "gamestats",
+      "description": "Display game statistics",
+      "usage": "gamestats",
+      "ownerOnly": false
+    }
   ],
   "features": [
     "multiplayer-games",

@@ -9,9 +9,24 @@
   "priority": 30,
   "dependencies": [],
   "commands": [
-    "recover",
-    "deleted",
-    "antilog"
+    {
+      "name": "recover",
+      "description": "Recover deleted messages from archive",
+      "usage": "recover [timeframe]",
+      "ownerOnly": true
+    },
+    {
+      "name": "deleted",
+      "description": "Show recently deleted messages",
+      "usage": "deleted [count]",
+      "ownerOnly": true
+    },
+    {
+      "name": "antilog",
+      "description": "View anti-delete activity log",
+      "usage": "antilog [hours]",
+      "ownerOnly": true
+    }
   ],
   "features": [
     "message-recovery",

@@ -72,7 +72,7 @@
     "monitoringInterval": 30000
   },
   "plugins": {
-    "autoDiscovery": false,
+    "autoDiscovery": true,
     "hotReload": true,
     "pluginTimeout": 10000,
     "maxPlugins": 20,

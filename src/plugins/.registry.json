@@ -1,5 +1,19 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T08:01:49.777Z",
-  "plugins": []
+  "lastUpdated": "2025-08-18T08:11:00.733Z",
+  "plugins": [
+    {
+      "name": "games",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T08:11:00.730Z",
+      "commands": [
+        "tictactoe",
+        "wordguess",
+        "endgame",
+        "gameinfo",
+        "gamestats"
+      ]
+    }
+  ]
 }

@@ -9,14 +9,54 @@
   "priority": 1,
   "dependencies": [],
   "commands": [
-    "help",
-    "info",
-    "settings",
-    "allow",
-    "disallow",
-    "status",
-    "reload",
-    "env"
+    {
+      "name": "help",
+      "description": "Show available commands and help information",
+      "usage": "help [command]",
+      "ownerOnly": false
+    },
+    {
+      "name": "info",
+      "description": "Display bot information and statistics",
+      "usage": "info",
+      "ownerOnly": true
+    },
+    {
+      "name": "settings",
+      "description": "Configure bot settings",
+      "usage": "settings [option] [value]",
+      "ownerOnly": true
+    },
+    {
+      "name": "allow",
+      "description": "Allow a user to execute specific commands",
+      "usage": "allow @user command",
+      "ownerOnly": true
+    },
+    {
+      "name": "disallow",
+      "description": "Remove user's command permissions",
+      "usage": "disallow @user [command]",
+      "ownerOnly": true
+    },
+    {
+      "name": "status",
+      "description": "Show bot system status",
+      "usage": "status",
+      "ownerOnly": true
+    },
+    {
+      "name": "reload",
+      "description": "Reload plugins or specific components",
+      "usage": "reload [plugin]",
+      "ownerOnly": true
+    },
+    {
+      "name": "env",
+      "description": "Manage environment variables",
+      "usage": "env [get|set|list] [key] [value]",
+      "ownerOnly": true
+    }
   ],
   "features": [
     "system-management",

@@ -61,6 +61,17 @@ class WhatsAppBot {
         }
     }
 
+    async handleReconnection() {
+        console.log('🔄 Handling reconnection...');
+        
+        // Try to recover missed messages
+        if (this.botClient?.messageArchiver) {
+            await this.botClient.messageArchiver.recoverMissedMessages(this.botClient.client);
+        }
+        
+        console.log('✅ Reconnection handling complete');
+    }
+
     async setupWebInterface() {
         this.app = express();
         this.server = http.createServer(this.app);
@@ -148,6 +159,18 @@ class WhatsAppBot {
                 if (this.io) {
                     this.io.emit('status', { connected: false, qr: null });
                 }
+            });
+
+            // Archive outgoing messages
+            this.botClient.on('message_sent', async (message) => {
+                if (this.botClient.messageArchiver) {
+                    await this.botClient.messageArchiver.archiveMessage(message, true);
+                }
+            });
+            
+            // Handle reconnection
+            this.botClient.on('reconnected', async () => {
+                await this.handleReconnection();
             });
         }
 

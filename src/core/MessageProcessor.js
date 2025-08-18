@@ -67,18 +67,23 @@ class MessageProcessor extends EventEmitter {
     }
 
     extractCommand(message) {
-        const text = message.body.trim();
+        const text = message.body;
+        if (!text || typeof text !== 'string') {
+            return null;
+        }
+        
+        const trimmed = text.trim();
         const prefix = process.env.COMMAND_PREFIX || '.';
         
-        if (!text.startsWith(prefix)) {
+        if (!trimmed.startsWith(prefix)) {
             return null;
         }
 
-        const parts = text.substring(prefix.length).split(' ');
+        const parts = trimmed.substring(prefix.length).split(' ');
         return {
             name: parts[0].toLowerCase(),
             args: parts.slice(1),
-            raw: text,
+            raw: trimmed,
             prefix: prefix
         };
     }

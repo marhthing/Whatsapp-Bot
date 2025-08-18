@@ -45,7 +45,7 @@ class MessageArchiver {
         await fs.ensureDir(path.join(monthPath, 'status'));
     }
 
-    async archiveMessage(message) {
+    async archiveMessage(message, isOutgoing = false) {
         if (!this.isInitialized) {
             console.warn('⚠️ Message archiver not initialized, skipping archive');
             return;
@@ -54,7 +54,9 @@ class MessageArchiver {
         // Add to queue for processing
         this.archiveQueue.push({
             message,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            isOutgoing,
+            archived: false
         });
     }
 
@@ -72,6 +74,127 @@ class MessageArchiver {
         }
 
         this.processing = true;
+        
+        try {
+            const batch = this.archiveQueue.splice(0, 10); // Process in batches of 10
+            
+            for (const item of batch) {
+                await this.saveMessage(item.message, item.isOutgoing);
+                item.archived = true;
+            }
+            
+            if (batch.length > 0) {
+                console.log(`📁 Archived ${batch.length} messages`);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error processing archive queue:', error);
+        } finally {
+            this.processing = false;
+        }
+    }
+
+    async saveMessage(message, isOutgoing = false) {
+        try {
+            const messageData = {
+                id: message.id?.id || message.id?._serialized || Date.now().toString(),
+                from: message.from,
+                to: message.to,
+                body: message.body || '',
+                type: message.type || 'text',
+                timestamp: message.timestamp ? new Date(message.timestamp * 1000) : new Date(),
+                isOutgoing,
+                hasMedia: !!message.hasMedia,
+                quotedMessage: message.quotedMessage ? {
+                    id: message.quotedMessage.id?.id || message.quotedMessage.id?._serialized,
+                    body: message.quotedMessage.body,
+                    from: message.quotedMessage.from
+                } : null,
+                mentions: message.mentionedIds || [],
+                isGroup: message.from?.includes('@g.us') || false,
+                author: message.author, // For group messages
+                mediaPath: null, // Will be updated by MediaVault
+                archived: new Date().toISOString()
+            };
+
+            // Determine storage path based on message type
+            const messageDate = messageData.timestamp;
+            const year = messageDate.getFullYear().toString();
+            const month = (messageDate.getMonth() + 1).toString().padStart(2, '0');
+            const day = messageDate.getDate().toString().padStart(2, '0');
+
+            let categoryPath;
+            if (messageData.isGroup) {
+                categoryPath = path.join(this.messagesPath, year, month, 'groups');
+            } else if (messageData.from?.includes('@status')) {
+                categoryPath = path.join(this.messagesPath, year, month, 'status');
+            } else {
+                categoryPath = path.join(this.messagesPath, year, month, 'individual');
+            }
+
+            await fs.ensureDir(categoryPath);
+
+            // Create daily file
+            const fileName = `${day}.json`;
+            const filePath = path.join(categoryPath, fileName);
+
+            // Load existing messages for the day
+            let dailyMessages = [];
+            if (await fs.pathExists(filePath)) {
+                try {
+                    dailyMessages = await fs.readJson(filePath);
+                } catch (error) {
+                    console.warn(`⚠️ Error reading existing messages file: ${fileName}`);
+                    dailyMessages = [];
+                }
+            }
+
+            // Add new message
+            dailyMessages.push(messageData);
+
+            // Save back to file
+            await fs.writeJson(filePath, dailyMessages, { spaces: 2 });
+
+            return messageData;
+
+        } catch (error) {
+            console.error('❌ Error saving message:', error);
+            throw error;
+        }
+    }
+
+    async recoverMissedMessages(client) {
+        // This method can be called after reconnection to try to recover missed messages
+        try {
+            console.log('🔍 Checking for missed messages...');
+            
+            // Get recent chats and check for new messages
+            // This is a placeholder - WhatsApp doesn't provide a direct way to get missed messages
+            // But we can implement logic to check recent chat history
+            
+            const lastCheckFile = path.join(process.cwd(), 'data', 'system', 'last_message_check.json');
+            let lastCheckTime = 0;
+            
+            try {
+                if (await fs.pathExists(lastCheckFile)) {
+                    const data = await fs.readJson(lastCheckFile);
+                    lastCheckTime = data.timestamp || 0;
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not read last check time');
+            }
+
+            // Update last check time
+            await fs.writeJson(lastCheckFile, {
+                timestamp: Date.now(),
+                lastCheck: new Date().toISOString()
+            }, { spaces: 2 });
+
+            console.log('✅ Message recovery check completed');
+
+        } catch (error) {
+            console.error('❌ Error during message recovery:', error);
+        }
 
         try {
             const batch = this.archiveQueue.splice(0, 10); // Process up to 10 messages at once

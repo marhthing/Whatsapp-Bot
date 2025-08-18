@@ -38,6 +38,30 @@ This is a WhatsApp personal assistant bot designed to operate through the owner'
 
 ✅ **MIGRATION SUCCESS**: Migration from Replit Agent to standard Replit environment is 100% complete and verified working.
 
+## Recent Updates (August 18, 2025)
+
+✅ **4-Step Organized Workflow**: Implemented structured initialization process:
+- Step 1: Package Management (install/update packages if needed)
+- Step 2: WhatsApp Authentication (session selection and QR code pairing)
+- Step 3: Start Bot Core (initialize all bot components)
+- Step 4: Load Plugins and Full Engine (activate plugin system)
+
+✅ **Enhanced Message Archival**: Improved message saving capabilities:
+- Archives both incoming and outgoing messages with detailed metadata
+- Organizes messages by date in structured folders (individual/groups/status)
+- Includes offline message recovery system to catch missed messages during downtime
+- Batch processing for efficient archival performance
+
+✅ **Fixed Plugin System**: Corrected plugin manifest validation:
+- Updated all plugin manifests to use proper command format (objects with name/description)
+- Fixed command validation in PluginDiscovery for proper plugin loading
+- Re-enabled plugin auto-discovery with working validation system
+
+✅ **Message Processing Fix**: Resolved message body parsing errors:
+- Added null/undefined checks for message.body to prevent crashes
+- Improved error handling for status messages and broadcast content
+- Enhanced command extraction with proper text validation
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

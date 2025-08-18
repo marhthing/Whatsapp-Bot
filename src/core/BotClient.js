@@ -63,8 +63,17 @@ class BotClient extends EventEmitter {
             this.stateEngine = new StateEngine();
             await this.stateEngine.initialize();
 
-            // Initialize plugin system
-            this.pluginDiscovery = new PluginDiscovery();
+            // Initialize plugin system with dependencies
+            this.pluginDiscovery = new PluginDiscovery({
+                botClient: this,
+                client: this.client,
+                accessController: this.accessController,
+                loadingReaction: this.loadingReaction,
+                messageArchiver: this.messageArchiver,
+                mediaVault: this.mediaVault,
+                stateEngine: this.stateEngine,
+                eventBus: this.eventBus
+            });
             await this.pluginDiscovery.initialize();
 
             // Initialize message processor
