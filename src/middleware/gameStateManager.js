@@ -1,4 +1,5 @@
 const EnvironmentManager = require('../core/EnvironmentManager');
+const { jidManager } = require('../utils/jidManager');
 
 class GameStateManagerMiddleware {
     constructor() {
@@ -105,19 +106,10 @@ class GameStateManagerMiddleware {
                 player = message.author || message.from || ownerJid;
             }
 
-            // Normalize JID format - ensure consistent format
-            if (player && !player.includes('@')) {
-                player = player + '@s.whatsapp.net';
-            }
+            // Use jidManager for proper normalization
+            const normalizedPlayer = jidManager.normalizeJid(player);
             
-            // Handle WhatsApp JID variations - remove :92 suffix if present for matching
-            // but keep the original format that was used during game creation
-            let normalizedPlayer = player;
-            if (player && player.includes(':')) {
-                normalizedPlayer = player.split(':')[0] + '@s.whatsapp.net';
-            }
-
-            console.log('🎮 GameStateManager - Extracted player JID:', player, 'Chat:', chatId);
+            console.log('🎮 GameStateManager - Extracted player JID:', player, 'Normalized:', normalizedPlayer, 'Chat:', chatId);
 
             this.eventBus.emit('game_input_received', {
                 chatId: chatId,

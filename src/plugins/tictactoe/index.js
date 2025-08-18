@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs-extra');
+const { jidManager } = require('../../utils/jidManager');
 
 class TicTacToePlugin {
     constructor(options) {
@@ -358,9 +359,9 @@ class TicTacToePlugin {
             const currentPlayerSymbol = gameData.currentPlayer;
             const expectedPlayer = gameData.players[currentPlayerSymbol];
             
-            // Normalize both players for comparison
-            const normalizedExpected = this.normalizeJidForComparison(expectedPlayer);
-            const normalizedActual = this.normalizeJidForComparison(player);
+            // Normalize both players for comparison using jidManager
+            const normalizedExpected = jidManager.normalizeJid(expectedPlayer);
+            const normalizedActual = jidManager.normalizeJid(player);
             
             console.log('🎯 Turn Validation - Current Symbol:', currentPlayerSymbol);
             console.log('🎯 Turn Validation - Expected Player:', expectedPlayer, '(normalized:', normalizedExpected + ')');
@@ -489,25 +490,7 @@ class TicTacToePlugin {
         }
     }
 
-    /**
-     * Normalize JID for comparison - removes :92 suffix and ensures consistent format
-     */
-    normalizeJidForComparison(jid) {
-        if (!jid) return '';
-        
-        // Remove :92 suffix if present
-        let normalized = jid;
-        if (jid.includes(':')) {
-            normalized = jid.split(':')[0] + '@s.whatsapp.net';
-        }
-        
-        // Ensure @s.whatsapp.net suffix
-        if (!normalized.includes('@')) {
-            normalized = normalized + '@s.whatsapp.net';
-        }
-        
-        return normalized;
-    }
+    
 
     /**
      * Extract display name from JID
