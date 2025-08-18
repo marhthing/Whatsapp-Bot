@@ -137,51 +137,61 @@ class TicTacToePlugin {
             console.log('  - Conversation text:', message.message?.conversation);
             console.log('  - Extended text:', message.message?.extendedTextMessage?.text);
             
-            // Extract mentions using comprehensive approach
-            const mentions = this.extractAllMentions(message);
-            console.log('🎯 Extracted mentions:', mentions);
-            
-            if (mentions.length > 0) {
-                opponent = mentions[0];
-                console.log('🎯 Found mentioned opponent:', opponent);
-            } 
-            // Check if replying to someone's message
-            else if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
-                const quotedParticipant = message.message.extendedTextMessage.contextInfo.participant;
-                if (quotedParticipant && quotedParticipant !== player) {
-                    opponent = quotedParticipant;
-                    console.log('🎯 Found quoted opponent:', opponent);
+            // Determine opponent using same logic as .allow command
+            if (chatId.endsWith('@g.us')) {
+                // Group chat: Check if replying to someone's message
+                if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+                    const quotedParticipant = message.message.extendedTextMessage.contextInfo.participant;
+                    if (quotedParticipant && quotedParticipant !== player) {
+                        opponent = quotedParticipant;
+                        console.log('🎯 Found quoted opponent in group:', opponent);
+                    } else {
+                        console.log('🎯 Quoted participant is same as player, skipping');
+                    }
+                }
+                // Handle phone numbers from args in groups
+                else if (args.length > 0) {
+                    let userInput = args[0].replace('@', '');
+                    
+                    // Check if it's a phone number (digits only)
+                    if (/^\d+$/.test(userInput)) {
+                        opponent = userInput + '@s.whatsapp.net';
+                        console.log('🎯 Found opponent from phone number in group:', opponent);
+                    }
+                    // Handle username - we'll need to ask for phone number instead
+                    else if (userInput.length > 0) {
+                        await reply(`❌ Cannot find user "${userInput}". In groups, please:\n\n• Reply to their message: .tictactoe\n• Use phone number: .tictactoe @2348012345678`);
+                        return { success: false, message: 'Username not supported in groups' };
+                    }
+                }
+                // No specific opponent in group
+                else {
+                    await reply('❌ In groups, please:\n\n• Reply to someone\'s message: .tictactoe\n• Tag with phone number: .tictactoe @2348012345678');
+                    return { success: false, message: 'No opponent specified in group' };
+                }
+            } else {
+                // Individual/private chat
+                if (args.length > 0) {
+                    // User specified someone else in private chat
+                    let userInput = args[0].replace('@', '');
+                    
+                    if (/^\d+$/.test(userInput)) {
+                        opponent = userInput + '@s.whatsapp.net';
+                        console.log('🎯 Found opponent from phone number in private chat:', opponent);
+                    } else if (userInput.length > 0) {
+                        await reply(`❌ Cannot find user "${userInput}". Please use their phone number:\n\nExample: .tictactoe @2348012345678`);
+                        return { success: false, message: 'Username not supported' };
+                    }
                 } else {
-                    console.log('🎯 Quoted participant is same as player, skipping');
+                    // No args in private chat - play with the chat partner
+                    opponent = chatId;
+                    console.log('🎯 Found private chat opponent:', opponent);
                 }
-            }
-            // Handle phone numbers or usernames from args
-            else if (args.length > 0) {
-                let userInput = args[0].replace('@', '');
-                
-                // Check if it's a phone number (digits only)
-                if (/^\d+$/.test(userInput)) {
-                    opponent = userInput + '@s.whatsapp.net';
-                    console.log('🎯 Found opponent from phone number:', opponent);
-                }
-                // Handle username - we'll need to ask for phone number instead
-                else if (userInput.length > 0) {
-                    await reply(`❌ Cannot find user "${userInput}". Please use their phone number instead:\n\nExample: .tictactoe @2348012345678\n\nOr reply to their message: .tictactoe`);
-                    return { success: false, message: 'Username not supported, need phone number' };
-                }
-            }
-            // In private chat, if no opponent specified, use the bot owner as opponent
-            else if (chatId.endsWith('@s.whatsapp.net') && chatId !== player) {
-                // Private chat - the bot owner (who would be sending the command) should be the opponent
-                const accessController = this.botClient.getAccessController();
-                const ownerJid = accessController.getOwnerJid();
-                opponent = ownerJid;
-                console.log('🎯 Found private chat opponent (bot owner):', opponent);
             }
             
             // Opponent is REQUIRED - no AI mode
             if (!opponent) {
-                await reply('❌ Please specify someone to play with:\n\n• Use phone number: .tictactoe @2348012345678\n• Reply to their message: .tictactoe\n• In private chat: just type .tictactoe\n\nNote: Usernames don\'t work, please use phone numbers.');
+                await reply('❌ Please specify someone to play with. This should not happen - check the logic above.');
                 return { success: false, message: 'No opponent specified' };
             }
             
