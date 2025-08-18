@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T15:37:08.633Z",
+  "lastUpdated": "2025-08-18T15:42:37.965Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.477Z",
+      "loadedAt": "2025-08-18T15:42:37.738Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -21,7 +21,7 @@
       "name": "anti-delete",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.483Z",
+      "loadedAt": "2025-08-18T15:42:37.745Z",
       "commands": [
         "delete"
       ]
@@ -30,80 +30,16 @@
       "name": "anti-view-once",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.484Z",
+      "loadedAt": "2025-08-18T15:42:37.746Z",
       "commands": [
         "vv"
-      ]
-    },
-    {
-      "name": "games",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.487Z",
-      "commands": [
-        "tictactoe",
-        "wordguess",
-        "endgame",
-        "gameinfo",
-        "gamestats"
-      ]
-    },
-    {
-      "name": "jid",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.490Z",
-      "commands": [
-        "jid"
-      ]
-    },
-    {
-      "name": "media-tools",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.495Z",
-      "commands": [
-        "convert",
-        "upscale",
-        "analyze",
-        "mediainfo",
-        "compress",
-        "extract"
-      ]
-    },
-    {
-      "name": "tiktok-downloader",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.498Z",
-      "commands": [
-        "tiktok"
-      ]
-    },
-    {
-      "name": "youtube-downloader",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:36:36.587Z",
-      "commands": [
-        "ytv"
-      ]
-    },
-    {
-      "name": "ping",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T15:36:39.604Z",
-      "commands": [
-        "ping",
-        "pinginfo"
       ]
     },
     {
       "name": "core-commands",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T15:37:08.632Z",
+      "loadedAt": "2025-08-18T15:42:37.747Z",
       "commands": [
         "help",
         "info",
@@ -116,6 +52,70 @@
         "shutdown",
         "restart",
         "menu"
+      ]
+    },
+    {
+      "name": "games",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:42:37.750Z",
+      "commands": [
+        "tictactoe",
+        "wordguess",
+        "endgame",
+        "gameinfo",
+        "gamestats"
+      ]
+    },
+    {
+      "name": "jid",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:42:37.753Z",
+      "commands": [
+        "jid"
+      ]
+    },
+    {
+      "name": "media-tools",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:42:37.757Z",
+      "commands": [
+        "convert",
+        "upscale",
+        "analyze",
+        "mediainfo",
+        "compress",
+        "extract"
+      ]
+    },
+    {
+      "name": "ping",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:42:37.759Z",
+      "commands": [
+        "ping",
+        "pinginfo"
+      ]
+    },
+    {
+      "name": "tiktok-downloader",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:42:37.760Z",
+      "commands": [
+        "tiktok"
+      ]
+    },
+    {
+      "name": "youtube-downloader",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T15:42:37.965Z",
+      "commands": [
+        "ytv"
       ]
     }
   ]

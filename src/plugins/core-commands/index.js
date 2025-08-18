@@ -391,17 +391,56 @@ class CoreCommandsPlugin {
             // Get owner name (you can customize this)
             const ownerName = 'M A R T I N S ✧';
             
-            // Plugin count (get from bot client if available)
-            let pluginCount = 10; // default fallback
+            // Get actual commands from plugin system
+            let commandsByCategory = {
+                'CORE COMMANDS': [],
+                'GAMES & FUN': [],
+                'DOWNLOADERS': [],
+                'ANTI-FEATURES': [],
+                'MEDIA TOOLS': [],
+                'ADMIN TOOLS': [],
+                'UTILITIES': []
+            };
+            
+            let pluginCount = 0;
+            
             try {
                 if (this.botClient && this.botClient.pluginDiscovery && this.botClient.pluginDiscovery.plugins) {
                     pluginCount = this.botClient.pluginDiscovery.plugins.size;
+                    
+                    // Get all registered commands
+                    const commands = this.botClient.pluginDiscovery.commands;
+                    
+                    for (const [commandName, plugin] of commands) {
+                        const pluginName = plugin.name;
+                        
+                        // Categorize commands based on plugin name and command type
+                        if (pluginName === 'core-commands') {
+                            commandsByCategory['CORE COMMANDS'].push(commandName.toUpperCase());
+                        } else if (pluginName === 'games') {
+                            commandsByCategory['GAMES & FUN'].push(commandName.toUpperCase());
+                        } else if (pluginName.includes('downloader')) {
+                            commandsByCategory['DOWNLOADERS'].push(commandName.toUpperCase());
+                        } else if (pluginName.includes('anti-')) {
+                            commandsByCategory['ANTI-FEATURES'].push(commandName.toUpperCase());
+                        } else if (pluginName === 'media-tools') {
+                            commandsByCategory['MEDIA TOOLS'].push(commandName.toUpperCase());
+                        } else if (pluginName === 'admin-tools') {
+                            commandsByCategory['ADMIN TOOLS'].push(commandName.toUpperCase());
+                        } else if (pluginName === 'jid') {
+                            commandsByCategory['UTILITIES'].push(commandName.toUpperCase());
+                        }
+                    }
                 }
             } catch (error) {
-                console.log('Could not get plugin count, using default');
+                console.log('Could not get commands from registry, using fallback');
+                // Fallback to basic commands if registry access fails
+                commandsByCategory['CORE COMMANDS'] = ['HELP', 'MENU', 'INFO', 'STATUS', 'SETTINGS', 'ALLOW', 'DISALLOW', 'RELOAD', 'ENV', 'SHUTDOWN', 'RESTART'];
+                pluginCount = 10;
             }
             
-            const menuText = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            // Build dynamic menu text
+            let menuText = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃          🤖 MATDEV BOT          ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
 ┃ 🎯 Prefix: ${prefix}
@@ -416,50 +455,45 @@ class CoreCommandsPlugin {
 ┃ 🖥️ Platform: Linux
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-┌─── 🏠 CORE COMMANDS ───┐
-│ • HELP      • INFO      │
-│ • STATUS    • SETTINGS  │
-│ • ALLOW     • DISALLOW  │
-│ • RELOAD    • ENV       │
-│ • SHUTDOWN  • RESTART   │
-└─────────────────────────┘
+`;
 
-┌─── 🎮 GAMES & FUN ───┐
-│ • TICTACTOE  • WORDGUESS │
-│ • ENDGAME    • GAMEINFO  │
-│ • GAMESTATS             │
-└─────────────────────────┘
+            // Add categories with commands
+            const categoryIcons = {
+                'CORE COMMANDS': '🏠',
+                'GAMES & FUN': '🎮',
+                'DOWNLOADERS': '📥',
+                'ANTI-FEATURES': '🔒',
+                'MEDIA TOOLS': '🎨',
+                'ADMIN TOOLS': '⚙️',
+                'UTILITIES': '🏓'
+            };
 
-┌─── 📥 DOWNLOADERS ───┐
-│ • TIKTOK    • YTV      │
-│ • FB        • INSTAGRAM │
-└─────────────────────────┘
-
-┌─── 🔒 ANTI-FEATURES ───┐
-│ • RECOVER   • DELETED   │
-│ • ANTILOG   • VV        │
-└─────────────────────────┘
-
-┌─── 🎨 MEDIA TOOLS ───┐
-│ • CONVERT   • UPSCALE   │
-│ • ANALYZE   • MEDIAINFO │
-│ • COMPRESS  • EXTRACT   │
-└─────────────────────────┘
-
-┌─── ⚙️ ADMIN TOOLS ───┐
-│ • SYSTEMINFO • PLUGINS │
-│ • USERS     • PERMISSIONS │
-│ • LOGS      • CLEANUP   │
-│ • BACKUP               │
-└─────────────────────────┘
-
-┌─── 🏓 UTILITIES ───┐
-│ • PING      • PINGINFO │
-│ • JID                  │
-└─────────────────────────┘
-
-📝 *Use ${prefix}help [command] for detailed info*
-🔹 *Available to bot owner and allowed users*`;
+            for (const [category, commands] of Object.entries(commandsByCategory)) {
+                if (commands.length > 0) {
+                    const icon = categoryIcons[category] || '📌';
+                    menuText += `┌─── ${icon} ${category} ───┐\n`;
+                    
+                    // Sort commands and arrange in rows
+                    const sortedCommands = commands.sort();
+                    for (let i = 0; i < sortedCommands.length; i += 2) {
+                        const cmd1 = sortedCommands[i];
+                        const cmd2 = sortedCommands[i + 1];
+                        
+                        if (cmd2) {
+                            // Two commands per line, adjust spacing
+                            const spacing1 = Math.max(0, 12 - cmd1.length);
+                            menuText += `│ • ${cmd1}${' '.repeat(spacing1)}• ${cmd2}${' '.repeat(Math.max(0, 12 - cmd2.length))}│\n`;
+                        } else {
+                            // Single command
+                            menuText += `│ • ${cmd1}${' '.repeat(Math.max(0, 23 - cmd1.length))}│\n`;
+                        }
+                    }
+                    
+                    menuText += '└─────────────────────────┘\n\n';
+                }
+            }
+            
+            menuText += `📱 Type ${prefix}help <command> for details`;
 
             await reply(menuText);
             
@@ -503,9 +537,23 @@ class CoreCommandsPlugin {
             setTimeout(() => {
                 console.log('🔄 Restarting MATDEV Bot...');
                 
-                // Exit with code 1 to trigger automatic restart in Replit
-                // Replit workflows automatically restart on non-zero exit codes
-                process.exit(1);
+                // Use spawn to restart the process properly
+                const { spawn } = require('child_process');
+                
+                // Spawn a new instance of the bot
+                const child = spawn('node', ['index.js'], {
+                    detached: true,
+                    stdio: 'ignore'
+                });
+                
+                // Detach the child process
+                child.unref();
+                
+                // Exit current process after spawning new one
+                setTimeout(() => {
+                    process.exit(0);
+                }, 1000);
+                
             }, 2000);
             
         } catch (error) {
