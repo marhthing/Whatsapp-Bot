@@ -70,8 +70,21 @@ class AntiViewOncePlugin {
         try {
             console.log('🔐 Capturing view-once message...');
             
-            // Extract view-once content
-            const viewOnceMessage = message.message?.viewOnceMessage?.message;
+            // Extract view-once content - handle both wrapped and unwrapped formats
+            let viewOnceMessage = message.message?.viewOnceMessage?.message;
+            
+            // If not wrapped in viewOnceMessage, check if it's a direct media message without mediaKey
+            if (!viewOnceMessage) {
+                if (message.message?.imageMessage || message.message?.videoMessage) {
+                    const mediaMsg = message.message.imageMessage || message.message.videoMessage;
+                    // Check if it has URL but no mediaKey (common view-once pattern)
+                    if ((mediaMsg.url || mediaMsg.directPath) && !mediaMsg.mediaKey) {
+                        console.log('🔐 Processing unwrapped view-once message');
+                        viewOnceMessage = message.message;
+                    }
+                }
+            }
+            
             if (!viewOnceMessage) {
                 console.warn('⚠️ No view-once content found in message');
                 return false;
@@ -94,9 +107,25 @@ class AntiViewOncePlugin {
                     
                     console.log('📥 Downloading view-once media...');
                     const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-                    const buffer = await downloadMediaMessage(mediaMessage, 'buffer', {}, { 
-                        logger: require('pino')({ level: 'silent' })
-                    });
+                    
+                    // For view-once messages, we might need special handling
+                    // Try the standard download first
+                    let buffer;
+                    try {
+                        buffer = await downloadMediaMessage(mediaMessage, 'buffer', {}, { 
+                            logger: require('pino')({ level: 'silent' })
+                        });
+                    } catch (downloadError) {
+                        console.log('🔐 Standard download failed, trying alternative method for view-once...');
+                        
+                        // For messages without mediaKey, try downloading using the URL directly
+                        const mediaMsg = viewOnceMessage.imageMessage || viewOnceMessage.videoMessage;
+                        if (mediaMsg && (mediaMsg.url || mediaMsg.directPath)) {
+                            // This is a fallback - in practice, view-once URLs are encrypted and need special handling
+                            console.warn('⚠️ View-once media requires special decryption handling');
+                            throw downloadError;
+                        }
+                    }
 
                     if (buffer) {
                         // Determine media type - store all view-once in dedicated folder

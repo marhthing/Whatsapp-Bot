@@ -165,7 +165,22 @@ class MessageProcessor extends EventEmitter {
 
     hasViewOnceMessage(message) {
         // Check if message contains view-once content
-        return !!(message.message?.viewOnceMessage?.message);
+        if (message.message?.viewOnceMessage?.message) {
+            return true;
+        }
+        
+        // Additional check: messages with media URL but no media key might be view-once
+        // This catches view-once messages that don't come wrapped in viewOnceMessage
+        if (message.message?.imageMessage || message.message?.videoMessage) {
+            const mediaMsg = message.message.imageMessage || message.message.videoMessage;
+            // View-once messages often have URL but no mediaKey
+            if ((mediaMsg.url || mediaMsg.directPath) && !mediaMsg.mediaKey) {
+                console.log('🔐 Detected potential view-once message (has URL but no mediaKey)');
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     async handleViewOnceMessage(message) {
