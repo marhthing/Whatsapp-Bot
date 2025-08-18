@@ -87,7 +87,29 @@ class AccessController {
     }
 
     isOwner(jid) {
-        return this.ownerJid === jid;
+        if (!this.ownerJid || !jid) return false;
+        
+        // Extract phone number from both JIDs for comparison
+        const getPhoneNumber = (jidStr) => {
+            // Extract the phone number part before @ symbol
+            const match = jidStr.match(/^(\d+)/);
+            return match ? match[1] : null;
+        };
+        
+        const phoneFromInput = getPhoneNumber(jid);
+        const phoneFromOwner = getPhoneNumber(this.ownerJid);
+        
+        // Remove debug logs since the fix is working
+        // console.log(`🔍 JID Debug - Input: ${jid}, Phone: ${phoneFromInput}`);
+        // console.log(`🔍 Owner Debug - Stored: ${this.ownerJid}, Phone: ${phoneFromOwner}`);
+        // console.log(`🔍 Match Result: ${phoneFromInput === phoneFromOwner}`);
+        
+        const result = phoneFromInput === phoneFromOwner && phoneFromInput !== null;
+        if (result) {
+            console.log(`✅ Owner access granted for: ${jid}`);
+        }
+        
+        return result;
     }
 
     async allowCommand(userJid, command) {

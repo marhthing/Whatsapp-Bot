@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T09:19:09.918Z",
+  "lastUpdated": "2025-08-18T09:26:16.213Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:19:09.902Z",
+      "loadedAt": "2025-08-18T09:24:46.096Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -21,7 +21,7 @@
       "name": "anti-delete",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:19:09.907Z",
+      "loadedAt": "2025-08-18T09:24:46.104Z",
       "commands": [
         "recover",
         "deleted",
@@ -29,26 +29,10 @@
       ]
     },
     {
-      "name": "core-commands",
-      "version": "1.0.0",
-      "enabled": true,
-      "loadedAt": "2025-08-18T09:19:09.909Z",
-      "commands": [
-        "help",
-        "info",
-        "settings",
-        "allow",
-        "disallow",
-        "status",
-        "reload",
-        "env"
-      ]
-    },
-    {
       "name": "games",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:19:09.912Z",
+      "loadedAt": "2025-08-18T09:24:46.109Z",
       "commands": [
         "tictactoe",
         "wordguess",
@@ -61,7 +45,7 @@
       "name": "media-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T09:19:09.918Z",
+      "loadedAt": "2025-08-18T09:24:46.116Z",
       "commands": [
         "convert",
         "upscale",
@@ -69,6 +53,22 @@
         "mediainfo",
         "compress",
         "extract"
+      ]
+    },
+    {
+      "name": "core-commands",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T09:26:16.213Z",
+      "commands": [
+        "help",
+        "info",
+        "settings",
+        "allow",
+        "disallow",
+        "status",
+        "reload",
+        "env"
       ]
     }
   ]

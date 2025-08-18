@@ -54,6 +54,28 @@ class CoreCommandsPlugin {
         this.commands.env = envCommandHandlers.env.bind(envCommandHandlers);
     }
 
+    async executeCommand(commandName, message, args) {
+        if (!this.isInitialized) {
+            throw new Error('Core Commands plugin not initialized');
+        }
+
+        const commandHandler = this.commands[commandName];
+        if (!commandHandler) {
+            throw new Error(`Command '${commandName}' not found in core-commands plugin`);
+        }
+
+        // Create context object for compatibility
+        const context = {
+            message: message,
+            args: args,
+            reply: async (text) => {
+                await this.botClient.sendMessage(message.key.remoteJid, text);
+            }
+        };
+
+        return await commandHandler(context);
+    }
+
     async shutdown() {
         try {
             console.log('🛑 Shutting down Core Commands plugin...');
