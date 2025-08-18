@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T17:52:29.425Z",
+  "lastUpdated": "2025-08-18T17:57:06.455Z",
   "plugins": [
     {
       "name": "admin-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.284Z",
+      "loadedAt": "2025-08-18T17:57:06.262Z",
       "commands": [
         "systeminfo",
         "plugins",
@@ -21,7 +21,7 @@
       "name": "anti-delete",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.290Z",
+      "loadedAt": "2025-08-18T17:57:06.275Z",
       "commands": [
         "delete"
       ]
@@ -30,7 +30,7 @@
       "name": "anti-view-once",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.292Z",
+      "loadedAt": "2025-08-18T17:57:06.278Z",
       "commands": [
         "vv"
       ]
@@ -39,7 +39,7 @@
       "name": "core-commands",
       "version": "2.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.294Z",
+      "loadedAt": "2025-08-18T17:57:06.280Z",
       "commands": [
         "help",
         "info",
@@ -58,7 +58,7 @@
       "name": "endgame",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.296Z",
+      "loadedAt": "2025-08-18T17:57:06.282Z",
       "commands": [
         "endgame",
         "quit"
@@ -68,7 +68,7 @@
       "name": "jid",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.297Z",
+      "loadedAt": "2025-08-18T17:57:06.284Z",
       "commands": [
         "jid"
       ]
@@ -77,7 +77,7 @@
       "name": "media-tools",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.306Z",
+      "loadedAt": "2025-08-18T17:57:06.294Z",
       "commands": [
         "convert",
         "upscale",
@@ -91,7 +91,7 @@
       "name": "ping",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.308Z",
+      "loadedAt": "2025-08-18T17:57:06.296Z",
       "commands": [
         "ping",
         "pinginfo"
@@ -101,7 +101,7 @@
       "name": "tictactoe",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.310Z",
+      "loadedAt": "2025-08-18T17:57:06.303Z",
       "commands": [
         "tictactoe",
         "ttt"
@@ -111,7 +111,7 @@
       "name": "tiktok-downloader",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.323Z",
+      "loadedAt": "2025-08-18T17:57:06.306Z",
       "commands": [
         "tiktok"
       ]
@@ -120,7 +120,7 @@
       "name": "wordguess",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.325Z",
+      "loadedAt": "2025-08-18T17:57:06.307Z",
       "commands": [
         "wordguess",
         "wg"
@@ -130,7 +130,7 @@
       "name": "youtube-downloader",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T17:52:29.425Z",
+      "loadedAt": "2025-08-18T17:57:06.455Z",
       "commands": [
         "ytv"
       ]
