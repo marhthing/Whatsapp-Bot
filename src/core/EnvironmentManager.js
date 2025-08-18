@@ -35,12 +35,35 @@ class EnvironmentManager {
     async ensureEnvironmentFiles() {
         // Create user .env if it doesn't exist
         if (!await fs.pathExists(this.envPath)) {
-            await fs.copy(path.join(__dirname, '../../.env'), this.envPath);
+            const defaultUserEnv = `# WhatsApp Personal Assistant Bot - User Configuration
+# This file is automatically created and managed by the bot
+NODE_ENV=development
+ENABLE_WEB_INTERFACE=false
+AUTO_RELOAD_PLUGINS=true
+ENABLE_MEDIA_DOWNLOAD=true
+ENABLE_MESSAGE_ARCHIVE=true
+MAX_MEDIA_SIZE=52428800
+MAX_MESSAGE_CACHE=1000
+PLUGIN_TIMEOUT=10000
+WEB_PORT=5000
+WEB_HOST=0.0.0.0
+`;
+            await fs.writeFile(this.envPath, defaultUserEnv);
+            console.log('📝 Created default .env file');
         }
 
         // Create system .env if it doesn't exist
         if (!await fs.pathExists(this.systemEnvPath)) {
-            await fs.copy(path.join(__dirname, '../../.env.system'), this.systemEnvPath);
+            const defaultSystemEnv = `# WhatsApp Personal Assistant Bot - System Configuration
+# Session-specific variables (automatically managed)
+WHATSAPP_SESSION_ID=
+OWNER_JID=
+AUTH_METHOD=
+PHONE_NUMBER=
+SESSION_DIR=
+`;
+            await fs.writeFile(this.systemEnvPath, defaultSystemEnv);
+            console.log('📝 Created default .env.system file');
         }
     }
 
