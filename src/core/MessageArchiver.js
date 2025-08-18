@@ -500,11 +500,22 @@ class MessageArchiver {
 
             for (const filePath of archiveFiles) {
                 try {
-                    const archiveData = await fs.readJson(filePath);
+                    const fileData = await fs.readJson(filePath);
                     
-                    for (const message of archiveData.messages || []) {
+                    // Handle both array format (daily files) and structured format
+                    let messages = [];
+                    if (Array.isArray(fileData)) {
+                        messages = fileData;
+                    } else if (fileData.messages && Array.isArray(fileData.messages)) {
+                        messages = fileData.messages;
+                    } else {
+                        console.warn(`⚠️ Unexpected file format in ${filePath}`);
+                        continue;
+                    }
+                    
+                    for (const message of messages) {
                         // Apply filters
-                        if (chatId && message.chatId !== chatId) continue;
+                        if (chatId && message.from !== chatId) continue;
                         if (author && message.author !== author) continue;
                         if (hasMedia !== undefined && message.hasMedia !== hasMedia) continue;
                         if (text && !message.body.toLowerCase().includes(text.toLowerCase())) continue;
@@ -553,7 +564,8 @@ class MessageArchiver {
                         const dayFiles = await fs.readdir(categoryPath);
                         
                         for (const filename of dayFiles) {
-                            if (filename.endsWith(`_${day}.json`)) {
+                            // Check for daily files (day.json format)
+                            if (filename === `${day}.json`) {
                                 files.push(path.join(categoryPath, filename));
                             }
                         }
@@ -569,17 +581,45 @@ class MessageArchiver {
 
     async getMessageById(messageId) {
         try {
-            // Search recent messages first (last 7 days)
-            const recentMessages = await this.searchMessages({
-                limit: 1000
-            });
-
-            for (const message of recentMessages) {
-                if (message.id === messageId) {
-                    return message;
+            console.log(`🔍 Searching for message ID: ${messageId}`);
+            
+            // Search in recent files (last 7 days)
+            const now = new Date();
+            const searchDays = 7;
+            
+            for (let i = 0; i < searchDays; i++) {
+                const searchDate = new Date(now);
+                searchDate.setDate(searchDate.getDate() - i);
+                
+                const year = searchDate.getFullYear().toString();
+                const month = (searchDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = searchDate.getDate().toString().padStart(2, '0');
+                
+                // Search in all categories
+                const categories = ['individual', 'groups', 'status'];
+                
+                for (const category of categories) {
+                    const dayFilePath = path.join(this.messagesPath, year, month, category, `${day}.json`);
+                    
+                    if (await fs.pathExists(dayFilePath)) {
+                        try {
+                            const dailyMessages = await fs.readJson(dayFilePath);
+                            console.log(`🔍 Searching in ${dayFilePath} - Found ${dailyMessages.length} messages`);
+                            
+                            for (const message of dailyMessages) {
+                                if (message.id === messageId) {
+                                    console.log(`✅ Found message with ID: ${messageId}`);
+                                    return message;
+                                }
+                            }
+                        } catch (fileError) {
+                            console.warn(`⚠️ Error reading file ${dayFilePath}:`, fileError);
+                        }
+                    }
                 }
             }
-
+            
+            console.log(`⚠️ Message not found with ID: ${messageId}`);
             return null;
 
         } catch (error) {
