@@ -180,7 +180,7 @@ class Detector {
             
             notificationText += `💡 Use \`.recover ${deletionEntry.id}\` to restore this message`;
             
-            await this.botClient.sendMessage(targetJid, { text: notificationText });
+            await this.botClient.sendMessage(targetJid, notificationText);
             
             // Mark as notified
             deletionEntry.notifiedOwner = true;
