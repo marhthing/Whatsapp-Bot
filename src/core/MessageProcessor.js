@@ -459,8 +459,6 @@ class MessageProcessor extends EventEmitter {
 
     async processDeletedMessage(deletionData) {
         try {
-            console.log('🗑️ Message deletion detected in processor:', JSON.stringify(deletionData, null, 2));
-
             // Handle different deletion data formats from Baileys
             let messageKeys = [];
 
@@ -475,37 +473,25 @@ class MessageProcessor extends EventEmitter {
                 messageKeys = [deletionData];
             }
 
-            console.log(`🔍 Processing ${messageKeys.length} deleted message(s)`);
-
             for (const messageKey of messageKeys) {
                 try {
                     const messageId = messageKey.id || messageKey;
                     const chatId = messageKey.remoteJid || messageKey.from;
 
-                    console.log(`🔍 Looking for archived message - ID: ${messageId}, Chat: ${chatId}`);
-
                     // Try to recover from archive
                     const archivedMessage = await this.messageArchiver.getMessageById(messageId);
 
                     if (archivedMessage) {
-                        console.log(`📋 Found archived message for deletion: ${messageId}`);
-
                         // Get anti-delete plugin
                         const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
 
                         if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
-                            console.log(`🔄 Forwarding deletion to anti-delete plugin`);
                             await antiDeletePlugin.handleDeletedMessage(messageKey, null, archivedMessage);
-                        } else {
-                            console.log(`⚠️ Anti-delete plugin not available or doesn't have handleDeletedMessage method`);
                         }
                     } else {
-                        console.log(`⚠️ No archived message found for: ${messageId}`);
-
                         // Still notify anti-delete plugin about the deletion attempt
                         const antiDeletePlugin = await this.pluginDiscovery.getPlugin('anti-delete');
                         if (antiDeletePlugin && typeof antiDeletePlugin.handleDeletedMessage === 'function') {
-                            console.log(`🔄 Notifying anti-delete plugin of deletion without archived message`);
                             await antiDeletePlugin.handleDeletedMessage(messageKey, null, null);
                         }
                     }

@@ -73,12 +73,9 @@ class Detector {
 
     async handleDeletion(data) {
         try {
-            console.log('🔍 Anti-delete handling deletion data:', JSON.stringify(data, null, 2));
-            
             const { after, before } = data;
             
             if (!before) {
-                console.log('🔍 Message deletion detected but no original message available');
                 return;
             }
             
@@ -88,7 +85,7 @@ class Detector {
             const chatId = this.extractChatId(before);
             const messageId = this.extractMessageId(before);
             
-            console.log(`🔍 Processing deletion - Chat: ${chatId}, Sender: ${senderJid}, MessageID: ${messageId}`);
+            console.log('🗑️ Deletion detected');
             
             // Handle different timestamp formats
             let originalTimestamp;
@@ -134,8 +131,6 @@ class Detector {
             // Notify and forward deleted message (always enabled for now)
             await this.forwardDeletedMessage(deletionEntry);
             
-            console.log(`🔍 Logged message deletion: ${deletionEntry.originalMessageId}`);
-            
         } catch (error) {
             console.error('Error handling message deletion:', error);
         }
@@ -155,38 +150,43 @@ class Detector {
             }
             
             if (!targetJid) {
-                console.warn('⚠️ Target JID not available for anti-delete forwarding');
                 return;
             }
             
-            const senderPhone = deletionEntry.sender.split('@')[0];
-            const chatPhone = deletionEntry.chatId.split('@')[0];
+            // Create contextInfo for tagging the deleted message as a quote
+            const contextInfo = {
+                quotedMessage: {
+                    conversation: "" // Empty quoted message to show as tag
+                },
+                participant: deletionEntry.sender, // Original sender JID
+                remoteJid: deletionEntry.chatId // Original chat JID
+            };
             
-            let notificationText = `🗑️ **DELETED MESSAGE RECOVERED**\n\n`;
-            notificationText += `👤 **Sender:** ${senderPhone}\n`;
-            notificationText += `💬 **From Chat:** ${chatPhone}\n`;
-            notificationText += `📅 **Original:** ${new Date(deletionEntry.originalTimestamp).toLocaleString()}\n`;
-            notificationText += `🗑️ **Deleted:** ${new Date(deletionEntry.deletedTimestamp).toLocaleString()}\n\n`;
-            
+            // Send the original message content as a tagged message
             if (deletionEntry.messageBody) {
-                notificationText += `💬 **Deleted Content:**\n"${deletionEntry.messageBody}"\n\n`;
+                await this.botClient.sendMessage(targetJid, {
+                    text: deletionEntry.messageBody,
+                    contextInfo: contextInfo
+                });
+            } else if (deletionEntry.hasMedia) {
+                // For media messages, send a placeholder text with tag
+                await this.botClient.sendMessage(targetJid, {
+                    text: `[${deletionEntry.mediaType.toUpperCase()}]`,
+                    contextInfo: contextInfo
+                });
             } else {
-                notificationText += `💬 **Content:** (No text content)\n\n`;
+                // Fallback for unknown content
+                await this.botClient.sendMessage(targetJid, {
+                    text: "[DELETED MESSAGE]",
+                    contextInfo: contextInfo
+                });
             }
-            
-            if (deletionEntry.hasMedia) {
-                notificationText += `📎 **Had Media:** ${deletionEntry.mediaType}\n\n`;
-            }
-            
-            notificationText += `💡 Use \`.recover ${deletionEntry.id}\` to restore this message`;
-            
-            await this.botClient.sendMessage(targetJid, notificationText);
             
             // Mark as notified
             deletionEntry.notifiedOwner = true;
             await this.saveDeletionLog();
             
-            console.log(`📤 Forwarded deleted message to: ${targetJid}`);
+            console.log('📤 Deletion message sent');
             
         } catch (error) {
             console.error('Error forwarding deleted message:', error);
