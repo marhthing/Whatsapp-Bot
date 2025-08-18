@@ -134,7 +134,17 @@ class PluginDiscovery {
 
             // Load plugin class
             const PluginClass = require(mainPath);
-            const pluginInstance = new PluginClass(this.dependencies);
+            
+            // Prepare plugin options with all necessary dependencies
+            const pluginOptions = {
+                ...this.dependencies,
+                config: manifest,
+                pluginPath: pluginPath,
+                pluginName: pluginName,
+                manifest: manifest
+            };
+            
+            const pluginInstance = new PluginClass(pluginOptions);
 
             // Initialize plugin
             if (pluginInstance.initialize) {
@@ -270,7 +280,26 @@ class PluginDiscovery {
         }
 
         try {
-            return await plugin.instance.executeCommand(commandName, message, command);
+            // Create context object for the plugin
+            const context = {
+                message: message,
+                args: command.args,
+                command: command,
+                reply: async (text, options = {}) => {
+                    // Send message to the chat
+                    const chatId = message.key.remoteJid;
+                    const { BotClient } = require('./BotClient');
+                    const botClient = this.dependencies.botClient;
+                    
+                    if (botClient && botClient.sendMessage) {
+                        return await botClient.sendMessage(chatId, text, options);
+                    } else {
+                        throw new Error('Bot client not available for reply');
+                    }
+                }
+            };
+            
+            return await plugin.instance.executeCommand(commandName, context);
         } catch (error) {
             console.error(`❌ Error executing command '${commandName}' in plugin '${plugin.name}':`, error);
             throw error;
