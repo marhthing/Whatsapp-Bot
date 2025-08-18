@@ -1,0 +1,247 @@
+ Initializing WhatsApp Personal Assistant Bot...
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+🔧 Initializing performance monitor...
+📊 Loaded existing performance metrics
+👀 Started performance monitoring
+✅ Performance monitor initialized
+🔧 Initializing bot client components...
+🔧 Initializing WhatsApp client for session: mk
+📱 Phone number: 2347046040727
+🔐 Auth method: QR Code
+🔧 WhatsApp client initialization started...
+🔧 Initializing access controller...
+✅ Access controller initialized
+🔧 Initializing message archiver...
+✅ Message archiver initialized
+🔧 Initializing media vault...
+✅ Media vault initialized
+🔧 Initializing state engine...
+📁 Loaded state for 0 chats
+✅ State engine initialized
+🔧 Initializing plugin discovery...
+📁 Loaded plugin registry with 1 entries
+🔧 Initializing Admin Tools plugin...
+❌ Failed to initialize Admin Tools plugin: TypeError: Cannot read properties of undefined (reading 'bind')
+    at AdminToolsPlugin.initializeCommands (/home/runner/workspace/src/plugins/admin-tools/index.js:44:52)
+    at AdminToolsPlugin.initialize (/home/runner/workspace/src/plugins/admin-tools/index.js:31:18)
+    at PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:38)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+❌ Failed to load plugin 'admin-tools': TypeError: Cannot read properties of undefined (reading 'bind')
+    at AdminToolsPlugin.initializeCommands (/home/runner/workspace/src/plugins/admin-tools/index.js:44:52)
+    at AdminToolsPlugin.initialize (/home/runner/workspace/src/plugins/admin-tools/index.js:31:18)
+    at PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:38)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+🔍 Initializing Anti-Delete plugin...
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+Error initializing Anti-Delete Detector: TypeError: this.envManager.get is not a function
+    at Detector.initialize (/home/runner/workspace/src/plugins/anti-delete/detector.js:23:33)
+    at async AntiDeletePlugin.initialize (/home/runner/workspace/src/plugins/anti-delete/index.js:27:13)
+    at async PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:17)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+❌ Failed to initialize Anti-Delete plugin: TypeError: this.envManager.get is not a function
+    at Detector.initialize (/home/runner/workspace/src/plugins/anti-delete/detector.js:23:33)
+    at async AntiDeletePlugin.initialize (/home/runner/workspace/src/plugins/anti-delete/index.js:27:13)
+    at async PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:17)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+❌ Failed to load plugin 'anti-delete': TypeError: this.envManager.get is not a function
+    at Detector.initialize (/home/runner/workspace/src/plugins/anti-delete/detector.js:23:33)
+    at async AntiDeletePlugin.initialize (/home/runner/workspace/src/plugins/anti-delete/index.js:27:13)
+    at async PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:17)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+🔧 Initializing Core Commands plugin...
+✅ Core Commands plugin initialized
+📝 Registered command: help -> core-commands
+📝 Registered command: info -> core-commands
+📝 Registered command: settings -> core-commands
+📝 Registered command: allow -> core-commands
+📝 Registered command: disallow -> core-commands
+📝 Registered command: status -> core-commands
+📝 Registered command: reload -> core-commands
+📝 Registered command: env -> core-commands
+✅ Loaded plugin: core-commands v1.0.0
+🎮 Initializing Games plugin...
+✅ Games plugin initialized
+📝 Registered command: tictactoe -> games
+📝 Registered command: wordguess -> games
+📝 Registered command: endgame -> games
+📝 Registered command: gameinfo -> games
+📝 Registered command: gamestats -> games
+✅ Loaded plugin: games v1.0.0
+🎨 Initializing Media Tools plugin...
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+Error initializing Media Converter: TypeError: this.envManager.get is not a function
+    at Converter.initialize (/home/runner/workspace/src/plugins/media-tools/converter.js:27:33)
+    at async MediaToolsPlugin.initialize (/home/runner/workspace/src/plugins/media-tools/index.js:30:13)
+    at async PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:17)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+❌ Failed to initialize Media Tools plugin: TypeError: this.envManager.get is not a function
+    at Converter.initialize (/home/runner/workspace/src/plugins/media-tools/converter.js:27:33)
+    at async MediaToolsPlugin.initialize (/home/runner/workspace/src/plugins/media-tools/index.js:30:13)
+    at async PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:17)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+❌ Failed to load plugin 'media-tools': TypeError: this.envManager.get is not a function
+    at Converter.initialize (/home/runner/workspace/src/plugins/media-tools/converter.js:27:33)
+    at async MediaToolsPlugin.initialize (/home/runner/workspace/src/plugins/media-tools/index.js:30:13)
+    at async PluginDiscovery.loadPlugin (/home/runner/workspace/src/core/PluginDiscovery.js:141:17)
+    at async PluginDiscovery.discoverPlugins (/home/runner/workspace/src/core/PluginDiscovery.js:86:21)
+    at async PluginDiscovery.initialize (/home/runner/workspace/src/core/PluginDiscovery.js:26:13)
+    at async BotClient.initialize (/home/runner/workspace/src/core/BotClient.js:77:13)
+    at async WhatsAppBot.initialize (/home/runner/workspace/src/index.js:44:13)
+    at async WhatsAppBot.start (/home/runner/workspace/src/index.js:223:13)
+✅ Plugin discovery initialized with 2 plugins
+🔧 Initializing middleware stack...
+📝 Message capture middleware initialized
+🔐 Access filter middleware initialized
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+⏳ Loading reaction middleware initialized
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+📥 Media downloader middleware initialized
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+🎮 Game state manager middleware initialized
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+✅ Allowed commands middleware initialized
+🔧 Initializing environment manager...
+✅ Environment manager initialized
+🔧 Error recovery middleware initialized
+✅ Middleware stack initialized with 7 middleware
+✅ Bot client initialized successfully
+🔧 Initializing hot reloader...
+👀 Watching plugins directory: /home/runner/workspace/src/plugins
+✅ Hot reloader initialized and watching for changes
+✅ Bot initialization complete!
+🚀 WhatsApp Personal Assistant Bot is running!
+📁 Archived 1 messages
+🔐 WhatsApp connection opened successfully!
+🔐 Owner JID set: 2347046040727:77@s.whatsapp.net
+🔐 Bot ready! Operating as: 2347046040727:77@s.whatsapp.net
+✅ Bot will send messages using your WhatsApp account
+💾 Updated session config with JID: 2347046040727:77@s.whatsapp.net
+💾 Updated session metadata with JID
+📱 Connection confirmation sent to owner
+✅ WhatsApp client is ready!
+📁 Archived 1 messages
+Closing stale open session for new outgoing prekey bundle
+Closing session: SessionEntry {
+  _chains: {
+    'BTfPQxtGT9M+2HtuabVllcD97XjCYKk2COSoxBscK/hc': { chainKey: [Object], chainType: 2, messageKeys: {} },
+    BXNbnBbRmf8fsqLxPkJVKsUQayZpoGPAHnPLHZQdYv0g: { chainKey: [Object], chainType: 2, messageKeys: {} },
+    'BcL3eqY3bE5krty6LxrOtdKcFllVY9rgZxpz+qGvRcsB': { chainKey: [Object], chainType: 1, messageKeys: {} }
+  },
+  registrationId: 1445940873,
+  currentRatchet: {
+    ephemeralKeyPair: {
+      pubKey: <Buffer 05 c2 f7 7a a6 37 6c 4e 64 ae dc ba 2f 1a ce b5 d2 9c 16 59 55 63 da e0 67 1a 73 fa a1 af 45 cb 01>,
+      privKey: <Buffer 80 19 63 3e 2a df 3c 45 29 61 df 3a 76 3b 88 fd ce 9e 03 35 46 7c 59 46 80 3e 42 a6 e3 fe 00 4d>
+    },
+    lastRemoteEphemeralKey: <Buffer 05 73 5b 9c 16 d1 99 ff 1f b2 a2 f1 3e 42 55 2a c5 10 6b 26 69 a0 63 c0 1e 73 cb 1d 94 1d 62 fd 20>,
+    previousCounter: 2,
+    rootKey: <Buffer 95 7a 27 bf 8f e0 5e 08 9d 43 cf 3e 5d 7d 7b 37 af b3 9b f7 1d 02 f1 cf 74 70 ca a5 dd 07 37 e5>
+  },
+  indexInfo: {
+    baseKey: <Buffer 05 81 bf d3 10 4c 22 9b 8c bc b8 5c ec 32 63 d6 6e 8f ac ce 98 0b 62 55 d5 5d 2e de 4e 5d b5 45 10>,
+    baseKeyType: 2,
+    closed: -1,
+    used: 1755506093013,
+    created: 1755505588512,
+    remoteIdentityKey: <Buffer 05 c3 41 ab fe 61 33 b2 90 9f 7b 46 bf d3 88 74 7d 23 e6 4e 15 ca 3a 37 9c 3a 11 20 db aa c1 3a 1d>
+  }
+}
+🔍 Access check - Sender: 185534701924401@lid, Owner: 2347046040727:77@s.whatsapp.net, Chat: 120363420139242155@g.us
+🚫 Access denied for 185534701924401@lid: access_denied
+📁 Archived 1 messages
+Closing open session in favor of incoming prekey bundle
+Closing session: SessionEntry {
+  _chains: {
+    'BauKxtDcmu+YJCt7lhKcR/SMCbtiQoeuHfEIzRurOJgx': { chainKey: [Object], chainType: 1, messageKeys: {} }
+  },
+  registrationId: 1445940873,
+  currentRatchet: {
+    ephemeralKeyPair: {
+      pubKey: <Buffer 05 ab 8a c6 d0 dc 9a ef 98 24 2b 7b 96 12 9c 47 f4 8c 09 bb 62 42 87 ae 1d f1 08 cd 1b ab 38 98 31>,
+      privKey: <Buffer c8 38 2b c1 b1 c5 93 c6 a8 3d 5b 50 73 20 10 26 44 f2 a7 75 d5 4f 95 f0 97 56 3f 1f 23 95 ec 6e>
+    },
+    lastRemoteEphemeralKey: <Buffer 05 26 5b 61 c8 bc 00 2d 92 a7 eb a7 fa 04 cb 66 76 53 e9 2f 3a fd fc 3b 22 4b 12 39 ea ac c6 2d 23>,
+    previousCounter: 0,
+    rootKey: <Buffer 0d 75 10 4c c5 80 19 aa b7 3b d7 ab 11 9c 42 56 15 fa c7 cd e4 6d 08 ea 8c e1 33 17 8f 46 09 71>
+  },
+  indexInfo: {
+    baseKey: <Buffer 05 61 7b dd 22 d2 92 5e 23 84 b0 cf 7e b7 cb dc a8 7a fb 32 c1 2c d3 9c bc f4 6a 32 da 40 be 74 6e>,
+    baseKeyType: 1,
+    closed: -1,
+    used: 1755506465328,
+    created: 1755506465328,
+    remoteIdentityKey: <Buffer 05 c3 41 ab fe 61 33 b2 90 9f 7b 46 bf d3 88 74 7d 23 e6 4e 15 ca 3a 37 9c 3a 11 20 db aa c1 3a 1d>
+  },
+  pendingPreKey: {
+    signedKeyId: 5555402,
+    baseKey: <Buffer 05 61 7b dd 22 d2 92 5e 23 84 b0 cf 7e b7 cb dc a8 7a fb 32 c1 2c d3 9c bc f4 6a 32 da 40 be 74 6e>,
+    preKeyId: 2863
+  }
+}
+📁 Archived 1 messages
+📁 Archived 1 messages
+📥 Downloading media...
+❌ Error downloading/storing media: Error: Cannot derive from empty media key
+    at getMediaKeys (/home/runner/workspace/node_modules/@whiskeysockets/baileys/lib/Utils/messages-media.js:88:15)
+    at downloadContentFromMessage (/home/runner/workspace/node_modules/@whiskeysockets/baileys/lib/Utils/messages-media.js:426:24)
+    at downloadMsg (/home/runner/workspace/node_modules/@whiskeysockets/baileys/lib/Utils/messages.js:732:78)
+    at downloadMediaMessage (/home/runner/workspace/node_modules/@whiskeysockets/baileys/lib/Utils/messages.js:696:26)
+    at MessageProcessor.downloadAndStoreMedia (/home/runner/workspace/src/core/MessageProcessor.js:373:34)
+    at MessageProcessor.processMessage (/home/runner/workspace/src/core/MessageProcessor.js:34:28)
+    at async EventEmitter.<anonymous> (/home/runner/workspace/src/core/BotClient.js:210:25) {
+  data: null,
+  isBoom: true,
+  isServer: true,
+  output: {
+    statusCode: 500,
+    payload: {
+      statusCode: 500,
+      error: 'Internal Server Error',
+      message: 'An internal server error occurred'
+    },
+    headers: {}
+  }
+}
+🔍 Access check - Sender: 120363303367935415@newsletter, Owner: 2347046040727:77@s.whatsapp.net, Chat: 120363303367935415@newsletter
+🚫 Access denied for 120363303367935415@newsletter: access_denied
+🔍 Access check - Sender: 2347018091555@s.whatsapp.net, Owner: 2347046040727:77@s.whatsapp.net, Chat: 2347018091555@s.whatsapp.net
+🚫 Access denied for 2347018091555@s.whatsapp.net: access_denied
+📁 Archived 2 messages
+🔍 Access check - Sender: 2347018091555@s.whatsapp.net, Owner: 2347046040727:77@s.whatsapp.net, Chat: 2347018091555@s.whatsapp.net
+🚫 Access denied for 2347018091555@s.whatsapp.net: access_denied
+📁 Archived 1 messages

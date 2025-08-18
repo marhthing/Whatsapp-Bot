@@ -1,12 +1,43 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-08-18T08:33:12.334Z",
+  "lastUpdated": "2025-08-18T08:45:41.054Z",
   "plugins": [
+    {
+      "name": "admin-tools",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T08:45:41.041Z",
+      "commands": [
+        "systeminfo",
+        "plugins",
+        "users",
+        "permissions",
+        "logs",
+        "cleanup",
+        "backup"
+      ]
+    },
+    {
+      "name": "core-commands",
+      "version": "1.0.0",
+      "enabled": true,
+      "loadedAt": "2025-08-18T08:45:41.047Z",
+      "commands": [
+        "help",
+        "info",
+        "settings",
+        "allow",
+        "disallow",
+        "status",
+        "reload",
+        "env"
+      ]
+    },
     {
       "name": "games",
       "version": "1.0.0",
       "enabled": true,
-      "loadedAt": "2025-08-18T08:33:12.331Z",
+      "loadedAt": "2025-08-18T08:45:41.049Z",
       "commands": [
         "tictactoe",
         "wordguess",

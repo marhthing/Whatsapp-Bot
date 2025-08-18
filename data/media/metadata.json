@@ -1,0 +1,86 @@
+{
+  "536b931fedeb3dc1356c56c1a07dfc038b90795c2ed5348dd329b07558d5eb2d": {
+    "id": "536b931fedeb3dc1356c56c1a07dfc038b90795c2ed5348dd329b07558d5eb2d",
+    "filename": "2025-08-18T08-47-53-457Z_536b931f.jpg",
+    "originalName": "image.jpg",
+    "category": "images",
+    "mimetype": "image/jpeg",
+    "size": 132301,
+    "hash": "536b931fedeb3dc1356c56c1a07dfc038b90795c2ed5348dd329b07558d5eb2d",
+    "path": "/home/runner/workspace/data/media/images/2025-08-18T08-47-53-457Z_536b931f.jpg",
+    "relativePath": "images/2025-08-18T08-47-53-457Z_536b931f.jpg",
+    "createdAt": "2025-08-18T08:47:53.457Z",
+    "messages": [
+      {
+        "messageId": "3AFD145520E42E72BAFB",
+        "chatId": "2347046040727@s.whatsapp.net",
+        "author": "2347046040727@s.whatsapp.net",
+        "timestamp": 1755506873000,
+        "caption": null
+      }
+    ]
+  },
+  "bf63fcc5d07f387e7f19eaea12c431fdf223fbcc32fc605c22f3d33e743dcaca": {
+    "id": "bf63fcc5d07f387e7f19eaea12c431fdf223fbcc32fc605c22f3d33e743dcaca",
+    "filename": "2025-08-18T08-48-06-088Z_bf63fcc5.jpg",
+    "originalName": "image.jpg",
+    "category": "images",
+    "mimetype": "image/jpeg",
+    "size": 83721,
+    "hash": "bf63fcc5d07f387e7f19eaea12c431fdf223fbcc32fc605c22f3d33e743dcaca",
+    "path": "/home/runner/workspace/data/media/images/2025-08-18T08-48-06-088Z_bf63fcc5.jpg",
+    "relativePath": "images/2025-08-18T08-48-06-088Z_bf63fcc5.jpg",
+    "createdAt": "2025-08-18T08:48:06.088Z",
+    "messages": [
+      {
+        "messageId": "3A7D92C72105C391EB2D",
+        "chatId": "2347018091555@s.whatsapp.net",
+        "author": "2347018091555@s.whatsapp.net",
+        "timestamp": 1755506885000,
+        "caption": null
+      }
+    ]
+  },
+  "0e77760cdb201abf2a6bcd5080bf24eb6410da0fbcdbce92d5959706727d4619": {
+    "id": "0e77760cdb201abf2a6bcd5080bf24eb6410da0fbcdbce92d5959706727d4619",
+    "filename": "2025-08-18T08-48-55-933Z_0e77760c.ogg",
+    "originalName": "audio.ogg",
+    "category": "audio",
+    "mimetype": "audio/ogg; codecs=opus",
+    "size": 3515,
+    "hash": "0e77760cdb201abf2a6bcd5080bf24eb6410da0fbcdbce92d5959706727d4619",
+    "path": "/home/runner/workspace/data/media/audio/2025-08-18T08-48-55-933Z_0e77760c.ogg",
+    "relativePath": "audio/2025-08-18T08-48-55-933Z_0e77760c.ogg",
+    "createdAt": "2025-08-18T08:48:55.934Z",
+    "messages": [
+      {
+        "messageId": "3AE0D6271CFCC5F1CEFC",
+        "chatId": "2347046040727@s.whatsapp.net",
+        "author": "2347046040727@s.whatsapp.net",
+        "timestamp": 1755506935000,
+        "caption": null
+      }
+    ]
+  },
+  "9954c233207a3c8e345fc9c66940953a4d498108b827168a1e2b7b5c9f6bccf6": {
+    "id": "9954c233207a3c8e345fc9c66940953a4d498108b827168a1e2b7b5c9f6bccf6",
+    "filename": "2025-08-18T08-49-03-650Z_9954c233.webp",
+    "originalName": "sticker.webp",
+    "category": "stickers",
+    "mimetype": "image/webp",
+    "size": 15268,
+    "hash": "9954c233207a3c8e345fc9c66940953a4d498108b827168a1e2b7b5c9f6bccf6",
+    "path": "/home/runner/workspace/data/media/stickers/2025-08-18T08-49-03-650Z_9954c233.webp",
+    "relativePath": "stickers/2025-08-18T08-49-03-650Z_9954c233.webp",
+    "createdAt": "2025-08-18T08:49:03.651Z",
+    "messages": [
+      {
+        "messageId": "3A3B59EDA3D863A0ADD4",
+        "chatId": "2347046040727@s.whatsapp.net",
+        "author": "2347046040727@s.whatsapp.net",
+        "timestamp": 1755506943000,
+        "caption": null
+      }
+    ]
+  }
+}

@@ -21,7 +21,9 @@ class Converter {
 
     async initialize() {
         try {
-            await this.envManager.initialize();
+            if (!this.envManager.isInitialized) {
+                await this.envManager.initialize();
+            }
             
             this.tempDir = path.join(
                 this.envManager.get('DATA_DIR', './data'),

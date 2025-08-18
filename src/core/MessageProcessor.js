@@ -86,6 +86,19 @@ class MessageProcessor extends EventEmitter {
         return !!message.hasMedia;
     }
 
+    hasValidMediaKey(message) {
+        try {
+            if (message.message?.imageMessage?.mediaKey) return true;
+            if (message.message?.videoMessage?.mediaKey) return true;
+            if (message.message?.audioMessage?.mediaKey) return true;
+            if (message.message?.documentMessage?.mediaKey) return true;
+            if (message.message?.stickerMessage?.mediaKey) return true;
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
     async downloadAndStoreMedia(message) {
         try {
             if (!this.hasMedia(message)) {

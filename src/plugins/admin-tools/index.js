@@ -41,7 +41,7 @@ class AdminToolsPlugin {
 
     initializeCommands() {
         this.commands = {
-            systeminfo: this.systemInfo.systemInfo.bind(this.systemInfo),
+            systeminfo: this.systemInfo.systeminfo.bind(this.systemInfo),
             plugins: this.systemInfo.plugins.bind(this.systemInfo),
             users: this.userManager.users.bind(this.userManager),
             permissions: this.allowCommands.permissions.bind(this.allowCommands),

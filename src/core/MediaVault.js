@@ -149,11 +149,13 @@ class MediaVault {
 
     extractMessageInfo(message) {
         return {
-            messageId: message.id._serialized || message.id.id,
-            chatId: message.from,
-            author: message.author || message.from,
-            timestamp: message.timestamp * 1000,
-            caption: message._data?.caption || null
+            messageId: message.key?.id || 'unknown',
+            chatId: message.key?.remoteJid || 'unknown',
+            author: message.key?.participant || message.key?.remoteJid || 'unknown',
+            timestamp: message.messageTimestamp ? message.messageTimestamp * 1000 : Date.now(),
+            caption: message.message?.imageMessage?.caption || 
+                    message.message?.videoMessage?.caption || 
+                    message.message?.documentMessage?.caption || null
         };
     }
 
