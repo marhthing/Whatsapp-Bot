@@ -144,9 +144,12 @@ class LoadingReaction {
 
             if (typeof messageOrId === 'string') {
                 messageId = messageOrId;
-            } else {
+            } else if (messageOrId && messageOrId.id) {
                 message = messageOrId;
-                messageId = message.id._serialized || message.id.id;
+                messageId = messageOrId.id._serialized || messageOrId.id.id || messageOrId.id;
+            } else {
+                console.warn('⚠️ Invalid message object passed to removeLoadingReaction:', messageOrId);
+                return false;
             }
 
             // Remove reaction if we have the message object
@@ -206,9 +209,19 @@ class LoadingReaction {
         } finally {
             // Auto-remove reaction after delay
             if (reactionShown) {
-                setTimeout(async () => {
-                    await this.removeLoadingReaction(message);
-                }, 3000); // Remove after 3 seconds
+                // Extract messageId for cleanup
+                let messageId;
+                if (message.key?.id) {
+                    messageId = message.key.id;
+                } else if (message.id) {
+                    messageId = message.id.id || message.id;
+                }
+                
+                if (messageId) {
+                    setTimeout(async () => {
+                        await this.removeLoadingReaction(messageId);
+                    }, 3000); // Remove after 3 seconds
+                }
             }
         }
     }
