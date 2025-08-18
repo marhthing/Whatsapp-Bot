@@ -100,7 +100,7 @@ class TicTacToePlugin {
             // Get the actual sender JID properly (following AccessController pattern)
             let player;
             const accessController = this.botClient.getAccessController();
-            const ownerJid = accessController.getOwnerJid();
+            const ownerJid = accessController.ownerJid;
             
             if (message.key) {
                 if (message.key.fromMe) {

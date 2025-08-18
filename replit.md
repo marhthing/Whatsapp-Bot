@@ -8,6 +8,8 @@ MATDEV is a WhatsApp bot designed to operate through the owner's WhatsApp number
 - **Enhanced Game Input Processing**: Updated message processor to handle number-only inputs during active games without requiring command prefix
 - **Improved TicTacToe Plugin**: Redesigned for more natural chat-like gameplay with cleaner messaging
 - **Fixed JID Extraction**: Corrected sender JID detection in TicTacToe plugin following AccessController patterns
+- **Resolved Owner JID Access**: Fixed AccessController.ownerJid property access (was incorrectly calling as method)
+- **Enhanced Player Detection**: Proper distinction between bot owner and chat partner in private conversations
 - **Hot-Reload System**: Confirmed working perfectly for real-time plugin development
 
 ## User Preferences
