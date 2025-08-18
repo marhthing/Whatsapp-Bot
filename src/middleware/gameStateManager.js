@@ -111,8 +111,8 @@ class GameStateManagerMiddleware {
                 return /^[1-9]$/.test(text) || text === 'quit';
                 
             case 'wordguess':
-                // Valid inputs are single letters or 'quit'
-                return /^[a-z]$/.test(text) || text === 'quit';
+                // Valid inputs are single letters, 'start', or 'quit'
+                return /^[a-z]$/.test(text) || text === 'quit' || text === 'start';
                 
             default:
                 return false;

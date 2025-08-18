@@ -69,14 +69,24 @@ class TicTacToePlugin {
                 return { success: false, message: 'Game already active' };
             }
             
-            // Parse opponent (optional)
+            // Parse opponent (required for multiplayer)
             let opponent = null;
             if (args.length > 0) {
                 // Handle @mentions or phone numbers
-                opponent = args[0].replace('@', '').replace(/\D/g, '');
-                if (opponent) {
-                    opponent += '@s.whatsapp.net';
+                const mention = message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+                if (mention) {
+                    opponent = mention;
+                } else {
+                    opponent = args[0].replace('@', '').replace(/\D/g, '');
+                    if (opponent) {
+                        opponent += '@s.whatsapp.net';
+                    }
                 }
+            }
+            
+            if (!opponent) {
+                await reply('❌ Please tag someone to play with: .tictactoe @username');
+                return { success: false, message: 'No opponent specified' };
             }
             
             // Create new game state
@@ -84,7 +94,7 @@ class TicTacToePlugin {
                 board: Array(9).fill(null), // 0-8 positions
                 players: {
                     X: player,
-                    O: opponent || 'AI' // AI opponent if no player2
+                    O: opponent
                 },
                 currentPlayer: 'X',
                 gameStatus: 'active',
@@ -97,7 +107,7 @@ class TicTacToePlugin {
             
             const board = this.renderBoard(gameData.board);
             const playerName = player.split('@')[0] || 'Player1';
-            const opponentName = opponent ? opponent.split('@')[0] : 'AI';
+            const opponentName = opponent.split('@')[0] || 'Player2';
             
             let responseMessage = `🎯 **Tic-Tac-Toe Game Started!**\n\n`;
             responseMessage += board;
@@ -113,14 +123,14 @@ class TicTacToePlugin {
             // Register game with access controller
             accessController.startGame(chatId, 'tictactoe', {
                 startedBy: player,
-                players: [player, opponent].filter(Boolean),
+                players: [player, opponent],
                 state: 'active'
             });
             
             this.eventBus.emit('game_started', {
                 chatId,
                 gameType: 'tictactoe',
-                players: [player, opponent].filter(Boolean)
+                players: [player, opponent]
             });
             
             return { success: true, message: 'Game started successfully' };
@@ -192,7 +202,7 @@ class TicTacToePlugin {
             const currentPlayerSymbol = gameData.currentPlayer;
             const expectedPlayer = gameData.players[currentPlayerSymbol];
             
-            if (player !== expectedPlayer && expectedPlayer !== 'AI') {
+            if (player !== expectedPlayer) {
                 return {
                     message: `❌ It's not your turn. Waiting for ${expectedPlayer.split('@')[0]}.`,
                     gameEnded: false
@@ -239,19 +249,6 @@ class TicTacToePlugin {
                 responseMessage = `${this.renderBoard(gameData.board)}\n\n🎮 **Next Turn:** ${gameData.currentPlayer} (${nextPlayerName})`;
                 
                 await this.saveGameData(chatId, gameData);
-                
-                // Handle AI move if needed
-                if (nextPlayer === 'AI') {
-                    setTimeout(async () => {
-                        const aiMove = this.getAIMove(gameData.board);
-                        if (aiMove !== -1) {
-                            const aiResult = await this.handleInput(chatId, (aiMove + 1).toString(), 'AI');
-                            if (aiResult) {
-                                await this.botClient.sendMessage(chatId, `🤖 **AI Move:**\n\n${aiResult.message}`);
-                            }
-                        }
-                    }, 1500);
-                }
                 
                 return {
                     message: responseMessage,
