@@ -145,6 +145,12 @@ class MessageProcessor extends EventEmitter {
             if (!this.hasMedia(message)) {
                 return null;
             }
+            
+            // Check if message has valid media key before attempting download
+            if (!this.hasValidMediaKey(message)) {
+                console.warn('⚠️ Message has media but no valid media key, skipping download');
+                return null;
+            }
 
             console.log('📥 Downloading media...');
 
@@ -206,6 +212,15 @@ class MessageProcessor extends EventEmitter {
 
             const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
             console.log(`✅ Media stored: ${storedMedia.filename} (${this.formatSize(buffer.length)})`);
+
+            // Update the archived message with media path and metadata
+            if (storedMedia && message.key?.id) {
+                await this.messageArchiver.updateMessageMediaPath(
+                    message.key.id, 
+                    storedMedia.relativePath,
+                    storedMedia
+                );
+            }
 
             return storedMedia;
 

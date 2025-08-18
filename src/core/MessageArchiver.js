@@ -326,44 +326,61 @@ class MessageArchiver {
         return '';
     }
 
-    async updateMessageMediaPath(messageId, mediaPath) {
+    async updateMessageMediaPath(messageId, mediaPath, mediaMetadata = null) {
         try {
-            // Find the message by ID and update its mediaPath
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = (today.getMonth() + 1).toString().padStart(2, '0');
-            const day = today.getDate().toString().padStart(2, '0');
+            // Find the message by ID and update its mediaPath and related metadata
+            const searchDays = 3; // Search last 3 days
+            const now = new Date();
             
-            // Search in today's file first, then expand if needed
-            const fileName = `${day}.json`;
-            const possiblePaths = [
-                path.join(this.messagesPath, year.toString(), month, 'individual', fileName),
-                path.join(this.messagesPath, year.toString(), month, 'groups', fileName)
-            ];
-            
-            for (const filePath of possiblePaths) {
-                if (await fs.pathExists(filePath)) {
-                    try {
-                        const messages = await fs.readJson(filePath);
-                        
-                        // Find and update the message
-                        const messageIndex = messages.findIndex(msg => msg.id === messageId);
-                        if (messageIndex !== -1) {
-                            messages[messageIndex].mediaPath = mediaPath;
-                            messages[messageIndex].hasMedia = true;
+            for (let dayOffset = 0; dayOffset < searchDays; dayOffset++) {
+                const searchDate = new Date(now);
+                searchDate.setDate(searchDate.getDate() - dayOffset);
+                
+                const year = searchDate.getFullYear();
+                const month = (searchDate.getMonth() + 1).toString().padStart(2, '0');
+                const day = searchDate.getDate().toString().padStart(2, '0');
+                
+                const fileName = `${day}.json`;
+                const possiblePaths = [
+                    path.join(this.messagesPath, year.toString(), month, 'individual', fileName),
+                    path.join(this.messagesPath, year.toString(), month, 'groups', fileName)
+                ];
+                
+                for (const filePath of possiblePaths) {
+                    if (await fs.pathExists(filePath)) {
+                        try {
+                            const messages = await fs.readJson(filePath);
                             
-                            // Save updated messages
-                            await fs.writeJson(filePath, messages, { spaces: 2 });
-                            console.log(`📁 Updated media path for message ${messageId}: ${mediaPath}`);
-                            return true;
+                            // Find and update the message
+                            const messageIndex = messages.findIndex(msg => msg.id === messageId);
+                            if (messageIndex !== -1) {
+                                messages[messageIndex].mediaPath = mediaPath;
+                                messages[messageIndex].hasMedia = true;
+                                
+                                // Add metadata if provided
+                                if (mediaMetadata) {
+                                    messages[messageIndex].mediaMetadata = {
+                                        uniqueId: mediaMetadata.id,
+                                        filename: mediaMetadata.filename,
+                                        category: mediaMetadata.category,
+                                        mimetype: mediaMetadata.mimetype,
+                                        size: mediaMetadata.size
+                                    };
+                                }
+                                
+                                // Save updated messages
+                                await fs.writeJson(filePath, messages, { spaces: 2 });
+                                console.log(`📁 Updated media path for message ${messageId}: ${mediaPath}`);
+                                return true;
+                            }
+                        } catch (error) {
+                            console.warn(`⚠️ Error updating message in ${filePath}:`, error);
                         }
-                    } catch (error) {
-                        console.warn(`⚠️ Error updating message in ${filePath}:`, error);
                     }
                 }
             }
             
-            console.warn(`⚠️ Could not find message ${messageId} to update media path`);
+            console.warn(`⚠️ Could not find message ${messageId} to update media path in last ${searchDays} days`);
             return false;
         } catch (error) {
             console.error('❌ Error updating message media path:', error);

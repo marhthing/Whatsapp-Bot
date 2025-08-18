@@ -162,17 +162,18 @@ class MediaVault {
             const category = this.getMediaCategory(mediaData.mimetype, messageMediaType);
             const extension = this.getFileExtension(mediaData.mimetype, mediaData.filename);
             
-            // Generate unique filename with message ID to ensure uniqueness per message
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const messageId = message.key?.id ? message.key.id.substring(0, 8) : 'unknown';
-            const filename = `${timestamp}_${messageId}_${hash.substring(0, 8)}.${extension}`;
+            // Generate truly unique filename with nanouuid to prevent collisions during bulk operations
+            const messageId = message.key?.id || 'unknown';
+            const nanoTimestamp = Date.now() + Math.random().toString(36).substr(2, 9); // Add randomness to prevent collisions
+            const uniquePrefix = `${messageId.substring(0, 10)}_${nanoTimestamp}`;
+            const filename = `${uniquePrefix}_${hash.substring(0, 8)}.${extension}`;
             const filePath = path.join(this.mediaPath, category, filename);
 
             // Save file
             await fs.writeFile(filePath, mediaData.data);
 
-            // Create metadata with unique ID based on message and timestamp to avoid conflicts
-            const uniqueId = `${message.key?.id || 'unknown'}_${Date.now()}_${hash.substring(0, 8)}`;
+            // Create metadata with truly unique ID that ties directly to the message
+            const uniqueId = `${messageId}_${nanoTimestamp}_${hash.substring(0, 8)}`;
             const fileMetadata = {
                 id: uniqueId,
                 filename: filename,
@@ -273,6 +274,35 @@ class MediaVault {
             };
         } catch (error) {
             console.error(`❌ Failed to read media file ${fileId}:`, error);
+            return null;
+        }
+    }
+
+    // New method to get media by message ID - more reliable for anti-delete
+    async getMediaByMessageId(messageId) {
+        if (!messageId) return null;
+        
+        try {
+            // Search through metadata cache for files with this message ID
+            for (const [id, metadata] of this.metadataCache.entries()) {
+                if (metadata.messageId === messageId) {
+                    // Verify file still exists
+                    if (await fs.pathExists(metadata.path)) {
+                        const data = await fs.readFile(metadata.path);
+                        return {
+                            data: data,
+                            metadata: metadata,
+                            uniqueId: id
+                        };
+                    }
+                }
+            }
+            
+            console.warn(`⚠️ No media found for message ID: ${messageId}`);
+            return null;
+            
+        } catch (error) {
+            console.error(`❌ Error getting media for message ${messageId}:`, error);
             return null;
         }
     }

@@ -218,64 +218,54 @@ class Detector {
             const mediaType = deletionEntry.mediaType;
             const messageId = deletionEntry.originalMessageId;
 
-            // Get media file from storage
-            let mediaBuffer = null;
-            const fs = require('fs-extra');
-            const path = require('path');
+            // Get media file using the improved MediaVault system
+            let mediaData = null;
             
-            if (originalMessage.mediaPath) {
-                // Try to get media using stored path
+            try {
+                // Use the new getMediaByMessageId method for more reliable retrieval
+                mediaData = await this.botClient.mediaVault.getMediaByMessageId(messageId);
+                
+                if (mediaData) {
+                    console.log(`💾 Retrieved media from MediaVault for message: ${messageId}`);
+                } else {
+                    console.warn(`⚠️ No media found in MediaVault for message: ${messageId}`);
+                }
+            } catch (error) {
+                console.error(`❌ Error retrieving media from MediaVault:`, error);
+            }
+            
+            // If MediaVault doesn't have it, try the stored path as fallback
+            if (!mediaData && originalMessage.mediaPath) {
                 try {
+                    const fs = require('fs-extra');
+                    const path = require('path');
                     const fullPath = path.join(process.cwd(), 'data', 'media', originalMessage.mediaPath);
                     
                     if (await fs.pathExists(fullPath)) {
-                        mediaBuffer = await fs.readFile(fullPath);
-                        console.log(`📂 Retrieved media from stored path: ${originalMessage.mediaPath}`);
-                    }
-                } catch (error) {
-                    console.error(`❌ Error reading media file from stored path:`, error);
-                }
-            }
-            
-            // If no media path or file not found, try to find media files based on timestamp and message ID
-            if (!mediaBuffer && deletionEntry.hasMedia) {
-                try {
-                    const mediaTypes = ['stickers', 'images', 'videos', 'audio', 'documents'];
-                    
-                    for (const mediaType of mediaTypes) {
-                        const mediaDir = path.join(process.cwd(), 'data', 'media', mediaType);
+                        const mediaBuffer = await fs.readFile(fullPath);
+                        console.log(`📂 Retrieved media from archived path: ${originalMessage.mediaPath}`);
                         
-                        if (await fs.pathExists(mediaDir)) {
-                            const files = await fs.readdir(mediaDir);
-                            
-                            // Look for files created around the same time as the message
-                            const messageTime = new Date(deletionEntry.originalTimestamp);
-                            const timeWindow = 60000; // 1 minute window
-                            
-                            for (const file of files) {
-                                const filePath = path.join(mediaDir, file);
-                                const stats = await fs.stat(filePath);
-                                const timeDiff = Math.abs(stats.mtime.getTime() - messageTime.getTime());
-                                
-                                if (timeDiff <= timeWindow) {
-                                    mediaBuffer = await fs.readFile(filePath);
-                                    console.log(`📂 Found media file by timestamp: ${mediaType}/${file}`);
-                                    break;
-                                }
+                        // Create compatible structure
+                        mediaData = {
+                            data: mediaBuffer,
+                            metadata: {
+                                messageId: messageId,
+                                category: mediaType,
+                                mimetype: originalMessage.mimetype
                             }
-                            
-                            if (mediaBuffer) break;
-                        }
+                        };
                     }
                 } catch (error) {
-                    console.error(`❌ Error searching for media file:`, error);
+                    console.error(`❌ Error reading media file from archived path:`, error);
                 }
             }
             
-            if (!mediaBuffer) {
-                console.warn(`No media buffer found for ${messageId}, skipping`);
+            if (!mediaData || !mediaData.data) {
+                console.warn(`⚠️ No media data found for ${messageId}, skipping anti-delete forward`);
                 return; // Don't send anything if media not available
             }
+            
+            const mediaBuffer = mediaData.data;
 
             console.log(`📤 Forwarding deleted ${mediaType} as tagged message`);
 
