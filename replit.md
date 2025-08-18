@@ -79,6 +79,10 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Media messages are properly forwarded with correct sender tagging for WhatsApp quote structure
   - No fallback notifications - clean forwarding of actual deleted content only
   - Fixed media buffer retrieval errors for stickers and other media types
+  - **FIXED MEDIA DEDUPLICATION ISSUE**: Removed file deduplication to ensure each message gets unique media files
+  - Enhanced media storage with message ID-based filename generation for proper uniqueness
+  - Added proper media path linking between archived messages and stored media files
+  - Fixed "Invalid message content type" errors in anti-delete forwarding system
 - All core functionality tested and operational
 
 ### Current Working Features:

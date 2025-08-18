@@ -318,6 +318,51 @@ class MessageArchiver {
         return '';
     }
 
+    async updateMessageMediaPath(messageId, mediaPath) {
+        try {
+            // Find the message by ID and update its mediaPath
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            const day = today.getDate().toString().padStart(2, '0');
+            
+            // Search in today's file first, then expand if needed
+            const fileName = `${day}.json`;
+            const possiblePaths = [
+                path.join(this.messagesPath, year.toString(), month, 'individual', fileName),
+                path.join(this.messagesPath, year.toString(), month, 'group', fileName)
+            ];
+            
+            for (const filePath of possiblePaths) {
+                if (await fs.pathExists(filePath)) {
+                    try {
+                        const messages = await fs.readJson(filePath);
+                        
+                        // Find and update the message
+                        const messageIndex = messages.findIndex(msg => msg.id === messageId);
+                        if (messageIndex !== -1) {
+                            messages[messageIndex].mediaPath = mediaPath;
+                            messages[messageIndex].hasMedia = true;
+                            
+                            // Save updated messages
+                            await fs.writeJson(filePath, messages, { spaces: 2 });
+                            console.log(`📁 Updated media path for message ${messageId}: ${mediaPath}`);
+                            return true;
+                        }
+                    } catch (error) {
+                        console.warn(`⚠️ Error updating message in ${filePath}:`, error);
+                    }
+                }
+            }
+            
+            console.warn(`⚠️ Could not find message ${messageId} to update media path`);
+            return false;
+        } catch (error) {
+            console.error('❌ Error updating message media path:', error);
+            return false;
+        }
+    }
+
     async recoverMissedMessages(client) {
         // This method can be called after reconnection to try to recover missed messages
         try {

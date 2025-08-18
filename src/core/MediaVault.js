@@ -144,32 +144,29 @@ class MediaVault {
                 throw new Error(`File too large: ${this.formatSize(mediaData.data.length)} > ${process.env.MAX_MEDIA_SIZE}`);
             }
 
-            // Generate file hash for deduplication
+            // Generate file hash for metadata (but don't use for deduplication to ensure unique files per message)
             const hash = crypto.createHash('sha256').update(mediaData.data).digest('hex');
             
-            // Check if file already exists
-            const existingFile = this.findExistingFile(hash);
-            if (existingFile) {
-                console.log('📁 Media file already exists, updating metadata only');
-                await this.updateFileMetadata(existingFile.id, message);
-                return existingFile;
-            }
+            // Always create unique files - no deduplication for anti-delete functionality
+            // This ensures each message gets its own copy for proper deletion recovery
 
             // Determine file category and extension
             const category = this.getMediaCategory(mediaData.mimetype);
             const extension = this.getFileExtension(mediaData.mimetype, mediaData.filename);
             
-            // Generate unique filename
+            // Generate unique filename with message ID to ensure uniqueness per message
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `${timestamp}_${hash.substring(0, 8)}.${extension}`;
+            const messageId = message.key?.id ? message.key.id.substring(0, 8) : 'unknown';
+            const filename = `${timestamp}_${messageId}_${hash.substring(0, 8)}.${extension}`;
             const filePath = path.join(this.mediaPath, category, filename);
 
             // Save file
             await fs.writeFile(filePath, mediaData.data);
 
-            // Create metadata
+            // Create metadata with unique ID based on message and timestamp to avoid conflicts
+            const uniqueId = `${message.key?.id || 'unknown'}_${Date.now()}_${hash.substring(0, 8)}`;
             const fileMetadata = {
-                id: hash,
+                id: uniqueId,
                 filename: filename,
                 originalName: mediaData.filename || `file.${extension}`,
                 category: category,
@@ -179,11 +176,12 @@ class MediaVault {
                 path: filePath,
                 relativePath: path.join(category, filename),
                 createdAt: new Date().toISOString(),
+                messageId: message.key?.id,
                 messages: [this.extractMessageInfo(message)]
             };
 
-            // Store metadata
-            this.metadataCache.set(hash, fileMetadata);
+            // Store metadata with unique ID
+            this.metadataCache.set(uniqueId, fileMetadata);
             await this.saveMetadataCache();
 
             console.log(`💾 Stored ${category} file: ${filename} (${this.formatSize(mediaData.data.length)})`);

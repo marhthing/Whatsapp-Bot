@@ -31,7 +31,12 @@ class MessageProcessor extends EventEmitter {
 
             // Download and store media automatically for all message types
             if (this.hasMedia(message)) {
-                await this.downloadAndStoreMedia(message);
+                const storedMedia = await this.downloadAndStoreMedia(message);
+                
+                // Update the archived message with the media path
+                if (storedMedia && storedMedia.relativePath) {
+                    await this.messageArchiver.updateMessageMediaPath(message.key.id, storedMedia.relativePath);
+                }
             }
 
             // Only process messages that start with command prefix - optimize performance
