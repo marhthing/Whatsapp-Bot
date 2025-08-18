@@ -26,11 +26,21 @@ class MediaVault {
         try {
             console.log('🔧 Initializing media vault...');
 
-            // Create media directories
-            const mediaTypes = ['images', 'videos', 'audio', 'documents', 'stickers', 'view-once'];
+            // Ensure main media directory exists
+            await fs.ensureDir(this.mediaPath);
             
-            for (const type of mediaTypes) {
-                await fs.ensureDir(path.join(this.mediaPath, type));
+            // Create category-based media directories
+            const categories = ['images', 'videos', 'audio', 'documents', 'stickers', 'view-once'];
+            const messageTypes = ['individual', 'groups', 'status', 'newsletter', 'broadcast', 'channels'];
+            
+            // Create all category directories
+            for (const category of categories) {
+                await fs.ensureDir(path.join(this.mediaPath, category));
+                
+                // Create organized subdirectories for each category by message type
+                for (const messageType of messageTypes) {
+                    await fs.ensureDir(path.join(this.mediaPath, category, messageType));
+                }
             }
 
             // Load metadata cache
@@ -40,7 +50,7 @@ class MediaVault {
             this.startCleanupScheduler();
 
             this.isInitialized = true;
-            console.log('✅ Media vault initialized');
+            console.log('✅ Media vault initialized with organized storage structure');
 
         } catch (error) {
             console.error('❌ Failed to initialize media vault:', error);
@@ -160,15 +170,34 @@ class MediaVault {
 
             // Determine file category and extension
             // Check if this is specifically a view-once media from the category override
-            const category = mediaData.category === 'view-once' ? 'view-once' : this.getMediaCategory(mediaData.mimetype, messageMediaType);
+            const mediaCategory = mediaData.category === 'view-once' ? 'view-once' : this.getMediaCategory(mediaData.mimetype, messageMediaType);
             const extension = this.getFileExtension(mediaData.mimetype, mediaData.filename);
+            
+            // Determine message category for organized storage
+            const messageFrom = message.key?.remoteJid || '';
+            let messageCategory = 'individual'; // default
+            
+            if (messageFrom.includes('@newsletter')) {
+                messageCategory = 'newsletter';
+            } else if (messageFrom.includes('@broadcast')) {
+                messageCategory = 'broadcast';
+            } else if (messageFrom.includes('@status') || messageFrom.includes('status@broadcast')) {
+                messageCategory = 'status';
+            } else if (messageFrom.includes('@g.us')) {
+                messageCategory = 'groups';
+            } else if (message.broadcast) {
+                messageCategory = 'broadcast';
+            }
             
             // Generate truly unique filename with nanouuid to prevent collisions during bulk operations
             const messageId = message.key?.id || 'unknown';
             const nanoTimestamp = Date.now() + Math.random().toString(36).substr(2, 9); // Add randomness to prevent collisions
             const uniquePrefix = `${messageId.substring(0, 10)}_${nanoTimestamp}`;
             const filename = `${uniquePrefix}_${hash.substring(0, 8)}.${extension}`;
-            const filePath = path.join(this.mediaPath, category, filename);
+            
+            // Store in organized directory structure: media/[category]/[messageType]/filename
+            const filePath = path.join(this.mediaPath, mediaCategory, messageCategory, filename);
+            await fs.ensureDir(path.dirname(filePath)); // Ensure the directory exists
 
             // Save file
             await fs.writeFile(filePath, mediaData.data);
@@ -179,12 +208,13 @@ class MediaVault {
                 id: uniqueId,
                 filename: filename,
                 originalName: mediaData.filename || `file.${extension}`,
-                category: category,
+                category: mediaCategory,
+                messageCategory: messageCategory,
                 mimetype: mediaData.mimetype,
                 size: mediaData.data.length,
                 hash: hash,
                 path: filePath,
-                relativePath: path.join(category, filename),
+                relativePath: path.join(mediaCategory, messageCategory, filename),
                 createdAt: new Date().toISOString(),
                 messageId: message.key?.id,
                 messages: [this.extractMessageInfo(message)]
@@ -194,7 +224,7 @@ class MediaVault {
             this.metadataCache.set(uniqueId, fileMetadata);
             await this.saveMetadataCache();
 
-            console.log(`💾 Stored ${category} file: ${filename} (${this.formatSize(mediaData.data.length)})`);
+            console.log(`💾 Stored ${mediaCategory} file: ${filename} in ${messageCategory}/ (${this.formatSize(mediaData.data.length)})`);
             
             return fileMetadata;
 

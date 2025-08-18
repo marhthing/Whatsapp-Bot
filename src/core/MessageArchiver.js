@@ -46,6 +46,9 @@ class MessageArchiver {
         await fs.ensureDir(path.join(monthPath, 'individual'));
         await fs.ensureDir(path.join(monthPath, 'groups'));
         await fs.ensureDir(path.join(monthPath, 'status'));
+        await fs.ensureDir(path.join(monthPath, 'channels'));
+        await fs.ensureDir(path.join(monthPath, 'broadcast'));
+        await fs.ensureDir(path.join(monthPath, 'newsletter'));
     }
 
     async archiveMessage(message, isOutgoing = false) {
@@ -264,19 +267,40 @@ class MessageArchiver {
                 archived: new Date().toISOString()
             };
 
-            // Determine storage path based on message type
+            // Determine storage path based on message type with enhanced categorization
             const messageDate = messageData.timestamp;
             const year = messageDate.getFullYear().toString();
             const month = (messageDate.getMonth() + 1).toString().padStart(2, '0');
             const day = messageDate.getDate().toString().padStart(2, '0');
 
             let categoryPath;
-            if (messageData.isGroup) {
-                categoryPath = path.join(this.messagesPath, year, month, 'groups');
-            } else if (messageData.from?.includes('@status')) {
+            const messageFrom = messageData.from || '';
+            
+            // Enhanced message categorization
+            if (messageFrom.includes('@newsletter')) {
+                // WhatsApp Newsletter/Channel messages
+                categoryPath = path.join(this.messagesPath, year, month, 'newsletter');
+                messageData.category = 'newsletter';
+            } else if (messageFrom.includes('@broadcast')) {
+                // Broadcast list messages
+                categoryPath = path.join(this.messagesPath, year, month, 'broadcast');
+                messageData.category = 'broadcast';
+            } else if (messageFrom.includes('@status') || messageFrom.includes('status@broadcast')) {
+                // WhatsApp Status updates
                 categoryPath = path.join(this.messagesPath, year, month, 'status');
+                messageData.category = 'status';
+            } else if (message.broadcast || messageType === 'broadcast') {
+                // General broadcast messages
+                categoryPath = path.join(this.messagesPath, year, month, 'broadcast');
+                messageData.category = 'broadcast';
+            } else if (messageData.isGroup) {
+                // Regular group messages
+                categoryPath = path.join(this.messagesPath, year, month, 'groups');
+                messageData.category = 'group';
             } else {
+                // Individual/private messages
                 categoryPath = path.join(this.messagesPath, year, month, 'individual');
+                messageData.category = 'individual';
             }
 
             await fs.ensureDir(categoryPath);

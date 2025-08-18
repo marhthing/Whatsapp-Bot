@@ -61,6 +61,7 @@ The system follows a **personal assistant architecture** with multi-session supp
 **✅ UPDATED** - Fixed critical anti-delete media handling issues (August 18, 2025)  
 **✅ FIXED** - Resolved media storage and retrieval issues during bulk deletions (August 18, 2025)
 **✅ ENHANCED** - Improved anti-view-once detection and handling (August 18, 2025)
+**✅ ENHANCED** - Separated message and media storage for channels, status, and broadcast content (August 18, 2025)
 
 ### Migration Changes Made:
 - Fixed missing `getClientInfo()` method in BotClient for .info command
