@@ -341,7 +341,30 @@ class AccessController {
      * Check if message is a valid game input
      */
     isValidGameInput(message, gameType) {
-        const text = message.body.trim().toLowerCase();
+        // Extract text using the same method as MessageProcessor
+        let text = '';
+        if (message.message) {
+            if (message.message.conversation) {
+                text = message.message.conversation;
+            } else if (message.message.extendedTextMessage?.text) {
+                text = message.message.extendedTextMessage.text;
+            } else if (message.message.imageMessage?.caption) {
+                text = message.message.imageMessage.caption;
+            } else if (message.message.videoMessage?.caption) {
+                text = message.message.videoMessage.caption;
+            }
+        }
+        
+        // Fallback to direct body property
+        if (!text && message.body) {
+            text = message.body;
+        }
+        
+        if (!text || typeof text !== 'string') {
+            return false;
+        }
+        
+        text = text.trim().toLowerCase();
 
         switch (gameType) {
             case 'tictactoe':

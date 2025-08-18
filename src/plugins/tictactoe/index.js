@@ -183,14 +183,10 @@ class TicTacToePlugin {
             const playerName = player.split('@')[0] || 'Player1';
             const opponentName = opponent.split('@')[0] || 'Player2';
             
-            let responseMessage = `🎯 **Tic-Tac-Toe Game Started!**\n\n`;
+            let responseMessage = `🎮 Game started! ${playerName} (X) vs ${opponentName} (O).\n\n`;
             responseMessage += board;
-            responseMessage += `\n\n👤 **Players:**\n`;
-            responseMessage += `❌ X: ${playerName}\n`;
-            responseMessage += `⭕ O: ${opponentName}\n\n`;
-            responseMessage += `🎮 **Current Turn:** X (${playerName})\n`;
-            responseMessage += `📝 **Instructions:** Send a number 1-9 to place your mark, or "quit" to end the game\n\n`;
-            responseMessage += `\`\`\`\n1 | 2 | 3\n---------\n4 | 5 | 6\n---------\n7 | 8 | 9\`\`\``;
+            responseMessage += `\n\n@${playerName}, you go first. Send a number 1-9.\n\n`;
+            responseMessage += `Use numbers 1-9 to play.\nExample: "5" puts your mark in the center.`;
             
             await reply(responseMessage);
             
@@ -281,7 +277,7 @@ class TicTacToePlugin {
             if (player !== expectedPlayer) {
                 const waitingPlayerName = expectedPlayer.split('@')[0];
                 return {
-                    message: `⏳ It's not your turn! Waiting for **${waitingPlayerName}** (${currentPlayerSymbol}) to make a move.`,
+                    message: `Hey @${player.split('@')[0]}, it's not your turn.`,
                     gameEnded: false
                 };
             }
@@ -297,7 +293,7 @@ class TicTacToePlugin {
             if (winner) {
                 gameData.gameStatus = 'finished';
                 const winnerName = gameData.players[winner].split('@')[0];
-                responseMessage = `🎊 **GAME OVER!**\n\n${this.renderBoard(gameData.board)}\n\n🏆 **Winner: ${winnerName}** (${winner === 'X' ? '❌' : '⭕'})\n\n🎉 Congratulations! 🎉`;
+                responseMessage = `${winnerName} placed ${winner} at ${move}\n\n${this.renderBoard(gameData.board)}\n\n🏆 ${winnerName} wins!`;
                 
                 await this.saveGameData(chatId, gameData);
                 this.games.delete(chatId);
@@ -308,7 +304,7 @@ class TicTacToePlugin {
                 };
             } else if (gameData.moves >= 9) {
                 gameData.gameStatus = 'finished';
-                responseMessage = `🤝 **GAME OVER!**\n\n${this.renderBoard(gameData.board)}\n\n🤝 **Result: It's a TIE!**\n\nWell played both! 👏`;
+                responseMessage = `${player.split('@')[0]} placed ${currentPlayerSymbol} at ${move}\n\n${this.renderBoard(gameData.board)}\n\nIt's a tie!`;
                 
                 await this.saveGameData(chatId, gameData);
                 this.games.delete(chatId);
@@ -323,7 +319,7 @@ class TicTacToePlugin {
                 const nextPlayer = gameData.players[gameData.currentPlayer];
                 const nextPlayerName = nextPlayer.split('@')[0];
                 
-                responseMessage = `${this.renderBoard(gameData.board)}\n\n🎮 **Current Turn:** ${gameData.currentPlayer} (**${nextPlayerName}**)\n\n📝 Type a number (1-9) to place your mark!`;
+                responseMessage = `${player.split('@')[0]} placed ${currentPlayerSymbol} at ${move}\n\n${this.renderBoard(gameData.board)}\n\n@${nextPlayerName}, your turn.`;
                 
                 await this.saveGameData(chatId, gameData);
                 

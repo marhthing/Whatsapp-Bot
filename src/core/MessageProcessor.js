@@ -53,8 +53,17 @@ class MessageProcessor extends EventEmitter {
             const prefix = process.env.COMMAND_PREFIX || process.env.PREFIX || '.';
 
             // Skip processing if message doesn't start with prefix (for non-outgoing messages)
+            // BUT allow game inputs to be processed even without prefix when a game is active
             if (!isOutgoing && (!messageText || !messageText.trim().startsWith(prefix))) {
-                return; // Don't waste resources on non-command messages
+                // Check if there's an active game in this chat that might accept this input
+                const chatId = message.key.remoteJid;
+                const activeGame = this.accessController.getActiveGame(chatId);
+                
+                if (!activeGame) {
+                    return; // Don't waste resources on non-command messages when no game is active
+                }
+                
+                // Continue processing for potential game input
             }
 
             // Extract command if present (for both incoming and outgoing messages)
@@ -457,7 +466,7 @@ class MessageProcessor extends EventEmitter {
 
     async processGameMessage(message, gameType) {
         try {
-            const chatId = message.from;
+            const chatId = message.key.remoteJid || message.from;
             const activeGame = this.accessController.getActiveGame(chatId);
 
             if (!activeGame) {
@@ -536,12 +545,31 @@ class MessageProcessor extends EventEmitter {
 
     async executeGameMove(message, gameInfo) {
         try {
-            // Get game plugin
-            const gamePlugin = await this.pluginDiscovery.getPlugin('games');
-
-            if (gamePlugin && gamePlugin.processGameMove) {
-                await gamePlugin.processGameMove(message, gameInfo);
+            // Extract game input text
+            const inputText = this.getMessageText(message);
+            
+            // Extract sender JID properly
+            let senderJid;
+            if (message.key) {
+                senderJid = message.key.participant || message.key.remoteJid;
+            } else {
+                senderJid = message.author || message.from;
             }
+            
+            // Extract chat ID
+            const chatId = message.key.remoteJid || message.from;
+            
+            console.log(`🎮 Game move - Type: ${gameInfo.type}, Player: ${senderJid}, Input: "${inputText}", Chat: ${chatId}`);
+            
+            // Emit game input event for plugins to handle
+            this.eventBus.emit('game_input_received', {
+                chatId: chatId,
+                input: inputText.trim(),
+                player: senderJid,
+                gameType: gameInfo.type,
+                gameInfo: gameInfo,
+                message: message
+            });
 
         } catch (error) {
             console.error('❌ Error executing game move:', error);
