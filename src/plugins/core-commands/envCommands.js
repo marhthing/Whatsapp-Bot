@@ -11,7 +11,7 @@ class EnvCommands {
         try {
             const { args, reply } = context;
             
-            if (args.length === 0) {
+            if (!args || args.length === 0) {
                 await reply('❌ Please specify an environment command\nUsage: .env <list|set|get|remove> [args]\nExample: .env list');
                 return;
             }

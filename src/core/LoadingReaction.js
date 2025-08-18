@@ -77,7 +77,7 @@ class LoadingReaction {
             if (message.key?.id) {
                 messageId = message.key.id;
             } else if (message.id) {
-                messageId = message.id._serialized || message.id.id || message.id;
+                messageId = message.id.id || message.id;
             } else {
                 messageId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             }
@@ -111,7 +111,7 @@ class LoadingReaction {
             if (message.key?.id) {
                 messageId = message.key.id;
             } else if (message.id) {
-                messageId = message.id._serialized || message.id.id || message.id;
+                messageId = message.id.id || message.id;
             } else {
                 return false;
             }
