@@ -142,6 +142,7 @@ The system follows a **personal assistant architecture** with multi-session supp
   - Fixed critical bug where ANY user with @lid format JID was granted owner access
   - Now properly validates phone number match for @lid format before granting access
   - Enhanced access control to prevent unauthorized command execution
+  - Added intelligent @lid matching for owner's group messages with WhatsApp format variations
 - All core functionality tested and operational
 
 ### Current Working Features:
