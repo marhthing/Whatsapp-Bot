@@ -121,8 +121,16 @@ class BotClient extends EventEmitter {
                     '--no-first-run',
                     '--no-zygote',
                     '--single-process',
-                    '--disable-gpu'
-                ]
+                    '--disable-gpu',
+                    '--disable-web-security',
+                    '--disable-features=VizDisplayCompositor',
+                    '--disable-extensions',
+                    '--disable-plugins',
+                    '--disable-images',
+                    '--disable-javascript',
+                    '--virtual-time-budget=10000'
+                ],
+                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
             }
         };
 
