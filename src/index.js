@@ -25,7 +25,7 @@ class WhatsAppBot {
 
     async initialize() {
         try {
-            console.log('🔧 Initializing WhatsApp Personal Assistant Bot...');
+            console.log('🔧 Initializing MATDEV Bot...');
 
             // Initialize environment
             await this.envManager.initialize();

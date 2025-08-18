@@ -1,8 +1,8 @@
-# WhatsApp Personal Assistant Bot
+# MATDEV Bot
 
 ## Overview
 
-This is a WhatsApp personal assistant bot designed to operate through the owner's WhatsApp number with strict access control. The bot features a modular architecture with hot-reload plugin system, comprehensive message archival, and intelligent command processing. It's built as a personal assistant that primarily responds only to the bot owner while maintaining selective interaction capabilities for specific scenarios like games or explicitly allowed commands.
+This is MATDEV - a WhatsApp bot designed to operate through the owner's WhatsApp number with strict access control. The bot features a modular architecture with hot-reload plugin system, comprehensive message archival, and intelligent command processing. It's built as a personal assistant that primarily responds only to the bot owner while maintaining selective interaction capabilities for specific scenarios like games or explicitly allowed commands.
 
 ## Implementation Status
 
@@ -34,7 +34,7 @@ This is a WhatsApp personal assistant bot designed to operate through the owner'
 - **Package Installation**: All dependencies properly installed and configured
 - **Workflow Configuration**: Bot starter and main application workflows configured
 
-🎉 **FULLY OPERATIONAL**: The WhatsApp bot is successfully running and operational! Owner recognition works perfectly, commands are executing correctly, and all core functionality is working. The `.help` command has been tested and works as expected.
+🎉 **FULLY OPERATIONAL**: MATDEV bot is successfully running and operational! Owner recognition works perfectly, commands are executing correctly, and all core functionality is working. The `.help` command has been tested and works as expected.
 
 ✅ **MIGRATION SUCCESS**: Migration from Replit Agent to standard Replit environment is 100% complete and verified working.
 
@@ -61,7 +61,7 @@ This is a WhatsApp personal assistant bot designed to operate through the owner'
 ✅ **Loading Reaction Fix**: Resolved Baileys compatibility issues with message reactions to prevent crashes
 ✅ **Storage Management**: Implemented 3-day automatic cleanup for messages and media to prevent storage bloat (runs every 24h with 10-minute startup delay)
 ✅ **Command System Fully Functional**: All commands (.help, .info, .status, etc.) now responding correctly
-✅ **Connection Confirmation**: Bot now sends a welcome message to owner when successfully connected to WhatsApp
+✅ **Connection Confirmation**: MATDEV now sends a welcome message to owner when successfully connected to WhatsApp
 ✅ **Message Content Saving**: Fixed message body extraction to properly save message content from WhatsApp message structure
 ✅ **Outgoing Message Archival**: Bot now archives both incoming and outgoing messages for complete conversation history
 ✅ **Anti-Delete Functionality**: Enhanced with proper controls (.delete on/off/<jid>) and automatic forwarding of deleted messages

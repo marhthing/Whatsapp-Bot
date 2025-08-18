@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * WhatsApp Personal Assistant Bot - Unified Entry Point
+ * MATDEV Bot - Unified Entry Point
  * Streamlined startup process with stage-by-stage execution
  */
 
@@ -22,7 +22,7 @@ const colors = {
     magenta: '\x1b[35m'
 };
 
-class WhatsAppBotLauncher {
+class MatdevBotLauncher {
     constructor() {
         this.packageJsonPath = path.join(process.cwd(), 'package.json');
         this.nodeModulesPath = path.join(process.cwd(), 'node_modules');
@@ -39,7 +39,7 @@ class WhatsAppBotLauncher {
         try {
             console.log(`${colors.cyan}${colors.bright}`);
             console.log('╔══════════════════════════════════════════════╗');
-            console.log('║      WhatsApp Personal Assistant Bot         ║');
+            console.log('║                 MATDEV Bot                   ║');
             console.log('║           Unified Launcher v2.0              ║');
             console.log('╚══════════════════════════════════════════════╝');
             console.log(`${colors.reset}\n`);
@@ -320,7 +320,7 @@ class WhatsAppBotLauncher {
         try {
             await fs.access(mainFile);
             console.log(`${colors.green}✅ Found main bot application at src/index.js${colors.reset}`);
-            console.log(`${colors.cyan}🚀 Launching WhatsApp bot...${colors.reset}`);
+            console.log(`${colors.cyan}🚀 Launching MATDEV bot...${colors.reset}`);
             console.log(`${colors.yellow}📱 The bot will authenticate and connect to WhatsApp${colors.reset}\n`);
             
             // Close readline interface before requiring the main app
@@ -433,12 +433,12 @@ class WhatsAppBotLauncher {
 
 // Handle process termination gracefully
 process.on('SIGINT', () => {
-    console.log(`\n${colors.yellow}Bot launcher interrupted${colors.reset}`);
+    console.log(`\n${colors.yellow}MATDEV bot launcher interrupted${colors.reset}`);
     process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-    console.log(`\n${colors.yellow}Bot launcher terminated${colors.reset}`);
+    console.log(`\n${colors.yellow}MATDEV bot launcher terminated${colors.reset}`);
     process.exit(0);
 });
 
@@ -455,11 +455,11 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Start the application
 if (require.main === module) {
-    const launcher = new WhatsAppBotLauncher();
+    const launcher = new MatdevBotLauncher();
     launcher.launch().catch((error) => {
-        console.error(`${colors.red}Failed to launch WhatsApp Bot:${colors.reset}`, error);
+        console.error(`${colors.red}Failed to launch MATDEV bot:${colors.reset}`, error);
         process.exit(1);
     });
 }
 
-module.exports = WhatsAppBotLauncher;
+module.exports = MatdevBotLauncher;

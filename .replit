@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "WhatsApp Bot"
+args = "MATDEV Bot"
 
 [[workflows.workflow]]
-name = "WhatsApp Bot"
+name = "MATDEV Bot"
 author = "agent"
 
 [[workflows.workflow.tasks]]
