@@ -73,9 +73,12 @@ class Detector {
 
     async handleDeletion(data) {
         try {
+            console.log('🔍 Anti-delete handling deletion data:', JSON.stringify(data, null, 2));
+            
             const { after, before } = data;
             
             if (!before) {
+                console.log('🔍 Message deletion detected but no original message available');
                 return;
             }
             
@@ -85,7 +88,7 @@ class Detector {
             const chatId = this.extractChatId(before);
             const messageId = this.extractMessageId(before);
             
-            console.log('🗑️ Deletion detected');
+            console.log(`🔍 Processing deletion - Chat: ${chatId}, Sender: ${senderJid}, MessageID: ${messageId}`);
             
             // Handle different timestamp formats
             let originalTimestamp;
@@ -131,6 +134,8 @@ class Detector {
             // Notify and forward deleted message (always enabled for now)
             await this.forwardDeletedMessage(deletionEntry);
             
+            console.log(`🔍 Logged message deletion: ${deletionEntry.originalMessageId}`);
+            
         } catch (error) {
             console.error('Error handling message deletion:', error);
         }
@@ -150,25 +155,38 @@ class Detector {
             }
             
             if (!targetJid) {
+                console.warn('⚠️ Target JID not available for anti-delete forwarding');
                 return;
             }
             
-            // Send the original message content directly (will be tagged automatically by WhatsApp)
+            const senderPhone = deletionEntry.sender.split('@')[0];
+            const chatPhone = deletionEntry.chatId.split('@')[0];
+            
+            let notificationText = `🗑️ **DELETED MESSAGE RECOVERED**\n\n`;
+            notificationText += `👤 **Sender:** ${senderPhone}\n`;
+            notificationText += `💬 **From Chat:** ${chatPhone}\n`;
+            notificationText += `📅 **Original:** ${new Date(deletionEntry.originalTimestamp).toLocaleString()}\n`;
+            notificationText += `🗑️ **Deleted:** ${new Date(deletionEntry.deletedTimestamp).toLocaleString()}\n\n`;
+            
             if (deletionEntry.messageBody) {
-                await this.botClient.sendMessage(targetJid, deletionEntry.messageBody);
-            } else if (deletionEntry.hasMedia) {
-                // For media messages, send a placeholder text
-                await this.botClient.sendMessage(targetJid, `[${deletionEntry.mediaType.toUpperCase()}]`);
+                notificationText += `💬 **Deleted Content:**\n"${deletionEntry.messageBody}"\n\n`;
             } else {
-                // Fallback for unknown content
-                await this.botClient.sendMessage(targetJid, "[DELETED MESSAGE]");
+                notificationText += `💬 **Content:** (No text content)\n\n`;
             }
+            
+            if (deletionEntry.hasMedia) {
+                notificationText += `📎 **Had Media:** ${deletionEntry.mediaType}\n\n`;
+            }
+            
+            notificationText += `💡 Use \`.recover ${deletionEntry.id}\` to restore this message`;
+            
+            await this.botClient.sendMessage(targetJid, notificationText);
             
             // Mark as notified
             deletionEntry.notifiedOwner = true;
             await this.saveDeletionLog();
             
-            console.log('📤 Deletion message sent');
+            console.log(`📤 Forwarded deleted message to: ${targetJid}`);
             
         } catch (error) {
             console.error('Error forwarding deleted message:', error);

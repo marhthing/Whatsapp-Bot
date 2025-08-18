@@ -133,6 +133,8 @@ class AntiDeletePlugin {
                 return; // Anti-delete is disabled
             }
             
+            console.log('🗑️ Anti-delete plugin handling deleted message');
+            
             if (this.detector) {
                 const deletionData = {
                     after: after,
