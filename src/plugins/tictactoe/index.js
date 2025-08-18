@@ -290,6 +290,7 @@ class TicTacToePlugin {
             const gameData = this.games.get(chatId);
             
             console.log('🎯 HandleInput Debug - Chat:', chatId, 'Player:', player, 'Input:', input);
+            console.log('🎯 Game Data Players:', gameData ? gameData.players : 'No game data');
             
             if (!gameData || gameData.gameStatus !== 'active') {
                 return {
@@ -327,6 +328,11 @@ class TicTacToePlugin {
             // Validate player turn
             const currentPlayerSymbol = gameData.currentPlayer;
             const expectedPlayer = gameData.players[currentPlayerSymbol];
+            
+            console.log('🎯 Turn Validation - Current Symbol:', currentPlayerSymbol);
+            console.log('🎯 Turn Validation - Expected Player:', expectedPlayer);
+            console.log('🎯 Turn Validation - Actual Player:', player);
+            console.log('🎯 Turn Validation - Match:', player === expectedPlayer);
             
             if (player !== expectedPlayer) {
                 const waitingPlayerName = this.extractDisplayName(expectedPlayer);

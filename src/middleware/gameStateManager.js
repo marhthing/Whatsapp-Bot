@@ -105,6 +105,11 @@ class GameStateManagerMiddleware {
                 player = message.author || message.from || ownerJid;
             }
 
+            // Normalize JID format - ensure consistent format
+            if (player && !player.includes('@')) {
+                player = player + '@s.whatsapp.net';
+            }
+
             console.log('🎮 GameStateManager - Extracted player JID:', player, 'Chat:', chatId);
 
             this.eventBus.emit('game_input_received', {
