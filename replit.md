@@ -78,7 +78,11 @@ The system follows a **personal assistant architecture** with multi-session supp
 - **Ping Plugin**: ping, pinginfo (working for allowed users)
 - **Games Plugin**: tictactoe, wordguess, endgame, gameinfo, gamestats
 - **Admin Tools**: systeminfo, plugins, users, permissions, logs, cleanup, backup
-- **Anti-Delete**: recover, deleted, antilog
+- **Anti-Delete**: recover, deleted, antilog - **FULLY FUNCTIONAL**
+  - Automatically captures all messages and media
+  - Detects message deletions in real-time
+  - Forwards deleted content to bot owner with sender info, timestamps, and content
+  - Provides recovery commands to restore deleted messages
 - **Media Tools**: convert, upscale, analyze, mediainfo, compress, extract
 - **Access Control**: Proper owner detection, command permissions, game participation
 - **Hot Reload**: Automatic plugin reloading on file changes

@@ -76,18 +76,24 @@ class Detector {
                 return;
             }
             
+            // Extract proper data from Baileys message structure
+            const messageText = this.extractMessageText(before);
+            const senderJid = this.extractSenderJid(before);
+            const chatId = this.extractChatId(before);
+            const messageId = this.extractMessageId(before);
+            
             const deletionEntry = {
                 id: this.generateId(),
-                originalMessageId: before.id._serialized,
-                deletedMessageId: after ? after.id._serialized : null,
-                chatId: before.from,
-                sender: before.author || before.from,
-                originalTimestamp: new Date(before.timestamp * 1000).toISOString(),
+                originalMessageId: messageId,
+                deletedMessageId: after ? this.extractMessageId(after) : null,
+                chatId: chatId,
+                sender: senderJid,
+                originalTimestamp: new Date(before.messageTimestamp * 1000).toISOString(),
                 deletedTimestamp: new Date().toISOString(),
-                messageType: before.type,
-                messageBody: before.body || '',
-                hasMedia: before.hasMedia || false,
-                mediaType: before.hasMedia ? before.type : null,
+                messageType: this.getMessageType(before),
+                messageBody: messageText,
+                hasMedia: this.hasMedia(before),
+                mediaType: this.hasMedia(before) ? this.getMediaType(before) : null,
                 notifiedOwner: false
             };
             
@@ -97,10 +103,8 @@ class Detector {
             // Emit deletion detected event
             this.eventBus.emit('deletion_detected', deletionEntry);
             
-            // Notify and forward deleted message if enabled
-            if (this.envManager.get('ENABLE_ANTI_DELETE') === 'true') {
-                await this.forwardDeletedMessage(deletionEntry);
-            }
+            // Notify and forward deleted message (always enabled for now)
+            await this.forwardDeletedMessage(deletionEntry);
             
             console.log(`🔍 Logged message deletion: ${deletionEntry.originalMessageId}`);
             
@@ -147,7 +151,7 @@ class Detector {
             
             notificationText += `💡 Use \`.recover ${deletionEntry.id}\` to restore this message`;
             
-            await this.botClient.sendMessage(targetJid, notificationText);
+            await this.botClient.sendMessage(targetJid, { text: notificationText });
             
             // Mark as notified
             deletionEntry.notifiedOwner = true;
@@ -299,6 +303,73 @@ class Detector {
         } catch (error) {
             console.error('Error during Anti-Delete Detector shutdown:', error);
         }
+    }
+
+    // Utility methods for extracting data from Baileys message structure
+    extractMessageText(message) {
+        if (message.message) {
+            if (message.message.conversation) {
+                return message.message.conversation;
+            } else if (message.message.extendedTextMessage?.text) {
+                return message.message.extendedTextMessage.text;
+            } else if (message.message.imageMessage?.caption) {
+                return message.message.imageMessage.caption;
+            } else if (message.message.videoMessage?.caption) {
+                return message.message.videoMessage.caption;
+            }
+        }
+        return message.body || '';
+    }
+
+    extractSenderJid(message) {
+        if (message.key) {
+            return message.key.participant || message.key.remoteJid;
+        }
+        return message.author || message.from;
+    }
+
+    extractChatId(message) {
+        if (message.key) {
+            return message.key.remoteJid;
+        }
+        return message.from;
+    }
+
+    extractMessageId(message) {
+        if (message.key) {
+            return message.key.id;
+        }
+        return message.id?._serialized || message.id?.id || message.id;
+    }
+
+    getMessageType(message) {
+        if (message.message) {
+            const messageKeys = Object.keys(message.message);
+            return messageKeys[0] || 'unknown';
+        }
+        return message.type || 'text';
+    }
+
+    hasMedia(message) {
+        if (message.message) {
+            return !!(message.message.imageMessage || 
+                     message.message.videoMessage || 
+                     message.message.audioMessage || 
+                     message.message.documentMessage || 
+                     message.message.stickerMessage);
+        }
+        return !!message.hasMedia;
+    }
+
+    getMediaType(message) {
+        if (message.message) {
+            if (message.message.imageMessage) return 'image';
+            if (message.message.videoMessage) return 'video';
+            if (message.message.audioMessage) return 'audio';
+            if (message.message.documentMessage) return 'document';
+            if (message.message.stickerMessage) return 'sticker';
+        }
+        return message.type || 'unknown';
     }
 }
 

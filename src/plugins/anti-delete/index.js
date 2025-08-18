@@ -60,8 +60,26 @@ class AntiDeletePlugin {
         
         // Listen for deletion detection events
         this.eventBus.on('deletion_detected', async (data) => {
-            console.log(`🔍 Message deletion detected: ${data.messageId}`);
+            console.log(`🔍 Message deletion detected: ${data.id}`);
         });
+    }
+
+    // Method called by MessageProcessor when message is deleted
+    async handleDeletedMessage(after, before, archivedMessage) {
+        try {
+            console.log('🗑️ Anti-delete plugin handling deleted message');
+            
+            if (this.detector) {
+                const deletionData = {
+                    after: after,
+                    before: archivedMessage || before
+                };
+                await this.detector.handleDeletion(deletionData);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in anti-delete plugin handling deletion:', error);
+        }
     }
 
     async shutdown() {
