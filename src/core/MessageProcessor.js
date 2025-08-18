@@ -29,8 +29,8 @@ class MessageProcessor extends EventEmitter {
             // Always archive the message first (both incoming and outgoing)
             await this.messageArchiver.archiveMessage(message, isOutgoing);
 
-            // Download media if present
-            if (message.hasMedia && process.env.AUTO_DOWNLOAD_MEDIA === 'true') {
+            // Download and store media automatically for all message types
+            if (this.hasMedia(message)) {
                 await this.downloadAndStoreMedia(message);
             }
 
@@ -46,8 +46,9 @@ class MessageProcessor extends EventEmitter {
             const accessResult = this.accessController.canProcessMessage(message, command);
             
             if (!accessResult.allowed) {
-                // Log access denied but don't respond
-                console.log(`🚫 Access denied for ${message.author || message.from}: ${accessResult.reason}`);
+                // Log access denied with proper JID extraction
+                const senderJid = message.key?.participant || message.key?.remoteJid || message.author || message.from;
+                console.log(`🚫 Access denied for ${senderJid}: ${accessResult.reason}`);
                 this.eventBus?.emitAccessDenied(message, accessResult.reason);
                 return;
             }
@@ -73,8 +74,171 @@ class MessageProcessor extends EventEmitter {
         }
     }
 
+    hasMedia(message) {
+        // Check if message has media content
+        if (message.message) {
+            return !!(message.message.imageMessage || 
+                     message.message.videoMessage || 
+                     message.message.audioMessage || 
+                     message.message.documentMessage || 
+                     message.message.stickerMessage);
+        }
+        return !!message.hasMedia;
+    }
+
+    async downloadAndStoreMedia(message) {
+        try {
+            if (!this.hasMedia(message)) {
+                return null;
+            }
+
+            console.log('📥 Downloading media...');
+            
+            // Use Baileys downloadMediaMessage function
+            const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+            const buffer = await downloadMediaMessage(message, 'buffer', {}, { 
+                logger: require('pino')({ level: 'silent' })
+            });
+            
+            if (!buffer) {
+                console.warn('⚠️ Failed to download media - no buffer received');
+                return null;
+            }
+
+            // Determine media type and mimetype
+            let mediaType = 'document';
+            let mimetype = 'application/octet-stream';
+            let filename = 'file';
+
+            if (message.message.imageMessage) {
+                mediaType = 'image';
+                mimetype = message.message.imageMessage.mimetype || 'image/jpeg';
+                filename = 'image.jpg';
+            } else if (message.message.videoMessage) {
+                mediaType = 'video';
+                mimetype = message.message.videoMessage.mimetype || 'video/mp4';
+                filename = 'video.mp4';
+            } else if (message.message.audioMessage) {
+                mediaType = 'audio';
+                mimetype = message.message.audioMessage.mimetype || 'audio/ogg';
+                filename = 'audio.ogg';
+            } else if (message.message.documentMessage) {
+                mediaType = 'document';
+                mimetype = message.message.documentMessage.mimetype || 'application/octet-stream';
+                filename = message.message.documentMessage.fileName || 'document';
+            } else if (message.message.stickerMessage) {
+                mediaType = 'sticker';
+                mimetype = message.message.stickerMessage.mimetype || 'image/webp';
+                filename = 'sticker.webp';
+            }
+
+            // Store in media vault
+            const mediaData = {
+                data: buffer,
+                mimetype: mimetype,
+                filename: filename
+            };
+
+            const storedMedia = await this.mediaVault.storeMedia(mediaData, message);
+            console.log(`✅ Media stored: ${storedMedia.filename} (${this.formatSize(buffer.length)})`);
+            
+            return storedMedia;
+
+        } catch (error) {
+            console.error('❌ Error downloading/storing media:', error);
+            return null;
+        }
+    }
+
+    formatSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    async executeCommand(message, command) {
+        try {
+            // Get command execution from plugin discovery
+            const result = await this.pluginDiscovery.executeCommand(command.name, {
+                message,
+                command,
+                args: command.args,
+                reply: async (text, options = {}) => {
+                    await this.sendMessage(message.key.remoteJid || message.from, text, options);
+                }
+            });
+            
+            return result;
+            
+        } catch (error) {
+            console.error(`❌ Error executing command '${command.name}':`, error);
+            await this.sendMessage(
+                message.key.remoteJid || message.from, 
+                `❌ Error executing command: ${error.message}`
+            );
+        }
+    }
+
+    async sendMessage(chatId, content, options = {}) {
+        try {
+            if (!this.client) {
+                throw new Error('WhatsApp client not available');
+            }
+
+            let messageContent;
+            if (typeof content === 'string') {
+                messageContent = { text: content };
+            } else {
+                messageContent = content;
+            }
+
+            const sentMessage = await this.client.sendMessage(chatId, messageContent, options);
+            
+            // Archive the outgoing message
+            if (sentMessage) {
+                await this.messageArchiver.archiveMessage(sentMessage, true);
+            }
+
+            return sentMessage;
+            
+        } catch (error) {
+            console.error('❌ Error sending message:', error);
+            throw error;
+        }
+    }
+
+    async sendErrorMessage(message, error) {
+        try {
+            const errorText = `❌ **Error**\n\n${error.message || 'An unknown error occurred'}`;
+            await this.sendMessage(message.key.remoteJid || message.from, errorText);
+        } catch (sendError) {
+            console.error('❌ Failed to send error message:', sendError);
+        }
+    }
+
     extractCommand(message) {
-        const text = message.body;
+        // Extract message text from different message types
+        let text = '';
+        
+        if (message.message) {
+            if (message.message.conversation) {
+                text = message.message.conversation;
+            } else if (message.message.extendedTextMessage?.text) {
+                text = message.message.extendedTextMessage.text;
+            } else if (message.message.imageMessage?.caption) {
+                text = message.message.imageMessage.caption;
+            } else if (message.message.videoMessage?.caption) {
+                text = message.message.videoMessage.caption;
+            }
+        }
+        
+        // Fallback to direct body property
+        if (!text && message.body) {
+            text = message.body;
+        }
+        
         if (!text || typeof text !== 'string') {
             return null;
         }

@@ -188,8 +188,22 @@ class AccessController {
      * Main access control logic - determines if a user can process a command
      */
     canProcessMessage(message, command = null) {
-        const senderJid = message.author || message.from;
-        const chatId = message.from;
+        // Extract sender JID properly from Baileys message structure
+        let senderJid, chatId;
+        
+        if (message.key) {
+            // For group messages, participant is the sender
+            // For individual messages, remoteJid is the sender
+            senderJid = message.key.participant || message.key.remoteJid;
+            chatId = message.key.remoteJid;
+        } else {
+            // Fallback for other message structures
+            senderJid = message.author || message.from;
+            chatId = message.from;
+        }
+
+        // Debug log for troubleshooting
+        console.log(`🔍 Access check - Sender: ${senderJid}, Owner: ${this.ownerJid}, Chat: ${chatId}`);
 
         // Owner can always process any message
         if (this.isOwner(senderJid)) {

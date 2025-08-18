@@ -1,0 +1,17 @@
+[
+  {
+    "id": "A9B11F3D0C828719043F56925DE1B241",
+    "from": "120363346040696057@g.us",
+    "body": "",
+    "type": "text",
+    "timestamp": "2025-08-18T08:30:30.000Z",
+    "isOutgoing": false,
+    "hasMedia": false,
+    "quotedMessage": null,
+    "mentions": [],
+    "isGroup": true,
+    "author": "268006462603346@lid",
+    "mediaPath": null,
+    "archived": "2025-08-18T08:30:31.546Z"
+  }
+]

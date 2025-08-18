@@ -1,0 +1,129 @@
+{
+  "startTime": 1755505553336,
+  "totalMessages": 0,
+  "totalCommands": 0,
+  "totalPluginLoads": 0,
+  "totalErrors": 0,
+  "commandExecutionTimes": [],
+  "pluginLoadTimes": [],
+  "memoryUsage": [
+    {
+      "timestamp": 1755505583337,
+      "rss": 98816000,
+      "heapUsed": 28721928,
+      "heapTotal": 30679040,
+      "external": 3484799
+    },
+    {
+      "timestamp": 1755505613337,
+      "rss": 110116864,
+      "heapUsed": 31198904,
+      "heapTotal": 33300480,
+      "external": 3511446
+    },
+    {
+      "timestamp": 1755505643338,
+      "rss": 111034368,
+      "heapUsed": 32224872,
+      "heapTotal": 33562624,
+      "external": 3872687
+    },
+    {
+      "timestamp": 1755505673339,
+      "rss": 110215168,
+      "heapUsed": 31649824,
+      "heapTotal": 33562624,
+      "external": 3545995
+    },
+    {
+      "timestamp": 1755505703340,
+      "rss": 110739456,
+      "heapUsed": 32233784,
+      "heapTotal": 33562624,
+      "external": 3568723
+    },
+    {
+      "timestamp": 1755505733340,
+      "rss": 110632960,
+      "heapUsed": 31977760,
+      "heapTotal": 33562624,
+      "external": 3569143
+    },
+    {
+      "timestamp": 1755505763340,
+      "rss": 110632960,
+      "heapUsed": 32072056,
+      "heapTotal": 33562624,
+      "external": 3569287
+    },
+    {
+      "timestamp": 1755505793340,
+      "rss": 110764032,
+      "heapUsed": 32164648,
+      "heapTotal": 33562624,
+      "external": 3569431
+    },
+    {
+      "timestamp": 1755505823340,
+      "rss": 110764032,
+      "heapUsed": 32259712,
+      "heapTotal": 33562624,
+      "external": 3569575
+    }
+  ],
+  "cpuUsage": [
+    {
+      "timestamp": 1755505583337,
+      "user": 654598,
+      "system": 73632
+    },
+    {
+      "timestamp": 1755505613337,
+      "user": 1543396,
+      "system": 168233
+    },
+    {
+      "timestamp": 1755505643338,
+      "user": 1596882,
+      "system": 170866
+    },
+    {
+      "timestamp": 1755505673339,
+      "user": 1606366,
+      "system": 171360
+    },
+    {
+      "timestamp": 1755505703340,
+      "user": 1619447,
+      "system": 174516
+    },
+    {
+      "timestamp": 1755505733340,
+      "user": 1636818,
+      "system": 175685
+    },
+    {
+      "timestamp": 1755505763340,
+      "user": 1642286,
+      "system": 175962
+    },
+    {
+      "timestamp": 1755505793340,
+      "user": 1646610,
+      "system": 176999
+    },
+    {
+      "timestamp": 1755505823340,
+      "user": 1651502,
+      "system": 179163
+    }
+  ],
+  "responseTime": [],
+  "errorHistory": [],
+  "systemHealth": {
+    "status": "healthy",
+    "lastCheck": "2025-08-18T08:30:23.340Z",
+    "issues": []
+  },
+  "lastSaved": "2025-08-18T08:30:53.338Z"
+}
