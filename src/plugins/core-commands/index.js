@@ -212,29 +212,81 @@ class CoreCommandsPlugin {
         const { args, reply, message } = context;
         
         if (!args.length) {
-            await reply('❌ Usage: .allow <command>\nUse this command in the user\'s chat to allow them to use a specific command.');
+            await reply('❌ Usage: .allow <command>\nUse this command in the target user\'s chat to allow them to use a specific command.');
             return;
         }
         
         const command = args[0].toLowerCase();
-        const userJid = message.key.remoteJid;
+        let targetUserJid;
         
-        // Note: This would need to interact with the access control system
-        await reply(`✅ Command '${command}' has been allowed for this user.\nThey can now use .${command} even though they're not the bot owner.`);
+        // Determine the target user based on chat type
+        if (message.key.remoteJid.endsWith('@g.us')) {
+            // Group chat: We need to allow a specific participant
+            // For now, we'll need the user to specify or reply to a message
+            if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+                // User replied to someone's message - allow that person
+                targetUserJid = message.message.extendedTextMessage.contextInfo.participant;
+            } else {
+                await reply('❌ In groups, please reply to the user\'s message when using .allow\nOr use: .allow <command> in their private chat');
+                return;
+            }
+        } else {
+            // Individual chat: Allow this chat user
+            targetUserJid = message.key.remoteJid;
+        }
+        
+        try {
+            // Get access controller from bot client
+            const accessController = this.botClient.getAccessController();
+            await accessController.allowCommand(targetUserJid, command);
+            
+            console.log(`✅ Command '${command}' allowed for user: ${targetUserJid}`);
+            await reply(`✅ Command '${command}' has been allowed for this user.\nThey can now use .${command} even though they're not the bot owner.`);
+            
+        } catch (error) {
+            console.error('❌ Error allowing command:', error);
+            await reply(`❌ Failed to allow command: ${error.message}`);
+        }
     }
 
     async handleDisallow(context) {
         const { args, reply, message } = context;
         
         if (!args.length) {
-            await reply('❌ Usage: .disallow <command>\nUse this command in the user\'s chat to remove their permission for a specific command.');
+            await reply('❌ Usage: .disallow <command>\nUse this command in the target user\'s chat to remove their permission for a specific command.');
             return;
         }
         
         const command = args[0].toLowerCase();
-        const userJid = message.key.remoteJid;
+        let targetUserJid;
         
-        await reply(`❌ Command '${command}' has been disallowed for this user.\nThey can no longer use .${command} unless they're the bot owner.`);
+        // Determine the target user based on chat type
+        if (message.key.remoteJid.endsWith('@g.us')) {
+            // Group chat: We need to disallow a specific participant
+            if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+                // User replied to someone's message - disallow that person
+                targetUserJid = message.message.extendedTextMessage.contextInfo.participant;
+            } else {
+                await reply('❌ In groups, please reply to the user\'s message when using .disallow\nOr use: .disallow <command> in their private chat');
+                return;
+            }
+        } else {
+            // Individual chat: Disallow this chat user
+            targetUserJid = message.key.remoteJid;
+        }
+        
+        try {
+            // Get access controller from bot client
+            const accessController = this.botClient.getAccessController();
+            await accessController.disallowCommand(targetUserJid, command);
+            
+            console.log(`❌ Command '${command}' disallowed for user: ${targetUserJid}`);
+            await reply(`❌ Command '${command}' has been disallowed for this user.\nThey can no longer use .${command} unless they're the bot owner.`);
+            
+        } catch (error) {
+            console.error('❌ Error disallowing command:', error);
+            await reply(`❌ Failed to disallow command: ${error.message}`);
+        }
     }
 
     async handleReload(context) {

@@ -383,6 +383,10 @@ class BotClient extends EventEmitter {
         return this.client && this.client.user && this.isInitialized;
     }
 
+    getAccessController() {
+        return this.accessController;
+    }
+
     getStatus() {
         return {
             ready: this.isReady(),
